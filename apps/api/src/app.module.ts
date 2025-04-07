@@ -21,7 +21,7 @@ import { FileModule } from './modules/file/file.module';
     FCMTokenModule,
     FamilyTreeModule,
     FamilyTreeRelationshipModule,
-    FileModule
+    FileModule,
   ],
   controllers: [],
   providers: [

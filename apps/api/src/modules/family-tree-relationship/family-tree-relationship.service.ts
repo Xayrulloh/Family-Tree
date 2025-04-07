@@ -825,7 +825,9 @@ export class FamilyTreeRelationshipService {
       where: and(
         eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
         eq(schema.familyTreeRelationshipsSchema.depth, 1),
-        targetUserId ? eq(schema.familyTreeRelationshipsSchema.descendantId, targetUserId) : undefined
+        targetUserId
+          ? eq(schema.familyTreeRelationshipsSchema.descendantId, targetUserId)
+          : undefined
       ),
     });
 

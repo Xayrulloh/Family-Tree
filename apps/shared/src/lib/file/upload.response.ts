@@ -16,5 +16,5 @@ export {
   FileDeleteResponseSchema,
   FileDeleteResponseType,
   FileUploadResponseSchema,
-  FileUploadResponseType
-}
+  FileUploadResponseType,
+};

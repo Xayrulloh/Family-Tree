@@ -1,12 +1,7 @@
 import { z } from 'zod';
 import { createDisclosure } from '../../../shared/lib/disclosure';
 import { createForm } from '../../../shared/lib/create-form';
-import {
-  attach,
-  createEffect,
-  createEvent,
-  sample,
-} from 'effector';
+import { attach, createEffect, createEvent, sample } from 'effector';
 import { api } from '../../../shared/api';
 import { RcFile } from 'antd/es/upload';
 
@@ -70,6 +65,6 @@ sample({
   clock: formValidated,
   target: createTreeFx,
   source: form.$formValues,
-})
+});
 
 form.$formValues.watch(console.log);

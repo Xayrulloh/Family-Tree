@@ -14,13 +14,17 @@ export class CloudflareConfig {
 
   constructor(private configService: ConfigService) {
     this.s3 = new S3Client({
-      endpoint: configService.get<EnvType['CLOUDFLARE_ENDPOINT']>('CLOUDFLARE_ENDPOINT') as string,
+      endpoint: configService.get<EnvType['CLOUDFLARE_ENDPOINT']>(
+        'CLOUDFLARE_ENDPOINT'
+      ) as string,
       region: 'auto',
       credentials: {
-        accessKeyId: configService.get<EnvType['CLOUDFLARE_ACCESS_KEY_ID']>('CLOUDFLARE_ACCESS_KEY_ID') as string,
-        secretAccessKey: configService.get<EnvType['CLOUDFLARE_SECRET_ACCESS_KEY']>(
-          'CLOUDFLARE_SECRET_ACCESS_KEY'
+        accessKeyId: configService.get<EnvType['CLOUDFLARE_ACCESS_KEY_ID']>(
+          'CLOUDFLARE_ACCESS_KEY_ID'
         ) as string,
+        secretAccessKey: configService.get<
+          EnvType['CLOUDFLARE_SECRET_ACCESS_KEY']
+        >('CLOUDFLARE_SECRET_ACCESS_KEY') as string,
       },
       forcePathStyle: true,
     });

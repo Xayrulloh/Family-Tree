@@ -78,7 +78,7 @@ export const CreateTree: React.FC = () => {
               />
               {/* Image Upload */}
               <Upload
-                accept='image/*'
+                accept="image/*"
                 action={async (file) => {
                   await model.uploadFileFx(file);
                   const img = URL.createObjectURL(file);
@@ -88,7 +88,7 @@ export const CreateTree: React.FC = () => {
               >
                 <Button icon={<UploadOutlined />}>Upload</Button>
               </Upload>
-              <img src={img} alt='Family Tree' />
+              <img src={img} alt="Family Tree" />
             </Flex>
           </form>
         </FormProvider>

@@ -17,9 +17,15 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     private db: NodePgDatabase<typeof schema>
   ) {
     super({
-      clientID: configService.get<EnvType['GOOGLE_CLIENT_ID']>('GOOGLE_CLIENT_ID') as string,
-      clientSecret: configService.get<EnvType['GOOGLE_CLIENT_SECRET']>('GOOGLE_CLIENT_SECRET') as string,
-      callbackURL: configService.get<EnvType['GOOGLE_CALLBACK_URL']>('GOOGLE_CALLBACK_URL') as string,
+      clientID: configService.get<EnvType['GOOGLE_CLIENT_ID']>(
+        'GOOGLE_CLIENT_ID'
+      ) as string,
+      clientSecret: configService.get<EnvType['GOOGLE_CLIENT_SECRET']>(
+        'GOOGLE_CLIENT_SECRET'
+      ) as string,
+      callbackURL: configService.get<EnvType['GOOGLE_CALLBACK_URL']>(
+        'GOOGLE_CALLBACK_URL'
+      ) as string,
       scope: ['profile', 'email'],
     });
   }
