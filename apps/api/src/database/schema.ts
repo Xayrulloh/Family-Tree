@@ -103,6 +103,26 @@ export const FCMTokensSchema = pgTable('fcm_tokens', {
   ...baseSchema,
 });
 
+export const notificationsSchema = pgTable('notifications', {
+  content: text('content').notNull(),
+  receiverUserId: uuid('receiver_user_id')
+    .references(() => usersSchema.id)
+    .notNull(),
+  senderUserId: uuid('sender_user_id')
+    .references(() => usersSchema.id)
+    .notNull(),
+  ...baseSchema,
+});
+
+export const notificationReadsSchema = pgTable('notification_reads', {
+  userId: uuid('user_id')
+    .references(() => usersSchema.id)
+    .notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 // relations
 export const usersRelations = relations(usersSchema, ({ many }) => ({
   familyTrees: many(familyTreesSchema, { relationName: 'family-tree-creator' }),
@@ -157,3 +177,27 @@ export const FCMTokensRelations = relations(FCMTokensSchema, ({ one }) => ({
     relationName: 'user-fcm-token',
   }),
 }));
+
+export const notificationsRelations = relations(
+  notificationsSchema,
+  ({ one }) => ({
+    sender: one(usersSchema, {
+      fields: [notificationsSchema.senderUserId],
+      references: [usersSchema.id],
+    }),
+    receiver: one(usersSchema, {
+      fields: [notificationsSchema.receiverUserId],
+      references: [usersSchema.id],
+    }),
+  })
+);
+
+export const notificationReadsRelations = relations(
+  notificationReadsSchema,
+  ({ one }) => ({
+    user: one(usersSchema, {
+      fields: [notificationReadsSchema.userId],
+      references: [usersSchema.id],
+    }),
+  })
+);

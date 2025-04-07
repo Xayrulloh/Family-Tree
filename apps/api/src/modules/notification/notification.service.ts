@@ -1,0 +1,66 @@
+import { Inject, Injectable } from '@nestjs/common';
+import * as schema from '../../database/schema';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { DrizzleAsyncProvider } from '../../database/drizzle.provider';
+import { NotificationResponseType } from '@family-tree/shared';
+import { and, desc, eq, gt, isNull, notInArray } from 'drizzle-orm';
+
+@Injectable()
+export class NotificationService {
+  constructor(
+    @Inject(DrizzleAsyncProvider)
+    private db: NodePgDatabase<typeof schema>
+  ) {}
+
+  async getUserNotifications(
+    userId: string
+  ): Promise<NotificationResponseType> {
+    const lastReadNotification =
+      await this.db.query.notificationReadsSchema.findFirst({
+        where: and(eq(schema.notificationReadsSchema.userId, userId)),
+        orderBy: desc(schema.notificationReadsSchema.updatedAt),
+      });
+
+    const unReadNotifications =
+      await this.db.query.notificationsSchema.findMany({
+        where: and(
+          eq(schema.notificationsSchema.receiverUserId, userId),
+          isNull(schema.notificationsSchema.deletedAt),
+          lastReadNotification?.updatedAt
+            ? gt(
+                schema.notificationsSchema.createdAt,
+                lastReadNotification?.updatedAt
+              )
+            : undefined
+        ),
+      });
+
+    const last5Notifications = await this.db.query.notificationsSchema.findMany(
+      {
+        where: and(
+          eq(schema.notificationsSchema.receiverUserId, userId),
+          isNull(schema.notificationsSchema.deletedAt),
+          notInArray(
+            schema.notificationsSchema.id,
+            unReadNotifications.map((notification) => notification.id)
+          )
+        ),
+        limit: 5,
+      }
+    );
+
+    return {
+      unReadNotifications,
+      last5Notifications,
+    };
+  }
+
+  async markAllAsRead(userId: string): Promise<void> {
+    await this.db
+      .update(schema.notificationReadsSchema)
+      .set({
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.notificationReadsSchema.userId, userId));
+  }
+}

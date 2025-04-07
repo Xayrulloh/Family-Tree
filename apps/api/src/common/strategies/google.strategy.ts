@@ -46,6 +46,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
 
     if (!user) {
+      // create new user
       const [newUser] = await this.db
         .insert(schema.usersSchema)
         .values({
@@ -56,6 +57,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
           gender: UserGenderEnum.UNKNOWN,
         })
         .returning();
+
+      // create a default last read notification
+      await this.db.insert(schema.notificationReadsSchema).values({
+        userId: newUser.id,
+      });
 
       user = newUser;
     }

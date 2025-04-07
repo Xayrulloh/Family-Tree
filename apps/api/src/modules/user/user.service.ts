@@ -8,7 +8,6 @@ import { UserUpdateRequestDto } from './dto/user.dto';
 import { CloudflareConfig } from '../../config/cloudflare/cloudflare.config';
 import { CLOUDFLARE_USER_FOLDER } from '../../utils/constants';
 import { env } from '../../config/env/env';
-// import { env } from './config/env/env';
 
 @Injectable()
 export class UserService {
