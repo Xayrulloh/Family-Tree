@@ -32,6 +32,21 @@ export class UserService {
     return user;
   }
 
+  async getUserById(id: string): Promise<UserResponseType> {
+    const user = await this.db.query.usersSchema.findFirst({
+      where: and(
+        eq(schema.usersSchema.id, id),
+        isNull(schema.usersSchema.deletedAt)
+      ),
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+
+    return user;
+  }
+
   async getUserThemselves(id: string): Promise<UserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(

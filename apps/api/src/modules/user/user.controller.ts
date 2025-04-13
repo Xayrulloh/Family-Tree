@@ -14,6 +14,7 @@ import {
   UserResponseDto,
   UserUpdateRequestDto,
   UserEmailParamDto,
+  UserIdParamDto,
 } from './dto/user.dto';
 import {
   ApiCookieAuth,
@@ -45,17 +46,31 @@ export class UserController {
   }
 
   // Find exactly one user by its email (instead of mock user, users may connect real users)
-  @Get(':email')
+  // @Get(':email')
+  // @UseGuards(JWTAuthGuard)
+  // @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  // @ApiParam({ name: 'email', required: true, type: String })
+  // @HttpCode(HttpStatus.OK)
+  // @ApiOkResponse({ type: UserResponseDto })
+  // @ZodSerializerDto(UserResponseSchema)
+  // async getUserByEmail(
+  //   @Param() param: UserEmailParamDto
+  // ): Promise<UserResponseDto> {
+  //   return this.userService.getUserByEmail(param.email);
+  // } // FIXME: need to think about this
+
+  // Find exactly one user by its id
+  @Get(':id')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiParam({ name: 'email', required: true, type: String })
+  @ApiParam({ name: 'id', required: true, type: String })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: UserResponseDto })
   @ZodSerializerDto(UserResponseSchema)
-  async getUserByEmail(
-    @Param() param: UserEmailParamDto
+  async getUserById(
+    @Param() param: UserIdParamDto
   ): Promise<UserResponseDto> {
-    return this.userService.getUserByEmail(param.email);
+    return this.userService.getUserById(param.id);
   }
 
   // Update user themselves info

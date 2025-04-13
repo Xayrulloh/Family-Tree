@@ -1,11 +1,13 @@
 import { FCMTokenCreateDeleteRequestType, FCMTokenResponseType } from '@family-tree/shared';
+import { AxiosRequestConfig } from 'axios';
 import { base } from './base';
 
 export const fcmToken = {
-  create: (body: FCMTokenCreateDeleteRequestType) => {
-    return base.post<FCMTokenResponseType>('/fcm-tokens', body);
+  create: (body: FCMTokenCreateDeleteRequestType, config?: AxiosRequestConfig) => {
+    return base.post<FCMTokenResponseType>('/fcm-tokens', body, config);
   },
-  delete: (body: FCMTokenCreateDeleteRequestType) => {
-    return base.delete<FCMTokenResponseType>('/fcm-tokens', { data: body });
+  delete: (body: FCMTokenCreateDeleteRequestType, config?: AxiosRequestConfig) => {
+    return base.delete<FCMTokenResponseType>('/fcm-tokens', { data: body, ...config });
   },
 };
+

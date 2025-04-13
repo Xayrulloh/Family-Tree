@@ -1,11 +1,13 @@
+import { AxiosRequestConfig } from 'axios';
 import { NotificationResponseType } from '@family-tree/shared';
 import { base } from './base';
 
 export const notification = {
-  findAll: () => {
-    return base.get<NotificationResponseType[]>('/notifications');
+  findAll: (config?: AxiosRequestConfig) => {
+    return base.get<NotificationResponseType>(`/notifications`, config);
   },
-  read: () => {
-    return base.get('/notifications/read');
+  read: (config?: AxiosRequestConfig) => {
+    return base.get<void>(`/notifications/read`, config);
   },
 };
+

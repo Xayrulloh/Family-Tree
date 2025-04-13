@@ -46,6 +46,7 @@ export class NotificationService {
           )
         ),
         limit: 5,
+        orderBy: desc(schema.notificationsSchema.createdAt),
       }
     );
 

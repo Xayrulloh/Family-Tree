@@ -1,31 +1,29 @@
-import { Layout as AntLayout, Menu, theme } from 'antd';
-import { Header, Content } from 'antd/es/layout/layout';
-import Sider from 'antd/es/layout/Sider';
+import { UserOutlined } from '@ant-design/icons';
+import { Layout as AntLayout, Avatar, theme, Typography } from 'antd';
+import { Header, Content, Footer } from 'antd/es/layout/layout';
+import { NotificationDropdown } from '../../features/notification/dropdown';
 
 export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { token } = theme.useToken();
   return (
     <AntLayout style={{ minHeight: '100dvh' }}>
-      <Sider
-        breakpoint="lg"
-        collapsedWidth="0"
-        onBreakpoint={(broken) => {
-          console.log(broken);
-        }}
-        onCollapse={(collapsed, type) => {
-          console.log(collapsed, type);
-        }}
-      >
-        <div className="demo-logo-vertical" />
-        <Menu
-          theme="dark"
-          mode="inline"
-          defaultSelectedKeys={['4']}
-          items={[]}
-        />
-      </Sider>
       <AntLayout style={{ background: token.colorWhite }}>
-        <Header style={{ padding: 0, background: token.blue2 }} />
+        <Header style={{
+          padding: '0 24px',
+          background: token.colorWhite,
+          borderBottom: '2px solid #f0f0f0',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <Typography.Title level={3} style={{ margin: 0 }}>
+            Family Tree
+          </Typography.Title>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <NotificationDropdown />
+            <Avatar size="large" icon={<UserOutlined />} style={{ cursor: 'pointer' }} />
+          </div>
+        </Header>
         <Content style={{ margin: '24px 16px 0' }}>
           <div
             style={{
@@ -38,6 +36,9 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
             {children}
           </div>
         </Content>
+        <Footer style={{ textAlign: 'center', background: token.colorWhite }}>
+          © 2025 FamilyTree. All rights reserved.
+        </Footer>
       </AntLayout>
     </AntLayout>
   );
