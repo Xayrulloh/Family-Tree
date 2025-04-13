@@ -7,7 +7,6 @@ import {
   Post,
   Req,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { FCMTokenService } from './fcm-token.service';
 import {
@@ -27,7 +26,7 @@ import { FCMTokenResponseSchema } from '@family-tree/shared';
 import { ZodSerializerDto } from 'nestjs-zod';
 
 @ApiTags('FCM Token')
-@Controller('fcm-token')
+@Controller('fcm-tokens')
 export class FCMTokenController {
   constructor(private readonly fcmTokenService: FCMTokenService) {}
 
