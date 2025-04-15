@@ -67,9 +67,7 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: UserResponseDto })
   @ZodSerializerDto(UserResponseSchema)
-  async getUserById(
-    @Param() param: UserIdParamDto
-  ): Promise<UserResponseDto> {
+  async getUserById(@Param() param: UserIdParamDto): Promise<UserResponseDto> {
     return this.userService.getUserById(param.id);
   }
 

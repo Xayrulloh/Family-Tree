@@ -10,4 +10,3 @@ export const notification = {
     return base.get<void>(`/notifications/read`, config);
   },
 };
-

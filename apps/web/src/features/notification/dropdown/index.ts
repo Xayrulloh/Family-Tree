@@ -1,1 +1,1 @@
-export {  NotificationDropdown } from './ui';
+export { NotificationDropdown } from './ui';

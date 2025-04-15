@@ -15,7 +15,7 @@ const UserEmailParamSchema = z.object({
 
 const UserIdParamSchema = UserSchema.pick({
   id: true,
-})
+});
 
 type UserUpdateRequestType = z.infer<typeof UserUpdateRequestSchema>;
 
@@ -26,5 +26,5 @@ export {
   UserUpdateRequestType,
   UserEmailParamSchema,
   UserUsernameParamType,
-  UserIdParamSchema
+  UserIdParamSchema,
 };
