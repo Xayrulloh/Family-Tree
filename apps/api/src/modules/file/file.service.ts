@@ -8,9 +8,10 @@ export class FileService {
   async uploadFile(
     folder: string,
     key: string,
-    fileBuffer: Buffer
+    fileBuffer: Buffer,
+    mimetype: string
   ): Promise<void> {
-    await this.cloudflareConfig.uploadFile(folder, key, fileBuffer);
+    await this.cloudflareConfig.uploadFile(folder, key, fileBuffer, mimetype);
   }
 
   async deleteFile(folder: string, key: string): Promise<void> {
