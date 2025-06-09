@@ -7,7 +7,7 @@ import {
 import * as schema from '../../database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '../../database/drizzle.provider';
-import { and, asc, desc, eq, gte, inArray, isNull, not, or } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, not, or } from 'drizzle-orm';
 import {
   FamilyTreeRelationshipCreateRequestDto,
   FamilyTreeRelationshipCreateSonOrDaughterRequestDto,
@@ -272,12 +272,12 @@ export class FamilyTreeRelationshipService {
       })
       .returning();
 
-    // take ancestors and connect to new user
-    const ancestors =
+    // take parents and connect to new user
+    const parents =
       await this.db.query.familyTreeRelationshipsSchema.findMany({
         where: and(
           eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
-          gte(schema.familyTreeRelationshipsSchema.depth, 1),
+          eq(schema.familyTreeRelationshipsSchema.depth, 1),
           or(
             eq(
               schema.familyTreeRelationshipsSchema.descendantId,
@@ -309,18 +309,6 @@ export class FamilyTreeRelationshipService {
         descendantId: son.id,
       },
     ]);
-
-    // all related family
-    await Promise.all(
-      ancestors.map(async (ancestor) => {
-        await this.db.insert(schema.familyTreeRelationshipsSchema).values({
-          familyTreeId,
-          ancestorId: ancestor.ancestorId,
-          depth: ancestor.depth + 1,
-          descendantId: son.id,
-        });
-      })
-    );
 
     return son;
   }
@@ -400,7 +388,7 @@ export class FamilyTreeRelationshipService {
       await this.db.query.familyTreeRelationshipsSchema.findMany({
         where: and(
           eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
-          gte(schema.familyTreeRelationshipsSchema.depth, 1),
+          eq(schema.familyTreeRelationshipsSchema.depth, 1),
           or(
             eq(
               schema.familyTreeRelationshipsSchema.descendantId,
@@ -433,18 +421,6 @@ export class FamilyTreeRelationshipService {
       },
     ]);
 
-    // all related family
-    await Promise.all(
-      ancestors.map(async (ancestor) => {
-        await this.db.insert(schema.familyTreeRelationshipsSchema).values({
-          familyTreeId,
-          ancestorId: ancestor.ancestorId,
-          depth: ancestor.depth + 1,
-          descendantId: daughter.id,
-        });
-      })
-    );
-
     return daughter;
   }
 
@@ -455,6 +431,7 @@ export class FamilyTreeRelationshipService {
   ): Promise<FamilyTreeRelationshipUserArrayResponseDto> {
     // check is family tree exist
     await this.checkExistenceOfFamilyTree(familyTreeId);
+
     const parentOfTargetUser = await this.findParentOfTargetUser(
       familyTreeId,
       body.targetUserId
@@ -504,18 +481,6 @@ export class FamilyTreeRelationshipService {
     // take children of target user
     if (body.targetUserId) {
       // it's also called from family-tree controller when it's created
-      // take children of targetUser
-      const targetUserChildren =
-        await this.db.query.familyTreeRelationshipsSchema.findMany({
-          where: and(
-            gte(schema.familyTreeRelationshipsSchema.depth, 1),
-            eq(
-              schema.familyTreeRelationshipsSchema.ancestorId,
-              body.targetUserId
-            ),
-            eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId)
-          ),
-        });
 
       // connect parents
       await this.db.insert(schema.familyTreeRelationshipsSchema).values([
@@ -532,26 +497,6 @@ export class FamilyTreeRelationshipService {
           depth: 1,
         },
       ]);
-
-      // bind target children to new parents
-      await Promise.all(
-        targetUserChildren.map((child) => {
-          this.db.insert(schema.familyTreeRelationshipsSchema).values([
-            {
-              familyTreeId,
-              ancestorId: father.id,
-              descendantId: child.descendantId,
-              depth: child.depth + 1,
-            },
-            {
-              familyTreeId,
-              ancestorId: mother.id,
-              descendantId: child.descendantId,
-              depth: child.depth + 1,
-            },
-          ]);
-        })
-      );
     }
 
     // new parent
