@@ -37,6 +37,6 @@ export class AuthController {
       secure: true,
     });
 
-    res.redirect('http://localhost:4200');
+    res.redirect('http://localhost:4200/family-trees');
   }
 }

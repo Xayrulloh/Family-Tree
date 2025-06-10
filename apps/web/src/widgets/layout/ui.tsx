@@ -1,7 +1,7 @@
-import { UserOutlined } from '@ant-design/icons';
-import { Layout as AntLayout, Avatar, theme, Typography } from 'antd';
+import { Layout as AntLayout, theme, Typography } from 'antd';
 import { Header, Content, Footer } from 'antd/es/layout/layout';
 import { NotificationDropdown } from '../../features/notification/dropdown';
+import { UserDropdown } from '../../features/user/dropdown';
 
 export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { token } = theme.useToken();
@@ -23,11 +23,7 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
           </Typography.Title>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <NotificationDropdown />
-            <Avatar
-              size="large"
-              icon={<UserOutlined />}
-              style={{ cursor: 'pointer' }}
-            />
+            <UserDropdown />
           </div>
         </Header>
         <Content style={{ margin: '24px 16px 0' }}>
