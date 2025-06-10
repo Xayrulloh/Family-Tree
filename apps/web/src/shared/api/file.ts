@@ -1,10 +1,18 @@
+import { AxiosRequestConfig } from 'axios';
 import { base } from './base';
 
 export const file = {
-  upload: (category: 'tree', body: FormData) => {
+  upload: (category: 'tree', body: FormData, config?: AxiosRequestConfig) => {
     return base.post<{ path: string; message: string }>(
-      `/file/${category}`,
-      body
+      `/files/${category}`,
+      body,
+      config
+    );
+  },
+  delete: (category: 'tree', key: string, config?: AxiosRequestConfig) => {
+    return base.delete<{ message: string }>(
+      `/files/${category}/${key}`,
+      config
     );
   },
 };

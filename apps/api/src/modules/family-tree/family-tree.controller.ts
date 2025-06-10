@@ -60,7 +60,7 @@ export class FamilyTreeController {
   }
 
   // Find family trees by name (only public [public = true]) only 10 of them (name length must be at least 3)
-  @Get('public/:name')
+  @Get('publics/:name')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @ApiParam({ name: 'name', required: true, type: String })

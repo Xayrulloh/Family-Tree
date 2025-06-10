@@ -34,7 +34,7 @@ import { ConfigService } from '@nestjs/config';
 import { EnvType } from '../../config/env/env-validation';
 
 @ApiTags('File')
-@Controller('file')
+@Controller('files')
 export class FileController {
   constructor(
     private readonly fileService: FileService,
