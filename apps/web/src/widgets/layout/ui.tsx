@@ -31,7 +31,7 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
             style={{
               padding: 24,
               minHeight: 360,
-              background: token.blue3,
+              // background: token.blue3,
               borderRadius: token.borderRadiusLG,
             }}
           >

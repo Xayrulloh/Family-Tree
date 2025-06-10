@@ -30,12 +30,17 @@ export class CloudflareConfig {
     });
   }
 
-  async uploadFile(folder: string, key: string, body: Buffer): Promise<void> {
+  async uploadFile(
+    folder: string,
+    key: string,
+    body: Buffer,
+    mimetype: string
+  ): Promise<void> {
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
       Key: `${folder}/${key}`,
       Body: body,
-      ContentType: 'image/jpeg',
+      ContentType: mimetype,
     });
 
     await this.s3.send(command).catch((err) => console.log(err));

@@ -32,6 +32,7 @@ import {
 import { ZodSerializerDto } from 'nestjs-zod';
 import { ConfigService } from '@nestjs/config';
 import { EnvType } from '../../config/env/env-validation';
+import generateRandomString from '../../helpers/random-string.helper';
 
 @ApiTags('File')
 @Controller('files')
@@ -76,9 +77,14 @@ export class FileController {
     file: Express.Multer.File,
     @Param() param: FileUploadParamDto
   ): Promise<FileUploadResponseDto> {
-    const key = `${Date.now()}-${file.originalname}`;
+    const key = generateRandomString(15);
 
-    await this.fileService.uploadFile(param.folder, key, file.buffer);
+    await this.fileService.uploadFile(
+      param.folder,
+      key,
+      file.buffer,
+      file.mimetype
+    );
 
     const path = this.configService.get<EnvType['CLOUDFLARE_URL']>(
       'CLOUDFLARE_URL'
