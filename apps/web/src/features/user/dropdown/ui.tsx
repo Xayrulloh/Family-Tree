@@ -1,25 +1,66 @@
-import { Dropdown, MenuProps, Avatar, Typography } from 'antd';
+import { useState, useEffect } from 'react';
+import { Dropdown, MenuProps, Avatar, Typography, Input, Button, DatePicker, Select } from 'antd';
 import {
   UserOutlined,
   EditOutlined,
   CalendarOutlined,
+  SaveOutlined,
+  CloseOutlined,
 } from '@ant-design/icons';
 import { useUnit } from 'effector-react';
-import { $profile } from './model';
+import { $profile, $isEditing, profileEditStarted, profileEditCancelled, profileUpdated } from './model';
+import dayjs from 'dayjs';
+import { UserSchemaType } from '@family-tree/shared';
+
+const { Text } = Typography;
+const { Option } = Select;
 
 export const UserDropdown = () => {
-  const profile = useUnit($profile);
+  const [profile, isEditing] = useUnit([$profile, $isEditing]);
+  const [editedProfile, setEditedProfile] = useState<Partial<UserSchemaType>>({});
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Initialize editedProfile when profile changes
+  useEffect(() => {
+    if (profile) {
+      setEditedProfile({
+        name: profile.name,
+        gender: profile.gender,
+        birthdate: profile.birthdate,
+        image: profile.image
+      });
+    }
+  }, [profile]);
 
   const handleImageClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent dropdown close
+    e.stopPropagation();
     if (profile?.image) {
       window.open(profile.image, '_blank');
     }
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent dropdown close
-    window.open('/profile', 'target');
+    e.stopPropagation();
+    profileEditStarted();
+  };
+
+  const handleSaveClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsLoading(true);
+    profileUpdated(editedProfile);
+    setIsLoading(false);
+  };
+
+  const handleCancelClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    profileEditCancelled();
+  };
+
+  const handleFieldChange = (field: keyof UserSchemaType, value: string) => {
+    setEditedProfile(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const menuItems: MenuProps['items'] = [
@@ -36,7 +77,7 @@ export const UserDropdown = () => {
           }}
           onClick={handleImageClick}
         >
-          <Avatar size={80} src={profile?.image} icon={<UserOutlined />} />
+          <Avatar size={80} src={editedProfile.image} icon={<UserOutlined />} />
         </div>
       ),
     },
@@ -44,59 +85,88 @@ export const UserDropdown = () => {
       key: 'user-info',
       label: (
         <div style={{ padding: '0 16px 16px' }}>
-          <Typography.Title
-            level={5}
-            style={{
-              textAlign: 'center',
-              margin: '0 0 8px 0',
-              fontWeight: 'bold',
-            }}
-          >
-            {profile?.name || 'Unknown User'}
-          </Typography.Title>
+          {isEditing ? (
+            <Input
+              value={editedProfile.name}
+              onChange={(e) => handleFieldChange('name', e.target.value)}
+              style={{ marginBottom: 16, textAlign: 'center' }}
+              placeholder="Enter your name"
+            />
+          ) : (
+            <Text strong style={{ display: 'block', textAlign: 'center', marginBottom: 16 }}>
+              {profile?.name || 'Unknown User'}
+            </Text>
+          )}
 
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginBottom: 8,
-              color: '#666',
-            }}
-          >
-            <span style={{ marginRight: 8, fontSize: 14 }}>⚥</span>
-            <Typography.Text style={{ fontSize: 14 }}>
-              {profile?.gender || 'Unknown gender'}
-            </Typography.Text>
+          <div style={{ marginBottom: 8 }}>
+            {isEditing ? (
+              <Select
+                value={editedProfile.gender}
+                onChange={(value) => handleFieldChange('gender', value)}
+                style={{ width: '100%' }}
+                placeholder="Select gender"
+              >
+                <Option value="MALE">Male</Option>
+                <Option value="FEMALE">Female</Option>
+              </Select>
+            ) : (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#666' }}>
+                <span style={{ marginRight: 8, fontSize: 14 }}>⚥</span>
+                <Text>{profile?.gender || 'Unknown gender'}</Text>
+              </div>
+            )}
           </div>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              color: '#666',
-            }}
-          >
-            <CalendarOutlined style={{ marginRight: 8, color: '#888' }} />
-            <Typography.Text>
-              {profile?.birthdate
-                ? new Date(profile.birthdate).toLocaleDateString()
-                : 'Birthdate not set'}
-            </Typography.Text>
+
+          <div>
+            {isEditing ? (
+              <DatePicker
+                style={{ width: '100%' }}
+                value={editedProfile.birthdate ? dayjs(editedProfile.birthdate) : null}
+                onChange={(date) => handleFieldChange('birthdate', date ? date.format('YYYY-MM-DD') : '')}
+                placeholder="Select birthdate"
+              />
+            ) : (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#666' }}>
+                <CalendarOutlined style={{ marginRight: 8, color: '#888' }} />
+                <Text>
+                  {profile?.birthdate
+                    ? new Date(profile.birthdate).toLocaleDateString()
+                    : 'Birthdate not set'}
+                </Text>
+              </div>
+            )}
           </div>
         </div>
       ),
-      style: { pointerEvents: 'none' },
     },
-    // Divider
     {
       type: 'divider',
       style: { margin: '0 0 8px 0' },
     },
-    // Edit Profile
+    // Edit/Save Profile
     {
       key: 'edit-profile',
-      label: (
+      label: isEditing ? (
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 16px' }}>
+          <Button
+            type="text"
+            danger
+            icon={<CloseOutlined />}
+            onClick={handleCancelClick}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            icon={<SaveOutlined />}
+            onClick={handleSaveClick}
+            loading={isLoading}
+          >
+            Save
+          </Button>
+        </div>
+      ) : (
         <div
           style={{
             display: 'flex',
@@ -107,7 +177,7 @@ export const UserDropdown = () => {
           onClick={handleEditClick}
         >
           <EditOutlined style={{ marginRight: 8 }} />
-          <Typography.Text>Edit Profile</Typography.Text>
+          <Text>Edit Profile</Text>
         </div>
       ),
     },
@@ -121,9 +191,16 @@ export const UserDropdown = () => {
       trigger={['click']}
       placement="bottomRight"
       overlayStyle={{
-        width: 240,
+        width: 280,
         borderRadius: 8,
         boxShadow: '0 3px 6px -4px rgba(0, 0, 0, 0.12)',
+      }}
+      open={isEditing ? true : undefined}
+      onOpenChange={(open) => {
+        if (!open && isEditing) {
+          // Don't allow closing when editing
+          return;
+        }
       }}
     >
       <Avatar
