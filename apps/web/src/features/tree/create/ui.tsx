@@ -1,17 +1,11 @@
-// features/tree/create/ui.tsx
 import { PlusOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
-import { useForm } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 import { useUnit } from 'effector-react';
-
-import {
-  TreeFormModal,
-  useBindForm,
-  formSchema,
-} from '../../../features/tree/form';
-import { treeCreateModel } from './index';
+import {treeCreateModel} from './index';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RcFile } from 'antd/es/upload';
+import { TreeFormModal, useBindForm, formSchema } from '../form/index'
 
 export const CreateTree = () => {
   const [isOpen, isCreating, imgPreview] = useUnit([
@@ -27,6 +21,7 @@ export const CreateTree = () => {
       image: '',
       public: false,
     },
+    mode: 'onChange',
   });
 
   useBindForm({ form });
@@ -49,17 +44,17 @@ export const CreateTree = () => {
         Create
       </Button>
 
-      <TreeFormModal
-        open={isOpen}
-        title="Create New Tree"
-        onClose={treeCreateModel.disclosure.closed}
-        onSubmit={() =>
-          form.handleSubmit(() => treeCreateModel.formValidated())()
-        }
-        onUpload={handleUpload}
-        img={imgPreview}
-        submitting={isCreating}
-      />
+      <FormProvider {...form}>
+        <TreeFormModal
+          open={isOpen}
+          title="Create New Tree"
+          onClose={treeCreateModel.disclosure.closed}
+          onSubmit={() => treeCreateModel.formValidated()}
+          onUpload={handleUpload}
+          img={imgPreview}
+          submitting={isCreating}
+        />
+      </FormProvider>
     </>
   );
 };

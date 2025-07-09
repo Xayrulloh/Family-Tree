@@ -41,9 +41,29 @@ sample({
 });
 
 sample({
+  clock: uploadImageFx.doneData,
+  source: form.$formInstance,
+  filter: (formInstance): formInstance is NonNullable<typeof formInstance> =>
+    formInstance !== null,
+  fn: (_formInstance, path) => ({
+    name: 'image' as const,
+    value: path,
+  }),
+  target: form.setValueFx,
+});
+
+// Reset form after success
+sample({
   clock: createTreeFx.doneData,
-  fn: () => undefined, // or extract part of data
-  target: [disclosure.closed, mutated, form.resetFx, resetImage],
+  source: form.$formInstance,
+  filter: (formInstance): formInstance is NonNullable<typeof formInstance> =>
+    formInstance !== null,
+  fn: () => ({
+    name: '',
+    image: '',
+    public: false,
+  }),
+  target: form.resetFx,
 });
 
 export default {

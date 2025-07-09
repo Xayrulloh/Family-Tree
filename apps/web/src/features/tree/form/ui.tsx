@@ -1,5 +1,8 @@
 import { Button, Flex, Input, Modal, Switch, Upload } from 'antd';
-import { Controller, FormProvider, useFormContext } from 'react-hook-form';
+import {
+  Controller,
+  useFormContext,
+} from 'react-hook-form';
 import { RcFile } from 'antd/es/upload';
 import { FormValues } from './model';
 import { FieldWrapper } from '../../../shared/ui/field-wrapper';
@@ -32,11 +35,10 @@ export const TreeFormModal: React.FC<Props> = ({
       title={title}
       onCancel={onClose}
       okText="Save"
-      okButtonProps={{ type: 'primary', form: 'tree-form', htmlType: 'submit' }}
+      okButtonProps={{ type: 'primary', htmlType: 'submit', form: 'tree-form' }}
       confirmLoading={submitting}
     >
-      <form onSubmit={form.handleSubmit(onSubmit)} id="tree-form">
-        <FormProvider {...form}>
+        <form id="tree-form" onSubmit={form.handleSubmit(onSubmit)}>
           <Flex vertical gap={16}>
             <Controller
               control={form.control}
@@ -85,13 +87,12 @@ export const TreeFormModal: React.FC<Props> = ({
             {img && (
               <img
                 src={img}
-                alt="Tree"
+                alt="Preview"
                 style={{ maxHeight: 160, objectFit: 'contain' }}
               />
             )}
           </Flex>
-        </FormProvider>
-      </form>
+        </form>
     </Modal>
   );
 };
