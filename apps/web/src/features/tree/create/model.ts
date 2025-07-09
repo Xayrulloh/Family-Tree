@@ -1,70 +1,59 @@
-import { z } from 'zod';
-import { createDisclosure } from '../../../shared/lib/disclosure';
-import { createForm } from '../../../shared/lib/create-form';
-import { attach, createEffect, createEvent, sample } from 'effector';
-import { api } from '../../../shared/api';
+import { createEvent, createStore, sample, createEffect } from 'effector';
+import { form } from '../../../features/tree/form';
+import { FormValues } from '../../../features/tree/form/model';
 import { RcFile } from 'antd/es/upload';
+import { file } from '../../../../../../apps/web/src/shared/api/file';
+import { tree } from '../../../../../../apps/web/src/shared/api/tree';
+import { createDisclosure } from '../../../../../../apps/web/src/shared/lib/disclosure';
 
-export type FormValues = z.infer<typeof formSchema>;
+const disclosure = createDisclosure();
+const formValidated = createEvent();
+const mutated = createEvent();
 
-export const formSchema = z.object({
-  name: z.string().min(1, { message: 'Required field' }),
-  image: z.string().min(1, { message: 'Image is required' }),
-  public: z.boolean().default(false),
-});
+const $imgPreview = createStore<string>('');
+const resetImage = createEvent();
+const setImagePreview = createEvent<string>();
 
-export const formValidated = createEvent();
-export const mutated = createEvent(); // fix me: why we need that, what it does?
+$imgPreview.on(setImagePreview, (_, url) => url);
+$imgPreview.on(resetImage, () => '');
 
-export const disclosure = createDisclosure();
-export const form = createForm<FormValues>();
-
-const resetFormFx = createEffect(() =>
-  form.resetFx.prepend(() => ({
-    name: '',
-    image: null as unknown as string,
-    public: false,
-  }))()
-);
-
-const createTreeFx = attach({
-  source: form.$formValues,
-  effect: (body) => api.tree.create({ ...body, public: false }),
-});
-
-export const uploadFileFx = createEffect((file: RcFile) => {
+const uploadImageFx = createEffect(async (fileInput: RcFile) => {
   const formData = new FormData();
 
-  formData.append('file', file);
-  return api.file.upload('tree', formData);
+  formData.append('file', fileInput);
+
+  const res = await file.upload('tree', formData);
+
+  return res.data.path;
 });
 
-export const $treeCreating = createTreeFx.pending;
+const createTreeFx = createEffect(async (body: FormValues) => {
+  return tree.create(body);
+});
 
-// triggers
+const $treeCreating = createTreeFx.pending;
 
+// Chain effects and form submission
 sample({
-  clock: uploadFileFx.doneData,
+  clock: formValidated,
   source: form.$formValues,
-  fn: (values, response) =>
-    ({ ...values, image: response.data.path } satisfies FormValues),
-  target: form.resetFx,
+  target: createTreeFx,
 });
 
 sample({
   clock: createTreeFx.doneData,
-  target: [disclosure.closed, mutated],
+  fn: () => undefined, // or extract part of data
+  target: [disclosure.closed, mutated, form.resetFx, resetImage],
 });
 
-sample({
-  clock: disclosure.closed,
-  target: resetFormFx,
-});
-
-sample({
-  clock: formValidated,
-  target: createTreeFx,
-  source: form.$formValues,
-});
-
-form.$formValues.watch(console.log);
+export default {
+  disclosure,
+  formValidated,
+  mutated,
+  $imgPreview,
+  resetImage,
+  setImagePreview,
+  uploadImageFx,
+  createTreeFx,
+  $treeCreating,
+};

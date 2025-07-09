@@ -273,20 +273,16 @@ export class FamilyTreeRelationshipService {
       .returning();
 
     // take parents and connect to new user
-    const parents =
-      await this.db.query.familyTreeRelationshipsSchema.findMany({
-        where: and(
-          eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
-          eq(schema.familyTreeRelationshipsSchema.depth, 1),
-          or(
-            eq(
-              schema.familyTreeRelationshipsSchema.descendantId,
-              body.fatherId
-            ),
-            eq(schema.familyTreeRelationshipsSchema.descendantId, body.motherId)
-          )
-        ),
-      });
+    const parents = await this.db.query.familyTreeRelationshipsSchema.findMany({
+      where: and(
+        eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
+        eq(schema.familyTreeRelationshipsSchema.depth, 1),
+        or(
+          eq(schema.familyTreeRelationshipsSchema.descendantId, body.fatherId),
+          eq(schema.familyTreeRelationshipsSchema.descendantId, body.motherId)
+        )
+      ),
+    });
 
     // little family
     await this.db.insert(schema.familyTreeRelationshipsSchema).values([

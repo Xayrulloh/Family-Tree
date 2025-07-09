@@ -1,30 +1,26 @@
-import { createEffect, createStore, sample } from 'effector';
-import { userModel } from '../../entities/user';
+import { sample } from 'effector';
 import { LazyPageFactoryParams } from '../../shared/lib/lazy-page';
-import { api } from '../../shared/api';
-import { FamilyTreeSchemaType } from '@family-tree/shared';
+import { userModel } from '../../entities/user';
+import { treeModel } from '../../entities/trees';
+import { treeCreateModel } from '../../features/tree/create';
 
 export const factory = ({ route }: LazyPageFactoryParams) => {
   const authorizedRoute = userModel.chainAuthorized({ route });
 
-  const $trees = createStore<FamilyTreeSchemaType[]>([]);
-
-  const fetchTreesFx = createEffect(() => api.tree.findAll());
-  const $treesFetching = fetchTreesFx.pending;
+  const $treesFetching = treeModel.fetchTreesFx.pending;
 
   sample({
     clock: authorizedRoute.opened,
-    target: fetchTreesFx,
+    target: treeModel.fetchTreesFx,
   });
 
   sample({
-    clock: fetchTreesFx.doneData,
-    fn: (response) => response.data,
-    target: $trees,
+    clock: treeCreateModel.mutated,
+    target: treeModel.fetchTreesFx,
   });
 
   return {
-    $trees,
+    $trees: treeModel.$trees,
     $treesFetching,
   };
 };

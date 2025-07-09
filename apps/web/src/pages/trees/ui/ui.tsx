@@ -1,21 +1,60 @@
-import { Flex, theme, Row, Col, Typography, Card } from 'antd';
+import {
+  Flex,
+  theme,
+  Row,
+  Col,
+  Typography,
+  Card,
+  Spin,
+  Dropdown,
+  MenuProps,
+} from 'antd';
 import { factory } from '../model';
 import { LazyPageProps } from '../../../shared/lib/lazy-page';
 import { useUnit } from 'effector-react';
-import { FamilyTreeResponseType } from '@family-tree/shared';
-import { CreateTree } from '../../../features/tree/create';
-import { LockOutlined, GlobalOutlined } from '@ant-design/icons';
+import { FamilyTreeSchemaType } from '@family-tree/shared';
+import {
+  LockOutlined,
+  GlobalOutlined,
+  EllipsisOutlined,
+} from '@ant-design/icons';
+import { CreateTree, treeCreateModel } from '../../../../../../apps/web/src/features/tree/create';
 
 type Model = ReturnType<typeof factory>;
 type Props = LazyPageProps<Model>;
+type TreeCardProps = {
+  tree: FamilyTreeSchemaType;
+  onEdit?: (tree: FamilyTreeSchemaType) => void;
+  onDelete?: (tree: FamilyTreeSchemaType) => void;
+};
 
-const TreeCard: React.FC<{
-  tree: FamilyTreeResponseType;
-}> = ({ tree }) => {
+export const TreeCard: React.FC<TreeCardProps> = ({
+  tree,
+  onEdit,
+  onDelete,
+}) => {
+  const handleEdit = () => onEdit?.(tree);
+  const handleDelete = () => onDelete?.(tree);
+
+  const menuItems: MenuProps['items'] = [
+    {
+      key: 'edit',
+      label: 'Edit',
+      onClick: handleEdit,
+    },
+    {
+      key: 'delete',
+      label: 'Delete',
+      danger: true,
+      onClick: handleDelete,
+    },
+  ];
+
   return (
     <Card
       hoverable
-      style={{ height: '100%' }}
+      style={{ height: '100%', position: 'relative' }}
+      onClick={() => window.open('https://google.com', '_blank')}
       cover={
         <div
           style={{
@@ -33,13 +72,34 @@ const TreeCard: React.FC<{
               style={{ maxHeight: '100%', objectFit: 'contain' }}
             />
           ) : (
-            <span>🌲</span>
+            <span role="img" aria-label="tree" style={{ fontSize: 40 }}>
+              🌲
+            </span>
           )}
         </div>
       }
     >
+      {/* 3 dots menu (absolute positioned top-right) */}
+      <Dropdown
+        menu={{ items: menuItems }}
+        trigger={['click']}
+        placement="bottomRight"
+      >
+        <EllipsisOutlined
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: 'absolute',
+            bottom: 8,
+            right: 20,
+            fontSize: 25,
+            cursor: 'pointer',
+          }}
+        />
+      </Dropdown>
+
+      {/* Card content */}
       <Typography.Text strong>{tree.name}</Typography.Text>
-      <div>
+      <div style={{ marginTop: 8 }}>
         {tree.public ? <GlobalOutlined /> : <LockOutlined />}
         <Typography.Text style={{ marginLeft: 8 }}>
           {tree.public ? 'Public' : 'Private'}
@@ -50,10 +110,11 @@ const TreeCard: React.FC<{
 };
 
 const TreesGrid: React.FC<{
-  trees: FamilyTreeResponseType[];
+  trees: FamilyTreeSchemaType[];
   title: string;
   showCreate?: boolean;
-}> = ({ trees, title, showCreate }) => {
+  onCreateClick?: () => void;
+}> = ({ trees, title, showCreate, onCreateClick }) => {
   return (
     <div style={{ marginBottom: 40 }}>
       <Typography.Title level={4}>{title}</Typography.Title>
@@ -68,6 +129,7 @@ const TreesGrid: React.FC<{
           <Col xs={24} sm={12} md={8} lg={6}>
             <Card
               hoverable
+              onClick={onCreateClick}
               style={{
                 height: '100%',
                 minHeight: 220,
@@ -78,7 +140,10 @@ const TreesGrid: React.FC<{
                 border: '1px dashed #ccc',
               }}
             >
-              <div style={{ fontSize: 32 }}>🌲</div>
+              <span role="img" aria-label="tree" style={{ fontSize: 40 }}>
+                🌲
+              </span>
+              <br />
               <Typography.Text>Create New Tree</Typography.Text>
             </Card>
           </Col>
@@ -91,13 +156,27 @@ const TreesGrid: React.FC<{
 const TreesPage: React.FC<Props> = ({ model }) => {
   const [trees, treesFetching] = useUnit([model.$trees, model.$treesFetching]);
   const { token } = theme.useToken();
+  const isCreateOpen = useUnit(treeCreateModel.disclosure.$isOpen);
+
+  if (treesFetching) {
+    return (
+      <Flex justify="center" align="center" style={{ height: '100vh' }}>
+        <Spin size="large" tip="Loading your family trees...">
+          <div style={{ padding: 24 }} />
+        </Spin>
+      </Flex>
+    );
+  }
 
   return (
     <Flex vertical gap={token.size}>
-      {/* <Flex justify="end">
-        <CreateTree />
-      </Flex> */}
-      <TreesGrid title="My Family Trees" trees={trees} showCreate/>
+      <TreesGrid
+        title="My Family Trees"
+        trees={trees}
+        showCreate
+        onCreateClick={() => treeCreateModel.disclosure.opened()}
+      />
+      {isCreateOpen && <CreateTree />}
     </Flex>
   );
 };
