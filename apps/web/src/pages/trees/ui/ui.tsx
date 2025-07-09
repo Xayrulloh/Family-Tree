@@ -18,7 +18,10 @@ import {
   GlobalOutlined,
   EllipsisOutlined,
 } from '@ant-design/icons';
-import { CreateTree, treeCreateModel } from '../../../../../../apps/web/src/features/tree/create';
+import {
+  CreateEditTreeModal,
+  createEditTreeModel,
+} from '../../../features/tree/create-edit';
 
 type Model = ReturnType<typeof factory>;
 type Props = LazyPageProps<Model>;
@@ -109,15 +112,12 @@ export const TreeCard: React.FC<TreeCardProps> = ({
   );
 };
 
-const TreesGrid: React.FC<{
-  trees: FamilyTreeSchemaType[];
-  title: string;
-  showCreate?: boolean;
-  onCreateClick?: () => void;
-}> = ({ trees, title, showCreate, onCreateClick }) => {
+const TreesGrid: React.FC<Props> = ({ model }) => {
+  const [trees] = useUnit([model.$trees, model.$fetching]);
+
   return (
     <div style={{ marginBottom: 40 }}>
-      <Typography.Title level={4}>{title}</Typography.Title>
+      <Typography.Title level={4}>="My Family Trees"</Typography.Title>
       <Row gutter={[16, 16]}>
         {trees.map((tree) => (
           <Col key={tree.id} xs={24} sm={12} md={8} lg={6}>
@@ -125,11 +125,11 @@ const TreesGrid: React.FC<{
           </Col>
         ))}
 
-        {showCreate && (
+        {
           <Col xs={24} sm={12} md={8} lg={6}>
             <Card
               hoverable
-              onClick={onCreateClick}
+              onClick={() => createEditTreeModel.createTriggered()}
               style={{
                 height: '100%',
                 minHeight: 220,
@@ -147,16 +147,15 @@ const TreesGrid: React.FC<{
               <Typography.Text>Create New Tree</Typography.Text>
             </Card>
           </Col>
-        )}
+        }
       </Row>
     </div>
   );
 };
 
 const TreesPage: React.FC<Props> = ({ model }) => {
-  const [trees, treesFetching] = useUnit([model.$trees, model.$treesFetching]);
+  const [treesFetching] = useUnit([model.$fetching]);
   const { token } = theme.useToken();
-  const isCreateOpen = useUnit(treeCreateModel.disclosure.$isOpen);
 
   if (treesFetching) {
     return (
@@ -170,13 +169,8 @@ const TreesPage: React.FC<Props> = ({ model }) => {
 
   return (
     <Flex vertical gap={token.size}>
-      <TreesGrid
-        title="My Family Trees"
-        trees={trees}
-        showCreate
-        onCreateClick={() => treeCreateModel.disclosure.opened()}
-      />
-      {isCreateOpen && <CreateTree />}
+      <TreesGrid model={model} />
+      <CreateEditTreeModal />
     </Flex>
   );
 };
