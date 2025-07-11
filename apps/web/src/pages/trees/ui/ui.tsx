@@ -57,7 +57,14 @@ export const TreeCard: React.FC<TreeCardProps> = ({
     <Card
       hoverable
       style={{ height: '100%', position: 'relative' }}
-      onClick={() => window.open('https://google.com', '_blank')}
+      onClick={() => createEditTreeModel.editTriggered({ 
+        id: tree.id, 
+        values: { 
+          image: tree.image, 
+          name: tree.name, 
+          public: tree.public 
+        } 
+      })}
       cover={
         <div
           style={{
@@ -117,7 +124,7 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
 
   return (
     <div style={{ marginBottom: 40 }}>
-      <Typography.Title level={4}>="My Family Trees"</Typography.Title>
+      <Typography.Title level={4}>My Family Trees</Typography.Title>
       <Row gutter={[16, 16]}>
         {trees.map((tree) => (
           <Col key={tree.id} xs={24} sm={12} md={8} lg={6}>

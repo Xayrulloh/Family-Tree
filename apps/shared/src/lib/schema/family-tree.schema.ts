@@ -14,7 +14,6 @@ const FamilyTreeSchema = z
     public: z
       .boolean()
       .default(false)
-      .nullable()
       .describe('Public or private. Public would be visible to all users'),
   })
   .merge(BaseSchema);

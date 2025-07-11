@@ -1,6 +1,5 @@
 import {
   attach,
-  createEffect,
   createEvent,
   createStore,
   sample,
@@ -30,12 +29,13 @@ export const DEFAULT_VALUES: FormValues = {
   public: false,
 };
 
-export const editTriggered = createEvent();
+export const editTriggered = createEvent<{ id: string; values: FormValues }>();
 export const createTriggered = createEvent();
 export const formValidated = createEvent();
 export const reset = createEvent();
 export const uploaded = createEvent<RcFile>();
 export const created = createEvent();
+export const edited = createEvent();
 
 export const disclosure = createDisclosure();
 export const $mode = createStore<'create' | 'edit'>('create');
@@ -69,6 +69,16 @@ const createTreeFx = attach({
     }),
 });
 
+const editTreeFx = attach({
+  source: form.$formValues,
+  effect: (body, id: string) =>
+    api.tree.update(id, {
+      name: body.name,
+      public: body.public,
+      image: body.image,
+    }),
+});
+
 const setImgToFormFx = attach({
   source: form.$formInstance,
   effect: (instance, file: RcFile) => {
@@ -79,8 +89,8 @@ const setImgToFormFx = attach({
   },
 });
 
-export const $mutating = or(uploadImageFx.pending, createTreeFx.pending);
-export const mutated = createTreeFx.done;
+export const $mutating = or(uploadImageFx.pending, createTreeFx.pending, editTreeFx.pending);
+export const mutated = createTreeFx.done
 
 sample({
   clock: [editTriggered, createTriggered],
@@ -92,6 +102,7 @@ split({
   match: $mode,
   cases: {
     create: created,
+    edit: edited
   },
 });
 
@@ -121,6 +132,37 @@ sample({
   target: [setImgToFormFx, $file],
 });
 
+// edit
+sample({
+  clock: editTriggered,
+  fn: ({ values }) => values,
+  // target: form.resetFx()
+  target: form.resetFx.prepend((values: FormValues) => values),
+});
+
+sample({
+  clock: edited,
+  fn: (values) => {
+    console.log('edit values', values);
+    return undefined;
+  },
+  // source: form.$formValues,
+  // filter: (values) => !!values.image,
+  // target: uploadImageFx,
+});
+
+// sample({
+//   clock: edited,
+//   source: form.$formValues,
+  // filter: (values) => !values.image,
+  // fn: () => undefined,
+  // target: editTreeFx,
+// });
+
+
+
+
+// both logic
 sample({
   clock: [reset, mutated],
   target: [disclosure.closed, $mode.reinit],
