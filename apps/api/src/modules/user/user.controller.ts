@@ -13,7 +13,6 @@ import { UserService } from './user.service';
 import {
   UserResponseDto,
   UserUpdateRequestDto,
-  UserEmailParamDto,
   UserIdParamDto,
 } from './dto/user.dto';
 import {
