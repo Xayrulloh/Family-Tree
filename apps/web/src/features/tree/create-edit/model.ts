@@ -2,6 +2,7 @@ import {
   attach,
   createEvent,
   createStore,
+  merge,
   sample,
   split,
 } from 'effector';
@@ -10,7 +11,7 @@ import { createForm } from '../../../shared/lib/create-form';
 import { z } from 'zod';
 import { api } from '../../../shared/api';
 import { RcFile } from 'antd/es/upload';
-import { or } from 'patronum';
+import { delay, or, spread } from 'patronum';
 
 export type FormValues = z.infer<typeof formSchema>;
 
@@ -40,6 +41,7 @@ export const edited = createEvent();
 export const disclosure = createDisclosure();
 export const $mode = createStore<'create' | 'edit'>('create');
 export const $file = createStore<RcFile | null>(null);
+export const $id = createStore<string | null>(null);
 export const form = createForm<FormValues>();
 
 $mode.on(createTriggered, () => 'create').on(editTriggered, () => 'edit');
@@ -61,25 +63,24 @@ const uploadImageFx = attach({
 
 const createTreeFx = attach({
   source: form.$formValues,
-  effect: (body, path?: string) =>
-    api.tree.create({
-      name: body.name,
-      public: body.public,
-      image: path ?? null,
-    }),
+  effect: (body) => api.tree.create(body),
 });
 
 const editTreeFx = attach({
-  source: form.$formValues,
-  effect: (body, id: string) =>
-    api.tree.update(id, {
-      name: body.name,
-      public: body.public,
-      image: body.image,
-    }),
+  source: {
+    values: form.$formValues,
+    id: $id,
+  },
+  effect: ({ values, id }) => {
+    if (!id) {
+      throw new Error('Local: no id');
+    }
+
+    return api.tree.update(id, values);
+  },
 });
 
-const setImgToFormFx = attach({
+const setPreviewToFormFx = attach({
   source: form.$formInstance,
   effect: (instance, file: RcFile) => {
     const preview = URL.createObjectURL(file);
@@ -89,8 +90,19 @@ const setImgToFormFx = attach({
   },
 });
 
-export const $mutating = or(uploadImageFx.pending, createTreeFx.pending, editTreeFx.pending);
-export const mutated = createTreeFx.done
+const setPathToFormFx = attach({
+  source: form.$formInstance,
+  effect: (instance, path: string) => {
+    return instance?.setValue('image', path);
+  },
+});
+
+export const $mutating = or(
+  uploadImageFx.pending,
+  createTreeFx.pending,
+  editTreeFx.pending
+);
+export const mutated = merge([createTreeFx.done, editTreeFx.done]);
 
 sample({
   clock: [editTriggered, createTriggered],
@@ -102,7 +114,22 @@ split({
   match: $mode,
   cases: {
     create: created,
-    edit: edited
+    edit: edited,
+  },
+});
+
+sample({
+  clock: uploadImageFx.doneData,
+  fn: (response) => response.data.path,
+  target: setPathToFormFx,
+});
+
+split({
+  source: delay(setPathToFormFx.done, 0),
+  match: $mode,
+  cases: {
+    create: createTreeFx,
+    edit: editTreeFx,
   },
 });
 
@@ -122,45 +149,32 @@ sample({
 });
 
 sample({
-  clock: uploadImageFx.doneData,
-  fn: (response) => response.data.path,
-  target: createTreeFx,
-});
-
-sample({
   clock: uploaded,
-  target: [setImgToFormFx, $file],
+  target: [setPreviewToFormFx, $file],
 });
 
 // edit
 sample({
   clock: editTriggered,
-  fn: ({ values }) => values,
-  // target: form.resetFx()
-  target: form.resetFx.prepend((values: FormValues) => values),
+  target: spread({
+    values: form.resetFx,
+    id: $id,
+  }),
 });
 
 sample({
   clock: edited,
-  fn: (values) => {
-    console.log('edit values', values);
-    return undefined;
-  },
-  // source: form.$formValues,
-  // filter: (values) => !!values.image,
-  // target: uploadImageFx,
+  source: form.$formValues,
+  filter: (values) => !!values.image && values.image.startsWith('blob'),
+  target: uploadImageFx,
 });
 
-// sample({
-//   clock: edited,
-//   source: form.$formValues,
-  // filter: (values) => !values.image,
-  // fn: () => undefined,
-  // target: editTreeFx,
-// });
-
-
-
+sample({
+  clock: edited,
+  source: form.$formValues,
+  filter: (values) => !!values.image && values.image.startsWith('https'),
+  target: editTreeFx,
+});
 
 // both logic
 sample({
@@ -170,5 +184,9 @@ sample({
 
 sample({
   clock: disclosure.closed,
-  target: [form.resetFx.prepend(() => DEFAULT_VALUES), $file.reinit],
+  target: [
+    form.resetFx.prepend(() => DEFAULT_VALUES),
+    $file.reinit,
+    $id.reinit,
+  ],
 });
