@@ -29,9 +29,8 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
         <Content style={{ margin: '24px 16px 0' }}>
           <div
             style={{
-              padding: 24,
+              padding: 12,
               minHeight: 360,
-              // background: token.blue3,
               borderRadius: token.borderRadiusLG,
             }}
           >

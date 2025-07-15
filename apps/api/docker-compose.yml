@@ -1,4 +1,3 @@
-version: '3.9'
 services:
   db:
     image: postgres:14-alpine
@@ -7,7 +6,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_TEST_DB: ${POSTGRES_TEST_DB}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - '${POSTGRES_PORT}:5432'
