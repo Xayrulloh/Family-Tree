@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 import * as model from './model';
-import { Button, Flex, Input, Modal, Switch, Upload } from 'antd';
+import { Button, Divider, Flex, Input, Modal, Switch, Upload } from 'antd';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useId } from 'react';
@@ -28,35 +28,40 @@ export const CreateEditTreeModal: React.FC = () => {
   return (
     <Modal
       open={isOpen}
-      title={mode === 'create' ? 'Tree creation' : 'Tree editing'}
+      title={mode === 'create' ? 'Create Family Tree' : 'Edit Family Tree'}
       onCancel={() => model.disclosure.closed()}
       okButtonProps={{ htmlType: 'submit', form: formId, loading: mutating }}
+      width={480}
+      destroyOnClose
     >
+      {/* === 🧾 Form Start === */}
       <form
         onSubmit={form.handleSubmit(() => model.formValidated())}
         id={formId}
       >
-        <Flex vertical>
+        <Flex vertical gap={16}>
+          {/* === 🌳 Tree Name Input === */}
           <Controller
             control={form.control}
             name="name"
             render={({ field }) => (
               <FieldWrapper
-                label="Name"
+                label="Tree Name"
                 isError={!!form.formState.errors.name?.message}
                 message={form.formState.errors.name?.message}
               >
-                <Input {...field} />
+                <Input {...field} placeholder="Enter tree name" />
               </FieldWrapper>
             )}
           />
 
+          {/* === 🔓 Visibility Toggle === */}
           <Controller
             control={form.control}
             name="public"
             render={({ field }) => (
               <FieldWrapper
-                label="Public"
+                label="Visibility"
                 isError={!!form.formState.errors.public?.message}
                 message={form.formState.errors.public?.message}
               >
@@ -70,24 +75,32 @@ export const CreateEditTreeModal: React.FC = () => {
             )}
           />
 
-          <Upload
-            accept="image/*"
-            showUploadList={false}
-            customRequest={({ file, onSuccess }) => {
-              model.uploaded(file as RcFile);
-              setTimeout(() => onSuccess?.('ok'), 0);
-            }}
-          >
-            <Button icon={<UploadOutlined />}>Upload Image</Button>
-          </Upload>
+          <Divider style={{ margin: 0 }}/>
 
-          {img && (
-            <img
-              src={img}
-              alt="Preview"
-              style={{ maxHeight: 160, objectFit: 'contain' }}
-            />
-          )}
+          {/* === 📤 Image Upload === */}
+          <Flex vertical gap={12}>
+            {/* === 🖼️ Image Preview === */}
+            {img && (
+              <img
+                src={img}
+                alt="Preview"
+                height={160}
+                style={{ objectFit: 'contain', borderRadius: 6 }}
+              />
+            )}
+
+            {/* === 📤 Image Upload Button === */}
+            <Upload
+              accept="image/*"
+              showUploadList={false}
+              customRequest={({ file, onSuccess }) => {
+                model.uploaded(file as RcFile);
+                setTimeout(() => onSuccess?.('ok'), 0);
+              }}
+            >
+              <Button icon={<UploadOutlined />}>Upload Image</Button>
+            </Upload>
+          </Flex>
         </Flex>
       </form>
     </Modal>

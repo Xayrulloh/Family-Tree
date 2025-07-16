@@ -180,11 +180,11 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
                 border: '1px dashed #ccc',
               }}
             >
-              <span role="img" aria-label="tree" style={{ fontSize: 40 }}>
+              <span role="img" aria-label="tree" style={{ fontSize: 40, position: 'relative', left: 22 }}>
                 🌲
               </span>
               <br />
-              <Typography.Text>Create New Tree</Typography.Text>
+              <Typography.Text style={{ fontSize: 15 }}>Create New Tree</Typography.Text>
             </Card>
           </Col>
         }
