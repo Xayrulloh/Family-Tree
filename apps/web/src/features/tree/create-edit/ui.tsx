@@ -75,7 +75,7 @@ export const CreateEditTreeModal: React.FC = () => {
             )}
           />
 
-          <Divider style={{ margin: 0 }}/>
+          <Divider style={{ margin: 0 }} />
 
           {/* === 📤 Image Upload === */}
           <Flex vertical gap={12}>

@@ -50,7 +50,7 @@ export const createForm = <FormShape extends FieldValues>() => {
       if (!form) throw new Error('Form instance is not initialized');
       form.setValue(name, value);
     },
-});
+  });
 
   const useBindFormWithModel = ({ form }: { form: FormInstance }) => {
     const [

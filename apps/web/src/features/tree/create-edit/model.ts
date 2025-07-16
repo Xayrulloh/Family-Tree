@@ -145,7 +145,11 @@ export const $mutating = or(
 );
 
 // Resolved effects holder
-export const mutated = merge([createTreeFx.done, editTreeFx.done, deleteTreeFx.done]);
+export const mutated = merge([
+  createTreeFx.done,
+  editTreeFx.done,
+  deleteTreeFx.done,
+]);
 
 // Events of Samples
 // If user starts creating or editing, open the form
@@ -176,7 +180,7 @@ sample({
   clock: deleteTriggered,
   source: $id,
   target: deleteTreeFx,
-})
+});
 
 // If form is validated, send it to next clock by mode
 split({
