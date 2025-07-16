@@ -32,17 +32,19 @@ export const DEFAULT_VALUES: FormValues = {
 };
 
 // Initialization of Events
-export const editTriggered = createEvent<{ id: string; values: FormValues }>();
 export const createTriggered = createEvent();
+export const editTriggered = createEvent<{ id: string; values: FormValues }>();
+export const deleteTriggered = createEvent<{ id: string }>();
 export const formValidated = createEvent();
 export const reset = createEvent();
 export const uploaded = createEvent<RcFile>();
 export const created = createEvent();
 export const edited = createEvent();
+// export const deleted = createEvent();
 
 // Initialization of Stores
 // Stores whether user creating or editing
-export const $mode = createStore<'create' | 'edit'>('create');
+export const $mode = createStore<'create' | 'edit' | 'delete'>('create');
 
 // Stores uploaded file
 export const $file = createStore<RcFile | null>(null);
@@ -60,7 +62,10 @@ export const form = createForm<FormValues>();
 
 // Events without Clock
 // Triggers when user creating or editing
-$mode.on(createTriggered, () => 'create').on(editTriggered, () => 'edit');
+$mode
+  .on(createTriggered, () => 'create')
+  .on(editTriggered, () => 'edit')
+  .on(deleteTriggered, () => 'delete');
 
 // Attaching
 // Uploads image to Cloudflare
@@ -100,6 +105,18 @@ const editTreeFx = attach({
   },
 });
 
+// Deletes tree
+const deleteTreeFx = attach({
+  source: $id,
+  effect: (id) => {
+    if (!id) {
+      throw new Error('Local: no id');
+    }
+
+    return api.tree.delete(id);
+  },
+});
+
 // Binding preview to form
 const setPreviewToFormFx = attach({
   source: form.$formInstance,
@@ -123,11 +140,12 @@ const setPathToFormFx = attach({
 export const $mutating = or(
   uploadImageFx.pending,
   createTreeFx.pending,
-  editTreeFx.pending
+  editTreeFx.pending,
+  deleteTreeFx.pending
 );
 
 // Resolved effects holder
-export const mutated = merge([createTreeFx.done, editTreeFx.done]);
+export const mutated = merge([createTreeFx.done, editTreeFx.done, deleteTreeFx.done]);
 
 // Events of Samples
 // If user starts creating or editing, open the form
@@ -144,6 +162,21 @@ sample({
     id: $id,
   }),
 });
+
+// If user starts deleting, put id to form
+sample({
+  clock: deleteTriggered,
+  target: spread({
+    id: $id,
+  }),
+});
+
+// If user starts deleting, send it to deleteTreeFx
+sample({
+  clock: deleteTriggered,
+  source: $id,
+  target: deleteTreeFx,
+})
 
 // If form is validated, send it to next clock by mode
 split({
@@ -202,7 +235,6 @@ sample({
   target: [setPreviewToFormFx, $file],
 });
 
-
 // If setPreviewToFormFx is done, send it to createTreeFx/editTreeFx by mode
 split({
   source: delay(setPathToFormFx.done, 0), // FIXME: need to remove delay without breaking anything
@@ -219,8 +251,8 @@ split({
   cases: {
     create: createTreeFx,
     edit: editTreeFx,
-  }
-})
+  },
+});
 
 // Events of Closing and Cleaning of Form
 // If user closes form, close the form and reinit mode

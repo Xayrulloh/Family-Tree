@@ -29,7 +29,9 @@ export class FamilyTreeService {
     userId: string
   ): Promise<FamilyTreeArrayResponseDto> {
     return this.db.query.familyTreesSchema.findMany({
-      where: eq(schema.familyTreesSchema.createdBy, userId),
+      where: and(eq(schema.familyTreesSchema.createdBy, userId), isNull(
+        schema.familyTreesSchema.deletedAt
+      )),
       orderBy: asc(schema.familyTreesSchema.createdAt),
     });
   }

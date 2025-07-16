@@ -10,6 +10,7 @@ import {
   MenuProps,
   Button,
   Space,
+  Image,
 } from 'antd';
 import { factory } from '../model';
 import { LazyPageProps } from '../../../shared/lib/lazy-page';
@@ -33,9 +34,7 @@ type TreeCardProps = {
 };
 
 // Tree Card Component for Already Created Tree
-export const TreeCard: React.FC<TreeCardProps> = ({
-  tree,
-}) => {
+export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
   const menuItems: MenuProps['items'] = [
     {
       key: 'edit',
@@ -55,7 +54,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({
       label: 'Delete',
       danger: true,
       onClick: () => {
-        console.log('Here should be delete logic');
+        createEditTreeModel.deleteTriggered({ id: tree.id });
       },
     },
   ];
@@ -83,7 +82,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({
           }}
         >
           {tree.image ? (
-            <img
+            <Image
               src={tree.image}
               alt={tree.name}
               style={{
@@ -101,7 +100,6 @@ export const TreeCard: React.FC<TreeCardProps> = ({
         </div>
       }
     >
-
       <Dropdown
         menu={{ items: menuItems }}
         trigger={['click']}
@@ -153,7 +151,7 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
   const [trees] = useUnit([model.$trees, model.$fetching]);
 
   return (
-    <div style={{ marginBottom: 40, padding: '0 16px'  }}>
+    <div style={{ marginBottom: 40, padding: '0 16px' }}>
       <Typography.Title level={3}>My Family Trees</Typography.Title>
 
       <Row gutter={[16, 16]}>
@@ -180,11 +178,17 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
                 border: '1px dashed #ccc',
               }}
             >
-              <span role="img" aria-label="tree" style={{ fontSize: 40, position: 'relative', left: 22 }}>
+              <span
+                role="img"
+                aria-label="tree"
+                style={{ fontSize: 40, position: 'relative', left: 22 }}
+              >
                 🌲
               </span>
               <br />
-              <Typography.Text style={{ fontSize: 15 }}>Create New Tree</Typography.Text>
+              <Typography.Text style={{ fontSize: 15 }}>
+                Create New Tree
+              </Typography.Text>
             </Card>
           </Col>
         }
