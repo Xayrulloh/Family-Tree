@@ -25,6 +25,7 @@ import {
   CreateEditTreeModal,
   createEditTreeModel,
 } from '../../../features/tree/create-edit';
+import { DeleteTreeModal, deleteTreeModel } from '../../../features/tree/delete';
 
 // Types
 type Model = ReturnType<typeof factory>;
@@ -54,7 +55,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
       label: 'Delete',
       danger: true,
       onClick: () => {
-        createEditTreeModel.deleteTriggered({ id: tree.id });
+        deleteTreeModel.deleteTriggered({ id: tree.id });
       },
     },
   ];
@@ -206,7 +207,7 @@ const TreesPage: React.FC<Props> = ({ model }) => {
   if (treesFetching) {
     return (
       <Flex justify="center" align="center" style={{ padding: '64px 0' }}>
-        <Spin size="large" tip="Loading your family trees...">
+        <Spin size="large">
           <div style={{ padding: 24 }} />
         </Spin>
       </Flex>
@@ -217,6 +218,7 @@ const TreesPage: React.FC<Props> = ({ model }) => {
     <Flex vertical gap={token.size}>
       <TreesGrid model={model} />
       <CreateEditTreeModal />
+      <DeleteTreeModal />
     </Flex>
   );
 };

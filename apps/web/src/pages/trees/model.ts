@@ -6,6 +6,7 @@ import { createEditTreeModel } from '../../features/tree/create-edit';
 import { createEffect, createStore } from 'effector';
 import { FamilyTreeSchemaType } from '@family-tree/shared';
 import { api } from '../../shared/api';
+import { deleteTreeModel } from '../../features/tree/delete';
 
 export const factory = ({ route }: LazyPageFactoryParams) => {
   const authorizedRoute = userModel.chainAuthorized({ route });
@@ -15,7 +16,7 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
   const fetchTreesFx = createEffect(async () => api.tree.findAll());
 
   sample({
-    clock: [authorizedRoute.opened, createEditTreeModel.mutated],
+    clock: [authorizedRoute.opened, createEditTreeModel.mutated, deleteTreeModel.mutated],
     target: fetchTreesFx,
   });
 
