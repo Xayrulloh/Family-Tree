@@ -4,7 +4,7 @@ import { BaseSchema } from './base.schema';
 const FamilyTreeSchema = z
   .object({
     createdBy: z.string().min(1).describe('User who created this family tree'),
-    name: z.string().min(1).min(3).describe('Name of family tree'),
+    name: z.string().min(3).max(20).describe('Name of family tree'),
     image: z
       .string()
       .nullable()
@@ -14,7 +14,6 @@ const FamilyTreeSchema = z
     public: z
       .boolean()
       .default(false)
-      .nullable()
       .describe('Public or private. Public would be visible to all users'),
   })
   .merge(BaseSchema);

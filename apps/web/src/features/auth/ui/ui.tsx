@@ -23,6 +23,7 @@ export const Auth: React.FC = () => {
         style={{
           width: '30%',
           height: '7%',
+          minHeight: '40px',
           borderRadius: '50px',
           fontSize: '16px',
           backgroundColor: 'white',
@@ -38,7 +39,7 @@ export const Auth: React.FC = () => {
         }}
       >
         <GoogleOutlined style={{ color: '#4285F4', fontSize: '20px' }} />
-        Sign in with Google
+        Enter using Google
       </Button>
     </div>
   );

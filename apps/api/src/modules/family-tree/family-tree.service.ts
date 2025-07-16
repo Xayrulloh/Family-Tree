@@ -7,7 +7,7 @@ import {
 import * as schema from '../../database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '../../database/drizzle.provider';
-import { and, eq, ilike, isNull } from 'drizzle-orm';
+import { and, asc, eq, ilike, isNull } from 'drizzle-orm';
 import {
   FamilyTreeArrayResponseDto,
   FamilyTreeCreateRequestDto,
@@ -29,7 +29,11 @@ export class FamilyTreeService {
     userId: string
   ): Promise<FamilyTreeArrayResponseDto> {
     return this.db.query.familyTreesSchema.findMany({
-      where: eq(schema.familyTreesSchema.createdBy, userId),
+      where: and(
+        eq(schema.familyTreesSchema.createdBy, userId),
+        isNull(schema.familyTreesSchema.deletedAt)
+      ),
+      orderBy: asc(schema.familyTreesSchema.createdAt),
     });
   }
 

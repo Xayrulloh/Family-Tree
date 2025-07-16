@@ -41,6 +41,17 @@ export const createForm = <FormShape extends FieldValues>() => {
     },
   });
 
+  const setValueFx = attach({
+    source: $formInstance,
+    effect: (
+      form,
+      { name, value }: { name: Path<FormShape>; value: FormShape[typeof name] }
+    ) => {
+      if (!form) throw new Error('Form instance is not initialized');
+      form.setValue(name, value);
+    },
+  });
+
   const useBindFormWithModel = ({ form }: { form: FormInstance }) => {
     const [
       handleFormInstanceChange,
@@ -77,5 +88,6 @@ export const createForm = <FormShape extends FieldValues>() => {
     clearErrorsFx,
     setErrorFx,
     resetFx,
+    setValueFx,
   };
 };

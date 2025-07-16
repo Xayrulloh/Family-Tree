@@ -10,20 +10,16 @@ import {
 import { BellOutlined, CheckOutlined } from '@ant-design/icons';
 import { useUnit } from 'effector-react';
 import { useState } from 'react';
-import {
-  $displayNotifications,
-  $unreadCount,
-  $showViewAll,
-  markedAllAsRead,
-  fetchNotificationsFx,
-} from './model';
+import * as model from './model';
 
 export const NotificationDropdown = () => {
   const [open, setOpen] = useState(false);
-  const notifications = useUnit($displayNotifications);
-  const unreadCount = useUnit($unreadCount);
-  const showViewAll = useUnit($showViewAll);
-  const loading = useUnit(fetchNotificationsFx.pending);
+  const [notifications, unreadCount, showViewAll, loading] = useUnit([
+    model.$displayNotifications,
+    model.$unreadCount,
+    model.$showViewAll,
+    model.fetchNotificationsFx.pending,
+  ]);
 
   const dropdownContent = (
     <div style={{ width: 300, backgroundColor: '#fff' }}>
@@ -37,7 +33,7 @@ export const NotificationDropdown = () => {
         }}
       >
         <Typography.Text strong>Notifications</Typography.Text>
-        <Typography.Link onClick={() => markedAllAsRead()}>
+        <Typography.Link onClick={() => model.markedAllAsRead()}>
           Mark all as read
         </Typography.Link>
       </div>
