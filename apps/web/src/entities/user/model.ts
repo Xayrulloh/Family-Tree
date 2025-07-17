@@ -15,8 +15,8 @@ import {
   split,
 } from 'effector';
 import { reshape } from 'patronum';
-import { api } from '../../shared/api';
-import { routes } from '../../shared/config/routing';
+import { api } from '~/shared/api';
+import { routes } from '~/shared/config/routing';
 
 export enum SessionStatus {
   Initial,

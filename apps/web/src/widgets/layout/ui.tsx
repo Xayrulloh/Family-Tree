@@ -1,7 +1,7 @@
 import { Layout as AntLayout, theme, Typography } from 'antd';
 import { Header, Content, Footer } from 'antd/es/layout/layout';
-import { NotificationDropdown } from '../../features/notification/dropdown';
-import { UserDropdown } from '../../features/user/dropdown';
+import { NotificationDropdown } from '~/features/notification/dropdown';
+import { UserDropdown } from '~/features/user/dropdown';
 
 export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { token } = theme.useToken();

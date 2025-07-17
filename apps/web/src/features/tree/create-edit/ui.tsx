@@ -4,7 +4,7 @@ import { Button, Divider, Flex, Input, Modal, Switch, Upload } from 'antd';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useId } from 'react';
-import { FieldWrapper } from '../../../shared/ui/field-wrapper';
+import { FieldWrapper } from '~/shared/ui/field-wrapper';
 import { RcFile } from 'antd/es/upload';
 import { UploadOutlined } from '@ant-design/icons';
 

@@ -13,7 +13,7 @@ import {
   Image,
 } from 'antd';
 import { factory } from '../model';
-import { LazyPageProps } from '../../../shared/lib/lazy-page';
+import { LazyPageProps } from '~/shared/lib/lazy-page';
 import { useUnit } from 'effector-react';
 import { FamilyTreeSchemaType } from '@family-tree/shared';
 import {
@@ -24,8 +24,8 @@ import {
 import {
   CreateEditTreeModal,
   createEditTreeModel,
-} from '../../../features/tree/create-edit';
-import { DeleteTreeModal, deleteTreeModel } from '../../../features/tree/delete';
+} from '~/features/tree/create-edit';
+import { DeleteTreeModal, deleteTreeModel } from '~/features/tree/delete';
 
 // Types
 type Model = ReturnType<typeof factory>;

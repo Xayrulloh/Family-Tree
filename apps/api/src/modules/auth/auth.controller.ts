@@ -1,9 +1,9 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { GoogleOauthGuard } from '../../common/guards/google-oauth.guard';
+import { GoogleOauthGuard } from '~/common/guards/google-oauth.guard';
 import { UserSchemaType } from '@family-tree/shared';
 import { Request, Response } from 'express';
-import { COOKIES_ACCESS_TOKEN_KEY } from '../../utils/constants';
+import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 
 @Controller('auth')
 export class AuthController {

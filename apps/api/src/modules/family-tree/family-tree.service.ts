@@ -4,9 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import * as schema from '../../database/schema';
+import * as schema from '~/database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DrizzleAsyncProvider } from '../../database/drizzle.provider';
+import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import { and, asc, eq, ilike, isNull } from 'drizzle-orm';
 import {
   FamilyTreeArrayResponseDto,
@@ -14,8 +14,8 @@ import {
   FamilyTreeResponseDto,
   FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
-import { CloudflareConfig } from '../../config/cloudflare/cloudflare.config';
-import { CLOUDFLARE_TREE_FOLDER } from '../../utils/constants';
+import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
+import { CLOUDFLARE_TREE_FOLDER } from '~/utils/constants';
 
 @Injectable()
 export class FamilyTreeService {

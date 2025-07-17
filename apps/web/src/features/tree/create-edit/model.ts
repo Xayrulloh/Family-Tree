@@ -6,10 +6,10 @@ import {
   sample,
   split,
 } from 'effector';
-import { createDisclosure } from '../../../shared/lib/disclosure';
-import { createForm } from '../../../shared/lib/create-form';
+import { createDisclosure } from '~/shared/lib/disclosure';
+import { createForm } from '~/shared/lib/create-form';
 import { z } from 'zod';
-import { api } from '../../../shared/api';
+import { api } from '~/shared/api';
 import { RcFile } from 'antd/es/upload';
 import { delay, or, spread } from 'patronum';
 
