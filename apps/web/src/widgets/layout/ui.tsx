@@ -18,9 +18,24 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
             alignItems: 'center',
           }}
         >
-          <Typography.Title level={3} style={{ margin: 0 }}>
+          <Typography.Title
+            level={3}
+            style={{
+              margin: 0,
+              cursor: 'pointer',
+              transition: 'color 0.2s',
+            }}
+            onClick={() => {
+              if (window.location.pathname !== '/family-trees') {
+                window.open('/family-trees', '_self');
+              }
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#1890ff')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '')}
+          >
             Family Tree
           </Typography.Title>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <NotificationDropdown />
             <UserDropdown />

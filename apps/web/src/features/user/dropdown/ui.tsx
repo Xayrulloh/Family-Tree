@@ -52,7 +52,11 @@ export const UserDropdown = () => {
       key: 'profile',
       label: (
         <div
-          onClick={() => window.open('/profile', '_self')}
+          onClick={() => {
+            if (window.location.pathname !== '/profile') {
+              window.open('/profile', '_self');
+            }
+          }}
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
           <SettingOutlined />
