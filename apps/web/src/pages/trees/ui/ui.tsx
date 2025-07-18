@@ -163,7 +163,7 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
           </Col>
         ))}
 
-        {/* Create New Tree */}
+        {/* Create A New Tree */}
         {
           <Col xs={24} sm={12} md={8} lg={6} xl={4}>
             <Card
@@ -188,7 +188,7 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
               </span>
               <br />
               <Typography.Text style={{ fontSize: 15 }}>
-                Create New Tree
+                Create A New Tree
               </Typography.Text>
             </Card>
           </Col>

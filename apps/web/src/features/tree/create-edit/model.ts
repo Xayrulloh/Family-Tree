@@ -42,7 +42,7 @@ export const edited = createEvent();
 
 // Initialization of Stores
 // Stores whether user creating or editing
-export const $mode = createStore<'create' | 'edit' | 'delete'>('create');
+export const $mode = createStore<'create' | 'edit'>('create');
 
 // Stores uploaded file
 export const $file = createStore<RcFile | null>(null);
