@@ -53,7 +53,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
           email: emails[0].value,
           name: `${name.givenName} ${name.familyName}`,
           username: emails[0].value.split('@')[0] + `-${id}`,
-          image: photos[0].value,
+          image: photos[0].value || `https://api.dicebear.com/7.x/notionists/svg?seed=${id}`,
           gender: UserGenderEnum.UNKNOWN,
         })
         .returning();

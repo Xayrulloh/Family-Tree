@@ -18,7 +18,6 @@ import {
 } from './dto/family-tree-relationship.dto';
 import { UserGenderEnum, UserResponseType } from '@family-tree/shared';
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
-import { CLOUDFLARE_USER_FOLDER } from '~/utils/constants';
 
 @Injectable()
 export class FamilyTreeRelationshipService {
@@ -662,7 +661,7 @@ export class FamilyTreeRelationshipService {
 
       // delete old user image from cloudflare
       if (user.image) {
-        this.cloudflareConfig.deleteFile(CLOUDFLARE_USER_FOLDER, user.image);
+        this.cloudflareConfig.deleteFile(user.image);
       }
 
       // delete old user
@@ -674,7 +673,7 @@ export class FamilyTreeRelationshipService {
 
       // delete old user image from cloudflare
       if (user.image && body.image !== user.image) {
-        this.cloudflareConfig.deleteFile(CLOUDFLARE_USER_FOLDER, user.image);
+        this.cloudflareConfig.deleteFile(user.image);
       }
 
       // update user info
