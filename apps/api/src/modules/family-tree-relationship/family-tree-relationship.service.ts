@@ -7,7 +7,7 @@ import {
 import * as schema from '~/database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
-import { and, asc, desc, eq, inArray, isNull, not, or } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, not, or } from 'drizzle-orm';
 import {
   FamilyTreeRelationshipCreateRequestDto,
   FamilyTreeRelationshipCreateSonOrDaughterRequestDto,
@@ -39,7 +39,6 @@ export class FamilyTreeRelationshipService {
     // get all family tree relationship
     const familyTreeRelationships =
       await this.db.query.familyTreeRelationshipsSchema.findMany({
-        orderBy: asc(schema.familyTreeRelationshipsSchema.depth),
         where: eq(
           schema.familyTreeRelationshipsSchema.familyTreeId,
           familyTreeId
@@ -47,27 +46,38 @@ export class FamilyTreeRelationshipService {
       });
 
     // get all users info
-    const users: Set<string> = new Set();
-
-    familyTreeRelationships.forEach((data) => {
-      users.add(data.ancestorId);
-      users.add(data.descendantId);
-    });
-
-    const usersInfo = await this.db.query.usersSchema.findMany({
-      where: inArray(schema.usersSchema.id, [...users]),
-    });
-
     const usersInfoMap = new Map<string, UserResponseType>();
 
-    usersInfo.forEach((data) => {
-      usersInfoMap.set(data.id, data);
-    });
+    await Promise.all(
+      familyTreeRelationships.map(async (data) => {
+        if (!usersInfoMap.has(data.ancestorId)) {
+          const userInfo = await this.db.query.usersSchema.findFirst({
+            where: eq(schema.usersSchema.id, data.ancestorId),
+          });
 
+          if (userInfo) {
+            usersInfoMap.set(userInfo.id, userInfo);
+          }
+        }
+
+        if (!usersInfoMap.has(data.descendantId)) {
+          const userInfo = await this.db.query.usersSchema.findFirst({
+            where: eq(schema.usersSchema.id, data.descendantId),
+          });
+
+          if (userInfo) {
+            usersInfoMap.set(userInfo.id, userInfo);
+          }
+        }
+      })
+    );
+
+    // FIXME: need to optimize below code
     // parents part
     const allParentsMixed = familyTreeRelationships.filter(
       (data) => data.depth === 0 && data.ancestorId !== data.descendantId
     );
+
     const parentMap: Map<
       string,
       { father: UserResponseType; mother: UserResponseType }
@@ -148,16 +158,16 @@ export class FamilyTreeRelationshipService {
             `${parent.father.id}&${parent.mother.id}`
           );
 
-          if (registeredChildrenOfParent?.length) {
-            childrenOfParent.set(`${parent.father.id}&${parent.mother.id}`, [
-              ...registeredChildrenOfParent,
-              usersInfoMap.get(child.descendantId)!,
-            ]);
-          } else {
-            childrenOfParent.set(`${parent.father.id}&${parent.mother.id}`, [
-              usersInfoMap.get(child.descendantId)!,
-            ]);
-          }
+          const childInfo = usersInfoMap.get(child.descendantId);
+
+          if (!childInfo) continue;
+
+          childrenOfParent.set(
+            `${parent.father.id}&${parent.mother.id}`,
+            registeredChildrenOfParent?.length
+              ? [...registeredChildrenOfParent, childInfo]
+              : [childInfo]
+          );
         }
       }
     }
@@ -209,23 +219,24 @@ export class FamilyTreeRelationshipService {
     await this.checkExistenceOfFamilyTree(familyTreeId);
 
     // find parents from user table
-    const father = await this.db.query.usersSchema.findFirst({
-      where: and(
-        eq(schema.usersSchema.id, body.fatherId),
-        eq(schema.usersSchema.gender, UserGenderEnum.MALE)
-      ),
-    });
+    const [father, mother] = await Promise.all([
+      this.db.query.usersSchema.findFirst({
+        where: and(
+          eq(schema.usersSchema.id, body.fatherId),
+          eq(schema.usersSchema.gender, UserGenderEnum.MALE)
+        ),
+      }),
+      this.db.query.usersSchema.findFirst({
+        where: and(
+          eq(schema.usersSchema.id, body.motherId),
+          eq(schema.usersSchema.gender, UserGenderEnum.FEMALE)
+        ),
+      }),
+    ]);
 
     if (!father) {
       throw new NotFoundException(`Father with id ${body.fatherId} not found`);
     }
-
-    const mother = await this.db.query.usersSchema.findFirst({
-      where: and(
-        eq(schema.usersSchema.id, body.motherId),
-        eq(schema.usersSchema.gender, UserGenderEnum.FEMALE)
-      ),
-    });
 
     if (!mother) {
       throw new NotFoundException(`Mother with id ${body.motherId} not found`);
@@ -271,18 +282,6 @@ export class FamilyTreeRelationshipService {
       })
       .returning();
 
-    // take parents and connect to new user
-    const parents = await this.db.query.familyTreeRelationshipsSchema.findMany({
-      where: and(
-        eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
-        eq(schema.familyTreeRelationshipsSchema.depth, 1),
-        or(
-          eq(schema.familyTreeRelationshipsSchema.descendantId, body.fatherId),
-          eq(schema.familyTreeRelationshipsSchema.descendantId, body.motherId)
-        )
-      ),
-    });
-
     // little family
     await this.db.insert(schema.familyTreeRelationshipsSchema).values([
       {
@@ -316,23 +315,24 @@ export class FamilyTreeRelationshipService {
     await this.checkExistenceOfFamilyTree(familyTreeId);
 
     // find parents from user table
-    const father = await this.db.query.usersSchema.findFirst({
-      where: and(
-        eq(schema.usersSchema.id, body.fatherId),
-        eq(schema.usersSchema.gender, UserGenderEnum.MALE)
-      ),
-    });
+        const [father, mother] = await Promise.all([
+      this.db.query.usersSchema.findFirst({
+        where: and(
+          eq(schema.usersSchema.id, body.fatherId),
+          eq(schema.usersSchema.gender, UserGenderEnum.MALE)
+        ),
+      }),
+      this.db.query.usersSchema.findFirst({
+        where: and(
+          eq(schema.usersSchema.id, body.motherId),
+          eq(schema.usersSchema.gender, UserGenderEnum.FEMALE)
+        ),
+      }),
+    ]);
 
     if (!father) {
       throw new NotFoundException(`Father with id ${body.fatherId} not found`);
     }
-
-    const mother = await this.db.query.usersSchema.findFirst({
-      where: and(
-        eq(schema.usersSchema.id, body.motherId),
-        eq(schema.usersSchema.gender, UserGenderEnum.FEMALE)
-      ),
-    });
 
     if (!mother) {
       throw new NotFoundException(`Mother with id ${body.motherId} not found`);
@@ -377,22 +377,6 @@ export class FamilyTreeRelationshipService {
         name: 'UNKNOWN',
       })
       .returning();
-
-    // take ancestors and connect to new user
-    const ancestors =
-      await this.db.query.familyTreeRelationshipsSchema.findMany({
-        where: and(
-          eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
-          eq(schema.familyTreeRelationshipsSchema.depth, 1),
-          or(
-            eq(
-              schema.familyTreeRelationshipsSchema.descendantId,
-              body.fatherId
-            ),
-            eq(schema.familyTreeRelationshipsSchema.descendantId, body.motherId)
-          )
-        ),
-      });
 
     // little family
     await this.db.insert(schema.familyTreeRelationshipsSchema).values([
@@ -731,7 +715,7 @@ export class FamilyTreeRelationshipService {
   }
 
   // helpful methods
-  async findRootParent(
+  private async findRootParent(
     familyTreeId: string
   ): Promise<FamilyTreeRelationshipUserArrayResponseDto> {
     const familyTreeRelationships =
@@ -753,9 +737,9 @@ export class FamilyTreeRelationshipService {
     return familyTreeRelationships.map((data) => data.ancestor);
   }
 
-  async findParentOfTargetUser(
+  private async findParentOfTargetUser(
     familyTreeId: string,
-    targetUserId: string
+    targetUserId?: string
   ): Promise<FamilyTreeRelationshipUserArrayResponseDto> {
     const parents = await this.db.query.familyTreeRelationshipsSchema.findMany({
       with: {
@@ -813,7 +797,9 @@ export class FamilyTreeRelationshipService {
     return children.map((child) => child.ancestor);
   }
 
-  async checkExistenceOfFamilyTree(familyTreeId: string): Promise<void> {
+  private async checkExistenceOfFamilyTree(
+    familyTreeId: string
+  ): Promise<void> {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
       where: and(
         eq(schema.familyTreesSchema.id, familyTreeId),

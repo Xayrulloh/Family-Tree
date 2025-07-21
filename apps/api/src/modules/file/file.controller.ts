@@ -18,6 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Multer } from 'multer';
 import {
   FileUploadResponseSchema,

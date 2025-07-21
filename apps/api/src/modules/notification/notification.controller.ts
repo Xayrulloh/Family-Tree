@@ -15,9 +15,9 @@ import {
 } from '@nestjs/swagger/dist/decorators';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
-import { Request } from 'express';
 import { NotificationResponseSchema } from '@family-tree/shared';
 import { ZodSerializerDto } from 'nestjs-zod';
+import { AuthenticatedRequest } from '~/shared/types/request-with-user';
 
 @ApiTags('Notification')
 @Controller('notifications')
@@ -32,9 +32,9 @@ export class NotificationController {
   @ApiOkResponse({ type: NotificationResponseDto })
   @ZodSerializerDto(NotificationResponseSchema)
   async getUserNotifications(
-    @Req() req: Request
+    @Req() req: AuthenticatedRequest
   ): Promise<NotificationResponseDto> {
-    return this.NotificationService.getUserNotifications(req.user!.id);
+    return this.NotificationService.getUserNotifications(req.user.id);
   }
 
   // Mark all notifications as read
@@ -42,7 +42,7 @@ export class NotificationController {
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.OK)
-  async markAllAsRead(@Req() req: Request): Promise<void> {
-    return this.NotificationService.markAllAsRead(req.user!.id);
+  async markAllAsRead(@Req() req: AuthenticatedRequest): Promise<void> {
+    return this.NotificationService.markAllAsRead(req.user.id);
   }
 }
