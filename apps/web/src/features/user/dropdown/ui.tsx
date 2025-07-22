@@ -7,9 +7,15 @@ import {
 } from '@ant-design/icons';
 import { useUnit } from 'effector-react';
 import { userModel } from '~/entities/user';
+import { $theme, themeToggled } from './model';
 
 export const UserDropdown = () => {
-  const [user, logout] = useUnit([userModel.$user, userModel.loggedOut]);
+  const [user, logout, theme, toggleTheme] = useUnit([
+    userModel.$user,
+    userModel.loggedOut,
+    $theme,
+    themeToggled,
+  ]);
 
   if (!user) {
     return <Spin size="small" />;
@@ -68,11 +74,11 @@ export const UserDropdown = () => {
       key: 'dark-mode',
       label: (
         <div
-          onClick={() => console.log('Dark mode clicked')}
+          onClick={() => toggleTheme()}
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
           <BulbOutlined />
-          Dark Mode
+          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
         </div>
       ),
     },
