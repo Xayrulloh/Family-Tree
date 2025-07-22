@@ -1,12 +1,17 @@
-import { Dropdown, MenuProps, Avatar, Typography, Spin } from 'antd';
+import { Dropdown, MenuProps, Avatar, Typography, Spin, Space } from 'antd';
 import {
   UserOutlined,
   LogoutOutlined,
   BulbOutlined,
-  SettingOutlined,
+  ManOutlined,
+  WomanOutlined,
+  CalendarOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 import { useUnit } from 'effector-react';
 import { $user } from './model';
+import { UserGenderEnum } from '@family-tree/shared';
+import { editProfileModel } from '../edit';
 
 export const UserDropdown = () => {
   const user = useUnit($user);
@@ -17,6 +22,19 @@ export const UserDropdown = () => {
 
   const avatarSource = user.image || `https://api.dicebear.com/9.x/lorelei/svg`;
 
+  const getGenderIcon = (gender: string) => {
+    switch (gender) {
+      case 'MALE' as UserGenderEnum.MALE:
+        return <ManOutlined style={{ color: '#1890ff' }} />;
+      case 'FEMALE' as UserGenderEnum.FEMALE:
+        return <WomanOutlined style={{ color: '#eb2f96' }} />;
+      default:
+        return false;
+    }
+  };
+
+  const userGenderIcon = getGenderIcon(user.gender);
+
   const menuItems: MenuProps['items'] = [
     {
       key: 'user-info',
@@ -26,7 +44,7 @@ export const UserDropdown = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            padding: '16px 0 12px',
+            padding: '5px 0',
           }}
         >
           <Avatar
@@ -41,6 +59,27 @@ export const UserDropdown = () => {
               {user.email}
             </Typography.Text>
           )}
+          {/* Gender and Birthdate */}
+          {(userGenderIcon || user.birthdate) && (
+            <Space direction="vertical" size={4} style={{ marginTop: 8 }}>
+              {user.gender && userGenderIcon && (
+                <Space>
+                  {userGenderIcon}
+                  <Typography.Text style={{ fontSize: 12 }}>
+                    {user.gender}
+                  </Typography.Text>
+                </Space>
+              )}
+              {user.birthdate && (
+                <Space>
+                  <CalendarOutlined />
+                  <Typography.Text style={{ fontSize: 12 }}>
+                    {user.birthdate}
+                  </Typography.Text>
+                </Space>
+              )}
+            </Space>
+          )}
         </div>
       ),
       style: { pointerEvents: 'none' },
@@ -49,18 +88,21 @@ export const UserDropdown = () => {
       type: 'divider',
     },
     {
-      key: 'profile',
+      key: 'edit-profile',
       label: (
         <div
-          onClick={() => {
-            if (window.location.pathname !== '/profile') {
-              window.open('/profile', '_self');
-            }
-          }}
+          onClick={() =>
+            editProfileModel.editTriggered({
+              name: user.name,
+              image: user.image as string,
+              gender: user.gender as [UserGenderEnum.MALE, UserGenderEnum.FEMALE][number],
+              birthdate: user.birthdate,
+            })
+          }
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
-          <SettingOutlined />
-          Profile
+          <EditOutlined />
+          Edit Profile
         </div>
       ),
     },
