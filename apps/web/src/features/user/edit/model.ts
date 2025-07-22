@@ -13,42 +13,41 @@ import { delay, or } from 'patronum';
 import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
 import { sessionFx } from '~/entities/user/model';
 
-// Base
+// Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
 
 export const formSchema = z.object({
   name: z.string().min(3, { message: 'Required field' }),
   image: z.string().min(10, { message: 'Required field' }),
-  gender: z.enum(['MALE' as UserGenderEnum.MALE, 'FEMALE' as UserGenderEnum.FEMALE, 'UNKNOWN' as UserGenderEnum.UNKNOWN]),
+  gender: z.enum([
+    'MALE' as UserGenderEnum.MALE,
+    'FEMALE' as UserGenderEnum.FEMALE,
+    'UNKNOWN' as UserGenderEnum.UNKNOWN,
+  ]),
   birthdate: z.string().date().nullable(),
 });
 
-// Initialization of Events
+// Events
 export const editTriggered = createEvent<FormValues>();
 export const formValidated = createEvent();
 export const reset = createEvent();
 export const uploaded = createEvent<RcFile>();
 
-// Initialization of Stores
-// Stores uploaded file
+// Stores
 export const $file = createStore<RcFile | null>(null);
 
-// Initialization of Closures
-// Notifies about opening and closing of the form
+// Disclosures
 export const disclosure = createDisclosure();
 
-// Initialization of Forms
-// Initial Form
+//Form
 export const form = createForm<FormValues>();
 
-// Attaching
-// Uploads image to Cloudflare
+// Effects
+// Uploads an image file to the server
 const uploadImageFx = attach({
   source: $file,
   effect: (file) => {
-    if (!file) {
-      throw new Error('Local: no file');
-    }
+    if (!file) throw new Error('Local: no file');
 
     const formData = new FormData();
 
@@ -58,7 +57,7 @@ const uploadImageFx = attach({
   },
 });
 
-// Edit Profile
+// Sends form values to update user profile
 const editProfileFx = attach({
   source: form.$formValues,
   effect: (values) => {
@@ -70,7 +69,7 @@ const editProfileFx = attach({
   },
 });
 
-// Binding preview to form
+// Generates preview URL and assigns it to form image field
 const setPreviewToFormFx = attach({
   source: form.$formInstance,
   effect: (instance, file: RcFile) => {
@@ -80,7 +79,7 @@ const setPreviewToFormFx = attach({
   },
 });
 
-// Binding path to form
+// Assigns uploaded image path to the form image field
 const setPathToFormFx = attach({
   source: form.$formInstance,
   effect: (instance, path: string) => {
@@ -88,36 +87,25 @@ const setPathToFormFx = attach({
   },
 });
 
-// Mutation
-// Pending effects holder
-export const $mutating = or(
-  uploadImageFx.pending,
-  editProfileFx.pending,
-);
 
-// Resolved effects holder
-export const mutated = editProfileFx.done
+// Derived State
+export const $mutating = or(uploadImageFx.pending, editProfileFx.pending);
+export const mutated = editProfileFx.done;
 
-// Events of Samples
+// Samples
+// Open modal and reset form with values on edit trigger
 sample({
   clock: editTriggered,
   target: [disclosure.opened, form.resetFx],
 });
 
-// If user starts editing, open the form
+// Send uploaded file to preview and store
 sample({
-  clock: editTriggered,
-  target: disclosure.opened,
+  clock: uploaded,
+  target: [setPreviewToFormFx, $file],
 });
 
-// If user starts editing, put values to form
-sample({
-  clock: editTriggered,
-  source: editTriggered.map((values) => values),
-  target: form.resetFx,
-});
-
-// If image is uploaded, send it to uploadImageFx
+// If image is a blob (not uploaded yet), trigger upload
 sample({
   clock: formValidated,
   source: form.$formValues,
@@ -125,8 +113,7 @@ sample({
   target: uploadImageFx,
 });
 
-// Events of Image Samples
-// If image was uploaded before and not changed, send it to editProfileFx
+// If image is already a URL, skip upload and go directly to update
 sample({
   clock: formValidated,
   source: form.$formValues,
@@ -134,42 +121,33 @@ sample({
   target: editProfileFx,
 });
 
-// If image is uploaded, send it to setPreviewToFormFx
+// After image upload completes, put image path into form
 sample({
   clock: uploadImageFx.doneData,
   fn: (response) => response.data.path,
   target: setPathToFormFx,
 });
 
-// If UI triggers uploaded, send it to setPreviewToFormFx
+// When form gets image path, proceed to profile update
 sample({
-  clock: uploaded,
-  target: [setPreviewToFormFx, $file],
+  clock: delay(setPathToFormFx.done, 0), // FIXME: delay workaround, remove if no race conditions
+  target: editProfileFx,
 });
 
-// If setPreviewToFormFx is done, send it to createTreeFx/editProfileFx by mode
-sample({
-  clock: delay(setPathToFormFx.done, 0), // FIXME: need to remove delay without breaking anything
-  target: editProfileFx,
-})
-
-// If editProfileFx is done, reset user info by calling sessionFx
+// After successful profile update, refresh session user
 sample({
   clock: editProfileFx.done,
   target: sessionFx,
 });
 
-// Events of Closing and Cleaning of Form
-// If user creates/edits form, close the form and reinit mode
+// Close modal on reset or successful update
 sample({
   clock: [reset, mutated],
   target: [disclosure.closed],
 });
 
-// If user closes form, reset form
+// On modal close, clear temporary state
 sample({
   clock: disclosure.closed,
-  target: [
-    $file.reinit,
-  ],
+  target: [$file.reinit],
 });
