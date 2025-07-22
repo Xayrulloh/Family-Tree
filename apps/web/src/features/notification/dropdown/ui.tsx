@@ -6,6 +6,7 @@ import {
   Typography,
   Spin,
   MenuProps,
+  theme,
 } from 'antd';
 import { BellOutlined, CheckOutlined } from '@ant-design/icons';
 import { useUnit } from 'effector-react';
@@ -21,28 +22,34 @@ export const NotificationDropdown = () => {
     model.fetchNotificationsFx.pending,
   ]);
 
+  const { token } = theme.useToken();
+
   const dropdownContent = (
-    <div style={{ width: 300, backgroundColor: '#fff' }}>
+    <div style={{ width: 300, backgroundColor: token.colorBgElevated }}>
       <div
         style={{
           padding: '8px 16px',
-          borderBottom: '1px solid #f0f0f0',
+          borderBottom: `1px solid ${token.colorBorderSecondary}`,
           display: 'flex',
           justifyContent: 'space-between',
-          backgroundColor: '#fff',
+          backgroundColor: token.colorBgElevated,
         }}
       >
-        <Typography.Text strong>Notifications</Typography.Text>
+        <Typography.Text strong style={{ color: token.colorText }}>
+          Notifications
+        </Typography.Text>
         <Typography.Link onClick={() => model.markedAllAsRead()}>
           Mark all as read
         </Typography.Link>
       </div>
-      <div
-        style={{ maxHeight: 250, overflowY: 'auto', backgroundColor: '#fff' }}
-      >
+      <div style={{ maxHeight: 250, overflowY: 'auto' }}>
         {loading ? (
           <div
-            style={{ display: 'flex', justifyContent: 'center', padding: 16 }}
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              padding: 16,
+            }}
           >
             <Spin />
           </div>
@@ -58,7 +65,7 @@ export const NotificationDropdown = () => {
                   transition: 'all 0.3s',
                 }}
               >
-                {/* Checkmark indicator */}
+                {/* Read/Unread indicator */}
                 <div
                   style={{
                     position: 'absolute',
@@ -67,23 +74,27 @@ export const NotificationDropdown = () => {
                     width: 18,
                     height: 18,
                     borderRadius: '50%',
-                    backgroundColor: item.isUnread ? '#e6f7ff' : '#f6ffed',
+                    backgroundColor: item.isUnread
+                      ? token.colorInfoBg
+                      : token.colorSuccessBg,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
                   {item.isUnread ? (
-                    <CheckOutlined style={{ fontSize: 10, color: '#1890ff' }} />
+                    <CheckOutlined
+                      style={{ fontSize: 10, color: token.colorInfoText }}
+                    />
                   ) : (
                     <span style={{ position: 'relative' }}>
                       <CheckOutlined
-                        style={{ fontSize: 10, color: '#52c41a' }}
+                        style={{ fontSize: 10, color: token.colorSuccessText }}
                       />
                       <CheckOutlined
                         style={{
                           fontSize: 10,
-                          color: '#52c41a',
+                          color: token.colorSuccessText,
                           position: 'absolute',
                           left: 4,
                           top: 0,
@@ -100,13 +111,17 @@ export const NotificationDropdown = () => {
                       style={{
                         fontSize: 14,
                         fontWeight: item.isUnread ? 500 : 400,
+                        color: token.colorText,
                       }}
                     >
                       {item.content}
                     </Typography.Text>
                   }
                   description={
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    <Typography.Text
+                      type="secondary"
+                      style={{ fontSize: 12 }}
+                    >
                       {item.timeAgo}
                     </Typography.Text>
                   }
@@ -120,10 +135,10 @@ export const NotificationDropdown = () => {
       {showViewAll && (
         <div
           style={{
-            borderTop: '1px solid #f0f0f0',
+            borderTop: `1px solid ${token.colorBorderSecondary}`,
             padding: '8px 16px',
             textAlign: 'center',
-            backgroundColor: '#fff',
+            backgroundColor: token.colorBgElevated,
           }}
         >
           <Typography.Link>View all notifications</Typography.Link>
@@ -143,7 +158,7 @@ export const NotificationDropdown = () => {
     <Dropdown
       menu={{ items }}
       trigger={['click']}
-      onOpenChange={(visible) => setOpen(visible)}
+      onOpenChange={setOpen}
       open={open}
       placement="bottomRight"
       dropdownRender={(menu) => (
