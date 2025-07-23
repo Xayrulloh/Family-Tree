@@ -4,8 +4,8 @@ const FileUploadParamSchema = z.object({
   folder: z.enum(['avatar', 'tree']),
 });
 
-const FileDeleteParamSchema = FileUploadParamSchema.extend({
-  key: z.string().min(1),
+const FileDeleteParamSchema = z.object({
+  path: z.string().min(1),
 });
 
 type FileUploadParamType = z.infer<typeof FileUploadParamSchema>;

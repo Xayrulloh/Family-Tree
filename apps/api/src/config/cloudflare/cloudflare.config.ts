@@ -10,6 +10,7 @@ import { EnvType } from '../env/env-validation';
 @Injectable()
 export class CloudflareConfig {
   private s3: S3Client;
+  private cloudflareR2Path: string
   private bucketName = 'family-tree';
 
   constructor(private configService: ConfigService) {
@@ -28,6 +29,9 @@ export class CloudflareConfig {
       },
       forcePathStyle: true,
     });
+    this.cloudflareR2Path = configService.get<EnvType['CLOUDFLARE_URL']>(
+      'CLOUDFLARE_URL'
+    )!
   }
 
   async uploadFile(
@@ -46,12 +50,15 @@ export class CloudflareConfig {
     await this.s3.send(command).catch((err) => console.log(err));
   }
 
-  async deleteFile(folder: string, key: string): Promise<void> {
-    const command = new DeleteObjectCommand({
-      Bucket: this.bucketName,
-      Key: `${folder}/${key}`,
-    });
+  async deleteFile(path: string): Promise<void> {
+    if (path.includes(this.cloudflareR2Path)) {
+      const command = new DeleteObjectCommand({
+        Bucket: this.bucketName,
+        Key: path.split(`${this.cloudflareR2Path}/`)[1],
+      });
 
-    await this.s3.send(command).catch((err) => console.log(err));
+      await this.s3.send(command).catch((err) => console.log(err));
+    }
+
   }
 }

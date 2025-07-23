@@ -105,9 +105,8 @@ export class FileController {
   @ZodSerializerDto(FileDeleteResponseSchema)
   async deleteFile(
     @Param() param: FileDeleteParamDto,
-    @Param('key') key: string
   ): Promise<FileDeleteResponseDto> {
-    await this.fileService.deleteFile(param.folder, key);
+    await this.fileService.deleteFile(param.path);
 
     return { message: 'File deleted successfully' };
   }

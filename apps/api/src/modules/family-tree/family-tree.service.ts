@@ -15,7 +15,6 @@ import {
   FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
-import { CLOUDFLARE_TREE_FOLDER } from '~/utils/constants';
 
 @Injectable()
 export class FamilyTreeService {
@@ -112,8 +111,8 @@ export class FamilyTreeService {
       throw new NotFoundException(`Family tree with id ${id} not found`);
     }
 
-    if (body.image && familyTree.image !== body.image) {
-      this.cloudflareConfig.deleteFile(CLOUDFLARE_TREE_FOLDER, body.image);
+    if (body.image && familyTree.image !== body.image && familyTree.image) {
+      this.cloudflareConfig.deleteFile(familyTree.image);
     }
 
     await this.db

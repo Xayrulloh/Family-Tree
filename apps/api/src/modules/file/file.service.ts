@@ -14,7 +14,7 @@ export class FileService {
     await this.cloudflareConfig.uploadFile(folder, key, fileBuffer, mimetype);
   }
 
-  async deleteFile(folder: string, key: string): Promise<void> {
-    await this.cloudflareConfig.deleteFile(folder, key);
+  async deleteFile(path: string): Promise<void> {
+    await this.cloudflareConfig.deleteFile(path);
   }
 }

@@ -87,7 +87,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
               src={tree.image}
               alt={tree.name}
               style={{
-                height: '100%',
+                height: 140,
                 width: '100%',
                 objectFit: 'cover',
                 transition: 'transform 0.3s',
