@@ -37,6 +37,19 @@ export class AuthController {
       secure: true,
     });
 
-    res.redirect('http://localhost:4200/family-trees');
+    res.redirect('http://localhost:4200/family-trees'); // FIXME: base url should be dynamic (in .env file)
+  }
+
+  @Get('logout')
+  async logout(@Req() req: Request, @Res() res: Response): Promise<void> {
+    res.clearCookie(COOKIES_ACCESS_TOKEN_KEY, {
+      httpOnly: true,
+      // sameSite: 'strict',
+      sameSite: 'none',
+      secure: true,
+      path: '/',
+    });
+
+    res.status(200).send();
   }
 }

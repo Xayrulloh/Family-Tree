@@ -14,7 +14,7 @@ import { userModel } from '~/entities/user';
 import { editProfileModel } from '~/features/user/edit';
 
 export const UserDropdown = () => {
-  const user = useUnit(userModel.$user);
+  const [user, logout] = useUnit([userModel.$user, userModel.loggedOut]);
 
   if (!user) {
     return <Spin size="small" />;
@@ -125,7 +125,7 @@ export const UserDropdown = () => {
       key: 'logout',
       label: (
         <div
-          onClick={() => console.log('Logout clicked')}
+          onClick={() => logout()}
           style={{
             display: 'flex',
             alignItems: 'center',
