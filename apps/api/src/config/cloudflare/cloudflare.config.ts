@@ -10,7 +10,7 @@ import { EnvType } from '../env/env-validation';
 @Injectable()
 export class CloudflareConfig {
   private s3: S3Client;
-  private cloudflareR2Path: string
+  private cloudflareR2Path: string;
   private bucketName = 'family-tree';
 
   constructor(private configService: ConfigService<EnvType>) {
@@ -20,18 +20,17 @@ export class CloudflareConfig {
       ),
       region: 'auto',
       credentials: {
-        accessKeyId: configService.getOrThrow<EnvType['CLOUDFLARE_ACCESS_KEY_ID']>(
-          'CLOUDFLARE_ACCESS_KEY_ID'
-        ),
+        accessKeyId: configService.getOrThrow<
+          EnvType['CLOUDFLARE_ACCESS_KEY_ID']
+        >('CLOUDFLARE_ACCESS_KEY_ID'),
         secretAccessKey: configService.getOrThrow<
           EnvType['CLOUDFLARE_SECRET_ACCESS_KEY']
         >('CLOUDFLARE_SECRET_ACCESS_KEY'),
       },
       forcePathStyle: true,
     });
-    this.cloudflareR2Path = configService.getOrThrow<EnvType['CLOUDFLARE_URL']>(
-      'CLOUDFLARE_URL'
-    )
+    this.cloudflareR2Path =
+      configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
   }
 
   async uploadFile(
@@ -59,6 +58,5 @@ export class CloudflareConfig {
 
       await this.s3.send(command).catch((err) => console.log(err));
     }
-
   }
 }

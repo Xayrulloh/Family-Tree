@@ -118,10 +118,7 @@ export const NotificationDropdown = () => {
                     </Typography.Text>
                   }
                   description={
-                    <Typography.Text
-                      type="secondary"
-                      style={{ fontSize: 12 }}
-                    >
+                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                       {item.timeAgo}
                     </Typography.Text>
                   }

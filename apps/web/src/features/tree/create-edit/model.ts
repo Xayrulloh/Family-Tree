@@ -61,9 +61,7 @@ export const form = createForm<FormValues>();
 
 // Events without Clock
 // Triggers when user creating or editing
-$mode
-  .on(createTriggered, () => 'create')
-  .on(editTriggered, () => 'edit');
+$mode.on(createTriggered, () => 'create').on(editTriggered, () => 'edit');
 
 // Attaching
 // Uploads image to Cloudflare
@@ -126,14 +124,11 @@ const setPathToFormFx = attach({
 export const $mutating = or(
   uploadImageFx.pending,
   createTreeFx.pending,
-  editTreeFx.pending,
+  editTreeFx.pending
 );
 
 // Resolved effects holder
-export const mutated = merge([
-  createTreeFx.done,
-  editTreeFx.done,
-]);
+export const mutated = merge([createTreeFx.done, editTreeFx.done]);
 
 // Events of Samples
 // If user starts creating or editing, open the form

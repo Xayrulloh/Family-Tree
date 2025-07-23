@@ -19,9 +19,7 @@ export const DeleteTreeModal: React.FC = () => {
       okButtonProps={{ htmlType: 'submit', danger: true, loading: mutating }}
       destroyOnClose
     >
-      <Typography.Text> 
-        Are you sure you want to delete
-      </Typography.Text>
+      <Typography.Text>Are you sure you want to delete</Typography.Text>
     </Modal>
   );
 };

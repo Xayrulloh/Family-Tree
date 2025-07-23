@@ -10,9 +10,8 @@ export type Theme = 'light' | 'dark';
 
 export const themeToggled = createEvent();
 
-export const $theme = createStore<Theme>('light').on(
-  themeToggled,
-  (current) => (current === 'light' ? 'dark' : 'light')
+export const $theme = createStore<Theme>('light').on(themeToggled, (current) =>
+  current === 'light' ? 'dark' : 'light'
 );
 
 persist({

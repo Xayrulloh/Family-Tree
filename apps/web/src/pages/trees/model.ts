@@ -16,7 +16,11 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
   const fetchTreesFx = createEffect(async () => api.tree.findAll());
 
   sample({
-    clock: [authorizedRoute.opened, createEditTreeModel.mutated, deleteTreeModel.mutated],
+    clock: [
+      authorizedRoute.opened,
+      createEditTreeModel.mutated,
+      deleteTreeModel.mutated,
+    ],
     target: fetchTreesFx,
   });
 

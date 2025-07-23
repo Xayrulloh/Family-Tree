@@ -10,7 +10,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '~': path.resolve(__dirname, 'src'),
-    }
+    },
   },
   cacheDir: '../../node_modules/.vite/apps/web',
   server: {

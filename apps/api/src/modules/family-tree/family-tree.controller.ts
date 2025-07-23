@@ -124,11 +124,7 @@ export class FamilyTreeController {
     @Param() param: FamilyTreeIdParamDto,
     @Body() body: FamilyTreeUpdateRequestDto
   ): Promise<void> {
-    return this.familyTreeService.updateFamilyTree(
-      req.user.id,
-      param.id,
-      body
-    );
+    return this.familyTreeService.updateFamilyTree(req.user.id, param.id, body);
   }
 
   // Delete family tree by id

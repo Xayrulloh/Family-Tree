@@ -85,7 +85,12 @@ export const CreateEditTreeModal: React.FC = () => {
                 src={img}
                 alt="Preview"
                 height={160}
-                style={{ objectFit: 'contain', borderRadius: 6, width: '100%', height: 160 }}
+                style={{
+                  objectFit: 'contain',
+                  borderRadius: 6,
+                  width: '100%',
+                  height: 160,
+                }}
               />
             )}
 

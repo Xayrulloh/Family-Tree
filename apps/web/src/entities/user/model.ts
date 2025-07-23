@@ -82,7 +82,7 @@ sample({
 
 sample({
   clock: loggedOut,
-  target: logoutFx
+  target: logoutFx,
 });
 
 sample({

@@ -105,7 +105,7 @@ export class FileController {
   @ApiResponse({ status: 404, description: 'File not found.' })
   @ZodSerializerDto(FileDeleteResponseSchema)
   async deleteFile(
-    @Param() param: FileDeleteParamDto,
+    @Param() param: FileDeleteParamDto
   ): Promise<FileDeleteResponseDto> {
     await this.fileService.deleteFile(param.path);
 

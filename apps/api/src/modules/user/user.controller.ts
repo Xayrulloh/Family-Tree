@@ -40,7 +40,9 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: UserResponseDto })
   @ZodSerializerDto(UserResponseSchema)
-  async getUserThemselves(@Req() req: AuthenticatedRequest): Promise<UserResponseDto> {
+  async getUserThemselves(
+    @Req() req: AuthenticatedRequest
+  ): Promise<UserResponseDto> {
     return this.userService.getUserThemselves(req.user.id);
   }
 

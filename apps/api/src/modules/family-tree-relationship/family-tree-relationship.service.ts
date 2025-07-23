@@ -315,7 +315,7 @@ export class FamilyTreeRelationshipService {
     await this.checkExistenceOfFamilyTree(familyTreeId);
 
     // find parents from user table
-        const [father, mother] = await Promise.all([
+    const [father, mother] = await Promise.all([
       this.db.query.usersSchema.findFirst({
         where: and(
           eq(schema.usersSchema.id, body.fatherId),

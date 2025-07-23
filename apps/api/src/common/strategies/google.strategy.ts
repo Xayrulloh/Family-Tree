@@ -5,7 +5,11 @@ import { Strategy, VerifyCallback } from 'passport-google-oauth2';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '~/database/schema';
-import { GoogleProfileType, UserGenderEnum, UserSchemaType } from '@family-tree/shared';
+import {
+  GoogleProfileType,
+  UserGenderEnum,
+  UserSchemaType,
+} from '@family-tree/shared';
 import { and, eq, isNull } from 'drizzle-orm';
 import { EnvType } from '~/config/env/env-validation';
 
@@ -53,7 +57,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
           email: emails[0].value,
           name: `${name.givenName} ${name.familyName}`,
           username: emails[0].value.split('@')[0] + `-${id}`,
-          image: photos[0].value || `https://api.dicebear.com/7.x/notionists/svg?seed=${id}`,
+          image:
+            photos[0].value ||
+            `https://api.dicebear.com/7.x/notionists/svg?seed=${id}`,
           gender: UserGenderEnum.UNKNOWN,
         })
         .returning();
@@ -68,6 +74,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
     done(null, user);
 
-    return user
+    return user;
   }
 }
