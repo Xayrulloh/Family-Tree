@@ -27,10 +27,10 @@ jobs:
           node-version: 20
           cache: 'pnpm'
 
-      - name: Setup pnpm store
+      - name: Set pnpm store to local directory
         run: pnpm config set store-dir .pnpm-store
 
-      - name: Restore pnpm cache
+      - name: Restore pnpm store cache
         uses: actions/cache@v4
         with:
           path: .pnpm-store
@@ -38,8 +38,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
-      - run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
-      - uses: nrwl/nx-set-shas@v4
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
       - name: Checking code format
         run: pnpm run check:lint
