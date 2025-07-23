@@ -3,9 +3,9 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from '../../common/strategies/jwt.strategy';
-import { GoogleStrategy } from '../../common/strategies/google.strategy';
-import { DrizzleModule } from '../../database/drizzle.module';
+import { JwtStrategy } from '~/common/strategies/jwt.strategy';
+import { GoogleStrategy } from '~/common/strategies/google.strategy';
+import { DrizzleModule } from '~/database/drizzle.module';
 
 @Module({
   imports: [

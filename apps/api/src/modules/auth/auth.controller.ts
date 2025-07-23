@@ -1,9 +1,9 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { GoogleOauthGuard } from '../../common/guards/google-oauth.guard';
-import { UserSchemaType } from '@family-tree/shared';
-import { Request, Response } from 'express';
-import { COOKIES_ACCESS_TOKEN_KEY } from '../../utils/constants';
+import { GoogleOauthGuard } from '~/common/guards/google-oauth.guard';
+import { Response } from 'express';
+import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
+import { AuthenticatedRequest } from '~/shared/types/request-with-user';
 
 @Controller('auth')
 export class AuthController {
@@ -18,7 +18,7 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(GoogleOauthGuard)
   async googleAuthCallback(
-    @Req() req: Request & { user: UserSchemaType },
+    @Req() req: AuthenticatedRequest,
     @Res() res: Response
   ): Promise<void> {
     const user = req.user;
@@ -37,6 +37,19 @@ export class AuthController {
       secure: true,
     });
 
-    res.redirect('http://localhost:4200');
+    res.redirect('http://localhost:4200/family-trees'); // FIXME: base url should be dynamic (in .env file)
+  }
+
+  @Get('logout')
+  async logout(@Req() req: Request, @Res() res: Response): Promise<void> {
+    res.clearCookie(COOKIES_ACCESS_TOKEN_KEY, {
+      httpOnly: true,
+      // sameSite: 'strict',
+      sameSite: 'none',
+      secure: true,
+      path: '/',
+    });
+
+    res.status(200).send();
   }
 }

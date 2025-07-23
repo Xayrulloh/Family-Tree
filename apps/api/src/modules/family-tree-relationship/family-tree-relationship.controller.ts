@@ -18,8 +18,8 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
-import { JWTAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { COOKIES_ACCESS_TOKEN_KEY } from '../../utils/constants';
+import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
+import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import {
   FamilyTreeRelationshipCreateRequestDto,
   FamilyTreeRelationshipCreateSonOrDaughterRequestDto,
@@ -46,7 +46,7 @@ export class FamilyTreeRelationshipController {
   ) {}
 
   // Find family tree relationship by family tree uuid
-  @Get(':familyTreeId/relationship')
+  @Get(':familyTreeId/relationships')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @ApiParam({ name: 'familyTreeId', required: true, type: String })
@@ -62,7 +62,7 @@ export class FamilyTreeRelationshipController {
   }
 
   // Find user of family tree by family tree uuid and user uuid
-  @Get(':familyTreeId/relationship/:userId')
+  @Get(':familyTreeId/relationships/:userId')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @ApiParam({ name: 'familyTreeId', required: true, type: String })
@@ -80,7 +80,7 @@ export class FamilyTreeRelationshipController {
   }
 
   // Create parent for target user
-  @Post(':familyTreeId/relationship/parent')
+  @Post(':familyTreeId/relationships/parent')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @ApiParam({ name: 'familyTreeId', required: true, type: String })
@@ -98,7 +98,7 @@ export class FamilyTreeRelationshipController {
   }
 
   // Create parent for target user
-  @Post(':familyTreeId/relationship/spouse')
+  @Post(':familyTreeId/relationships/spouse')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @ApiParam({ name: 'familyTreeId', required: true, type: String })
@@ -116,7 +116,7 @@ export class FamilyTreeRelationshipController {
   }
 
   // Create parent for target user
-  @Post(':familyTreeId/relationship/daughter')
+  @Post(':familyTreeId/relationships/daughter')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @ApiParam({ name: 'familyTreeId', required: true, type: String })
@@ -134,7 +134,7 @@ export class FamilyTreeRelationshipController {
   }
 
   // Create parent for target user
-  @Post(':familyTreeId/relationship/son')
+  @Post(':familyTreeId/relationships/son')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @ApiParam({ name: 'familyTreeId', required: true, type: String })
@@ -152,7 +152,7 @@ export class FamilyTreeRelationshipController {
   }
 
   // Update family tree relationship user of family tree
-  @Put(':familyTreeId/relationship/:userId')
+  @Put(':familyTreeId/relationships/:userId')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @ApiParam({ name: 'familyTreeId', required: true, type: String })
@@ -171,7 +171,7 @@ export class FamilyTreeRelationshipController {
   }
 
   // Delete family tree relationship user of family tree
-  @Delete(':familyTreeId/relationship/:userId')
+  @Delete(':familyTreeId/relationships/:userId')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @ApiParam({ name: 'familyTreeId', required: true, type: String })

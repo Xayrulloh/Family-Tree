@@ -9,19 +9,39 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileService } from './file.service';
-import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger/dist/decorators';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger/dist/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Multer } from 'multer';
-import { FileUploadResponseSchema, FileDeleteResponseSchema } from '@family-tree/shared';
-import { FileUploadParamDto, FileDeleteParamDto, FileUploadResponseDto, FileDeleteResponseDto } from './dto/file.dto';
+import {
+  FileUploadResponseSchema,
+  FileDeleteResponseSchema,
+} from '@family-tree/shared';
+import {
+  FileUploadParamDto,
+  FileDeleteParamDto,
+  FileUploadResponseDto,
+  FileDeleteResponseDto,
+} from './dto/file.dto';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { ConfigService } from '@nestjs/config';
-import { EnvType } from '../../config/env/env-validation';
+import { EnvType } from '~/config/env/env-validation';
+import generateRandomString from '~/helpers/random-string.helper';
 
 @ApiTags('File')
-@Controller('file')
+@Controller('files')
 export class FileController {
-  constructor(private readonly fileService: FileService, private readonly configService: ConfigService) {}
+  constructor(
+    private readonly fileService: FileService,
+    private readonly configService: ConfigService
+  ) {}
 
   @Post(':folder')
   @UseInterceptors(FileInterceptor('file'))
@@ -58,13 +78,23 @@ export class FileController {
     file: Express.Multer.File,
     @Param() param: FileUploadParamDto
   ): Promise<FileUploadResponseDto> {
-    const key = `${Date.now()}-${file.originalname}`;
+    const key = generateRandomString(15);
 
-    await this.fileService.uploadFile(param.folder, key, file.buffer);
+    await this.fileService.uploadFile(
+      param.folder,
+      key,
+      file.buffer,
+      file.mimetype
+    );
 
-    const path = this.configService.get<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL') as string;
+    const path = this.configService.get<EnvType['CLOUDFLARE_URL']>(
+      'CLOUDFLARE_URL'
+    ) as string;
 
-    return { message: 'File uploaded successfully', path: `${path}/${param.folder}/${key}` };
+    return {
+      message: 'File uploaded successfully',
+      path: `${path}/${param.folder}/${key}`,
+    };
   }
 
   @Delete(':folder/:key')
@@ -74,8 +104,10 @@ export class FileController {
   @ApiResponse({ status: 200, description: 'File deleted successfully.' })
   @ApiResponse({ status: 404, description: 'File not found.' })
   @ZodSerializerDto(FileDeleteResponseSchema)
-  async deleteFile(@Param() param: FileDeleteParamDto, @Param('key') key: string): Promise<FileDeleteResponseDto> {
-    await this.fileService.deleteFile(param.folder, key);
+  async deleteFile(
+    @Param() param: FileDeleteParamDto
+  ): Promise<FileDeleteResponseDto> {
+    await this.fileService.deleteFile(param.path);
 
     return { message: 'File deleted successfully' };
   }

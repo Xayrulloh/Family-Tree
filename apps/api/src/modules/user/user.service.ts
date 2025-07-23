@@ -1,22 +1,32 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import * as schema from '../../database/schema';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import * as schema from '~/database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DrizzleAsyncProvider } from '../../database/drizzle.provider';
+import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import { UserResponseType } from '@family-tree/shared';
 import { and, eq, isNull } from 'drizzle-orm';
 import { UserUpdateRequestDto } from './dto/user.dto';
-import { CloudflareConfig } from '../../config/cloudflare/cloudflare.config';
-import { CLOUDFLARE_USER_FOLDER } from '../../utils/constants';
-import { env } from '../../config/env/env';
-// import { env } from './config/env/env';
+import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
+import { EnvType } from '~/config/env/env-validation';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
+  private cloudflareR2Path: string;
+
   constructor(
     @Inject(DrizzleAsyncProvider)
     private db: NodePgDatabase<typeof schema>,
-    private cloudflareConfig: CloudflareConfig
-  ) {}
+    private cloudflareConfig: CloudflareConfig,
+    private configService: ConfigService<EnvType>
+  ) {
+    this.cloudflareR2Path =
+      configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
+  }
 
   async getUserByEmail(email: string): Promise<UserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
@@ -28,6 +38,21 @@ export class UserService {
 
     if (!user) {
       throw new NotFoundException(`User with email ${email} not found`);
+    }
+
+    return user;
+  }
+
+  async getUserById(id: string): Promise<UserResponseType> {
+    const user = await this.db.query.usersSchema.findFirst({
+      where: and(
+        eq(schema.usersSchema.id, id),
+        isNull(schema.usersSchema.deletedAt)
+      ),
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
     }
 
     return user;
@@ -45,10 +70,6 @@ export class UserService {
       throw new NotFoundException(`User with id ${id} not found`);
     }
 
-    if (user.image && !user.image.startsWith('http')) {
-      user.image = `${env().CLOUDFLARE_URL}/avatar/${user.image}`;
-    }
-
     return user;
   }
 
@@ -64,12 +85,16 @@ export class UserService {
       throw new NotFoundException(`User with id ${id} not found`);
     }
 
+    if (!user.image?.includes(this.cloudflareR2Path)) {
+      throw new BadRequestException('Image is not uploaded');
+    }
+
     if (user.gender !== body.gender) {
       // FIXME: Need to think about related family trees
     }
 
     if (user.image && user.image !== body.image) {
-      this.cloudflareConfig.deleteFile(CLOUDFLARE_USER_FOLDER, user.image);
+      this.cloudflareConfig.deleteFile(user.image);
     }
 
     await this.db

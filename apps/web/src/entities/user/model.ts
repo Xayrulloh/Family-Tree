@@ -15,8 +15,8 @@ import {
   split,
 } from 'effector';
 import { reshape } from 'patronum';
-import { api } from '../../shared/api';
-import { routes } from '../../shared/config/routing';
+import { api } from '~/shared/api';
+import { routes } from '~/shared/config/routing';
 
 export enum SessionStatus {
   Initial,
@@ -42,6 +42,7 @@ export const sessionStatus = reshape({
 export const $user = createStore<UserResponseType | null>(null);
 
 export const sessionFx = createEffect(() => api.user.me());
+export const logoutFx = createEffect(() => api.auth.logout());
 
 const authorized = sessionFx.doneData;
 const notAuthorized = sessionFx.failData;
@@ -77,6 +78,22 @@ sample({
   clock: loggedIn,
   fn: () => SessionStatus.Authorized,
   target: $session,
+});
+
+sample({
+  clock: loggedOut,
+  target: logoutFx,
+});
+
+sample({
+  clock: loggedOut,
+  fn: () => SessionStatus.UnAuthorized,
+  target: $session,
+});
+
+sample({
+  clock: logoutFx,
+  target: routes.registration.open,
 });
 
 type ChainOptions<Params extends RouteParams> = {
@@ -177,7 +194,7 @@ export const chainAnonymous = <Params extends RouteParams>({
     sample({
       clock: [alreadyAuthorized, authorized],
       filter: route.$isOpened,
-      target: routes.browse.open,
+      target: routes.trees.open, // if authorized, redirect to trees
     });
   }
 

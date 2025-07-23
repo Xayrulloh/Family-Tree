@@ -2,12 +2,16 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth2';
-import { DrizzleAsyncProvider } from '../../database/drizzle.provider';
+import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as schema from '../../database/schema';
-import { GoogleProfileType, UserGenderEnum } from '@family-tree/shared';
+import * as schema from '~/database/schema';
+import {
+  GoogleProfileType,
+  UserGenderEnum,
+  UserSchemaType,
+} from '@family-tree/shared';
 import { and, eq, isNull } from 'drizzle-orm';
-import { EnvType } from '../../config/env/env-validation';
+import { EnvType } from '~/config/env/env-validation';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -17,9 +21,15 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     private db: NodePgDatabase<typeof schema>
   ) {
     super({
-      clientID: configService.get<EnvType['GOOGLE_CLIENT_ID']>('GOOGLE_CLIENT_ID') as string,
-      clientSecret: configService.get<EnvType['GOOGLE_CLIENT_SECRET']>('GOOGLE_CLIENT_SECRET') as string,
-      callbackURL: configService.get<EnvType['GOOGLE_CALLBACK_URL']>('GOOGLE_CALLBACK_URL') as string,
+      clientID: configService.get<EnvType['GOOGLE_CLIENT_ID']>(
+        'GOOGLE_CLIENT_ID'
+      ) as string,
+      clientSecret: configService.get<EnvType['GOOGLE_CLIENT_SECRET']>(
+        'GOOGLE_CLIENT_SECRET'
+      ) as string,
+      callbackURL: configService.get<EnvType['GOOGLE_CALLBACK_URL']>(
+        'GOOGLE_CALLBACK_URL'
+      ) as string,
       scope: ['profile', 'email'],
     });
   }
@@ -29,7 +39,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     _refreshToken: string,
     profile: GoogleProfileType,
     done: VerifyCallback
-  ): Promise<void> {
+  ): Promise<UserSchemaType> {
     const { id, name, emails, photos } = profile;
 
     let user = await this.db.query.usersSchema.findFirst({
@@ -40,20 +50,30 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
 
     if (!user) {
+      // create new user
       const [newUser] = await this.db
         .insert(schema.usersSchema)
         .values({
           email: emails[0].value,
           name: `${name.givenName} ${name.familyName}`,
           username: emails[0].value.split('@')[0] + `-${id}`,
-          image: photos[0].value,
+          image:
+            photos[0].value ||
+            `https://api.dicebear.com/7.x/notionists/svg?seed=${id}`,
           gender: UserGenderEnum.UNKNOWN,
         })
         .returning();
+
+      // create a default last read notification
+      await this.db.insert(schema.notificationReadsSchema).values({
+        userId: newUser.id,
+      });
 
       user = newUser;
     }
 
     done(null, user);
+
+    return user;
   }
 }

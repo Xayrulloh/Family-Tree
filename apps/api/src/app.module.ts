@@ -11,6 +11,7 @@ import { FamilyTreeModule } from './modules/family-tree/family-tree.module';
 import { FamilyTreeRelationshipModule } from './modules/family-tree-relationship/family-tree-relationship.module';
 import { ZodSerializerInterceptorCustom } from './common/interceptors/zod.response.interceptor';
 import { FileModule } from './modules/file/file.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { FileModule } from './modules/file/file.module';
     FCMTokenModule,
     FamilyTreeModule,
     FamilyTreeRelationshipModule,
-    FileModule
+    FileModule,
+    NotificationModule,
   ],
   controllers: [],
   providers: [

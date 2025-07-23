@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CloudflareConfig } from '../../config/cloudflare/cloudflare.config';
+import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 
 @Injectable()
 export class FileService {
@@ -8,12 +8,13 @@ export class FileService {
   async uploadFile(
     folder: string,
     key: string,
-    fileBuffer: Buffer
+    fileBuffer: Buffer,
+    mimetype: string
   ): Promise<void> {
-    await this.cloudflareConfig.uploadFile(folder, key, fileBuffer);
+    await this.cloudflareConfig.uploadFile(folder, key, fileBuffer, mimetype);
   }
 
-  async deleteFile(folder: string, key: string): Promise<void> {
-    await this.cloudflareConfig.deleteFile(folder, key);
+  async deleteFile(path: string): Promise<void> {
+    await this.cloudflareConfig.deleteFile(path);
   }
 }

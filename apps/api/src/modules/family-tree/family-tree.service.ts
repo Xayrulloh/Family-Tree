@@ -4,32 +4,43 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import * as schema from '../../database/schema';
+import * as schema from '~/database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DrizzleAsyncProvider } from '../../database/drizzle.provider';
-import { and, eq, ilike, isNull } from 'drizzle-orm';
+import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
+import { and, asc, eq, ilike, isNull } from 'drizzle-orm';
 import {
   FamilyTreeArrayResponseDto,
   FamilyTreeCreateRequestDto,
   FamilyTreeResponseDto,
   FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
-import { CloudflareConfig } from '../../config/cloudflare/cloudflare.config';
-import { CLOUDFLARE_TREE_FOLDER } from '../../utils/constants';
+import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
+import { ConfigService } from '@nestjs/config';
+import { EnvType } from '~/config/env/env-validation';
 
 @Injectable()
 export class FamilyTreeService {
+  private cloudflareR2Path: string;
+
   constructor(
     @Inject(DrizzleAsyncProvider)
     private db: NodePgDatabase<typeof schema>,
-    private cloudflareConfig: CloudflareConfig
-  ) {}
+    private cloudflareConfig: CloudflareConfig,
+    private configService: ConfigService<EnvType>
+  ) {
+    this.cloudflareR2Path =
+      configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
+  }
 
   async getFamilyTreesOfUser(
     userId: string
   ): Promise<FamilyTreeArrayResponseDto> {
     return this.db.query.familyTreesSchema.findMany({
-      where: eq(schema.familyTreesSchema.createdBy, userId),
+      where: and(
+        eq(schema.familyTreesSchema.createdBy, userId),
+        isNull(schema.familyTreesSchema.deletedAt)
+      ),
+      orderBy: asc(schema.familyTreesSchema.createdAt),
     });
   }
 
@@ -78,6 +89,10 @@ export class FamilyTreeService {
       );
     }
 
+    if (!body.image?.includes(this.cloudflareR2Path)) {
+      throw new BadRequestException('Image is not uploaded');
+    }
+
     const [familyTree] = await this.db
       .insert(schema.familyTreesSchema)
       .values({
@@ -108,8 +123,12 @@ export class FamilyTreeService {
       throw new NotFoundException(`Family tree with id ${id} not found`);
     }
 
-    if (body.image && familyTree.image !== body.image) {
-      this.cloudflareConfig.deleteFile(CLOUDFLARE_TREE_FOLDER, body.image);
+    if (!body.image?.includes(this.cloudflareR2Path)) {
+      throw new BadRequestException('Image is not uploaded');
+    }
+
+    if (body.image && familyTree.image !== body.image && familyTree.image) {
+      this.cloudflareConfig.deleteFile(familyTree.image);
     }
 
     await this.db

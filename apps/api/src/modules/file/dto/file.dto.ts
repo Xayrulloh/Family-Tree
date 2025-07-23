@@ -14,4 +14,9 @@ class FileDeleteParamDto extends createZodDto(FileDeleteParamSchema) {}
 class FileUploadResponseDto extends createZodDto(FileUploadResponseSchema) {}
 class FileDeleteResponseDto extends createZodDto(FileDeleteResponseSchema) {}
 
-export { FileUploadParamDto, FileDeleteParamDto, FileUploadResponseDto, FileDeleteResponseDto };
+export {
+  FileUploadParamDto,
+  FileDeleteParamDto,
+  FileUploadResponseDto,
+  FileDeleteResponseDto,
+};

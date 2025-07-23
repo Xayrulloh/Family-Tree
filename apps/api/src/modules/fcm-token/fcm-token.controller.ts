@@ -7,7 +7,6 @@ import {
   Post,
   Req,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { FCMTokenService } from './fcm-token.service';
 import {
@@ -20,14 +19,14 @@ import {
   ApiNoContentResponse,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
-import { JWTAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { COOKIES_ACCESS_TOKEN_KEY } from '../../utils/constants';
-import { Request } from 'express';
+import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
+import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import { FCMTokenResponseSchema } from '@family-tree/shared';
 import { ZodSerializerDto } from 'nestjs-zod';
+import { AuthenticatedRequest } from '~/shared/types/request-with-user';
 
 @ApiTags('FCM Token')
-@Controller('fcm-token')
+@Controller('fcm-tokens')
 export class FCMTokenController {
   constructor(private readonly fcmTokenService: FCMTokenService) {}
 
@@ -39,10 +38,10 @@ export class FCMTokenController {
   @ApiCreatedResponse({ type: FCMTokenResponseDto })
   @ZodSerializerDto(FCMTokenResponseSchema)
   createFcmToken(
-    @Req() req: Request,
+    @Req() req: AuthenticatedRequest,
     @Body() body: FCMTokenCreateDeleteRequestDto
   ): Promise<FCMTokenResponseDto> {
-    return this.fcmTokenService.createFcmToken(req.user!.id, body);
+    return this.fcmTokenService.createFcmToken(req.user.id, body);
   }
 
   // Client may send unused FCM token in order to delete it
@@ -52,9 +51,9 @@ export class FCMTokenController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   deleteFcmToken(
-    @Req() req: Request,
+    @Req() req: AuthenticatedRequest,
     @Body() body: FCMTokenCreateDeleteRequestDto
   ): Promise<void> {
-    return this.fcmTokenService.deleteFcmToken(req.user!.id, body);
+    return this.fcmTokenService.deleteFcmToken(req.user.id, body);
   }
 }

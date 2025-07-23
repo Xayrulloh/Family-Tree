@@ -2,14 +2,14 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as schema from '../../database/schema';
+import * as schema from '~/database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DrizzleAsyncProvider } from '../../database/drizzle.provider';
+import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import { JwtPayloadType, UserSchemaType } from '@family-tree/shared';
 import { Request } from 'express';
-import { COOKIES_ACCESS_TOKEN_KEY } from '../../utils/constants';
+import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import { and, eq, isNull } from 'drizzle-orm';
-import { EnvType } from '../../config/env/env-validation';
+import { EnvType } from '~/config/env/env-validation';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -30,7 +30,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
     super({
       ignoreExpiration: false,
-      secretOrKey: configService.get<EnvType['JWT_SECRET']>('JWT_SECRET') as string,
+      secretOrKey: configService.get<EnvType['JWT_SECRET']>(
+        'JWT_SECRET'
+      ) as string,
       jwtFromRequest: extractJwtFromCookie,
     });
   }

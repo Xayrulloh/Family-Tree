@@ -5,7 +5,12 @@
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "types": ["vite/client", "vitest"]
+    "types": ["vite/client", "vitest"],
+    "baseUrl": "src",
+    "paths": {
+      "~/*": ["*"],
+      "@family-tree/shared": ["../../shared/src/index.ts"]
+    }
   },
   "files": [],
   "include": [],

@@ -1,10 +1,27 @@
+import { AxiosRequestConfig } from 'axios';
 import { base } from './base';
+import { FileUploadFolderEnum } from '@family-tree/shared';
 
 export const file = {
-  upload: (category: 'tree', body: FormData) => {
-    return base.post<{ key: string; message: string }>(
-      `/file/${category}`,
-      body
+  upload: (
+    category: FileUploadFolderEnum,
+    body: FormData,
+    config?: AxiosRequestConfig
+  ) => {
+    return base.post<{ path: string; message: string }>(
+      `/files/${category}`,
+      body,
+      config
+    );
+  },
+  delete: (
+    category: FileUploadFolderEnum,
+    key: string,
+    config?: AxiosRequestConfig
+  ) => {
+    return base.delete<{ message: string }>(
+      `/files/${category}/${key}`,
+      config
     );
   },
 };

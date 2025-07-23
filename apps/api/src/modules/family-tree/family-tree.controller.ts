@@ -19,9 +19,8 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
-import { JWTAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { COOKIES_ACCESS_TOKEN_KEY } from '../../utils/constants';
-import { Request } from 'express';
+import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
+import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import {
   FamilyTreeArrayResponseDto,
   FamilyTreeCreateRequestDto,
@@ -37,6 +36,7 @@ import {
 } from '@family-tree/shared';
 import { FamilyTreeRelationshipService } from '../family-tree-relationship/family-tree-relationship.service';
 import { ZodSerializerDto } from 'nestjs-zod';
+import { AuthenticatedRequest } from '~/shared/types/request-with-user';
 
 @ApiTags('Family Tree')
 @Controller('family-trees')
@@ -54,13 +54,13 @@ export class FamilyTreeController {
   @ApiOkResponse({ type: FamilyTreeArrayResponseDto })
   @ZodSerializerDto(FamilyTreeArrayResponseSchema)
   async getFamilyTreesOfUser(
-    @Req() req: Request
+    @Req() req: AuthenticatedRequest
   ): Promise<FamilyTreeArrayResponseDto> {
-    return this.familyTreeService.getFamilyTreesOfUser(req.user!.id);
+    return this.familyTreeService.getFamilyTreesOfUser(req.user.id);
   }
 
   // Find family trees by name (only public [public = true]) only 10 of them (name length must be at least 3)
-  @Get('public/:name')
+  @Get('publics/:name')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @ApiParam({ name: 'name', required: true, type: String })
@@ -95,11 +95,11 @@ export class FamilyTreeController {
   @ApiCreatedResponse({ type: FamilyTreeResponseDto })
   @ZodSerializerDto(FamilyTreeResponseSchema)
   async createFamilyTree(
-    @Req() req: Request,
+    @Req() req: AuthenticatedRequest,
     @Body() body: FamilyTreeCreateRequestDto
   ): Promise<FamilyTreeResponseDto> {
     const familyTree = await this.familyTreeService.createFamilyTree(
-      req.user!.id,
+      req.user.id,
       body
     );
 
@@ -120,15 +120,11 @@ export class FamilyTreeController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   async updateFamilyTree(
-    @Req() req: Request,
+    @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeIdParamDto,
     @Body() body: FamilyTreeUpdateRequestDto
   ): Promise<void> {
-    return this.familyTreeService.updateFamilyTree(
-      req.user!.id,
-      param.id,
-      body
-    );
+    return this.familyTreeService.updateFamilyTree(req.user.id, param.id, body);
   }
 
   // Delete family tree by id
@@ -139,9 +135,9 @@ export class FamilyTreeController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   async deleteFamilyTree(
-    @Req() req: Request,
+    @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeIdParamDto
   ): Promise<void> {
-    return this.familyTreeService.deleteFamilyTree(req.user!.id, param.id);
+    return this.familyTreeService.deleteFamilyTree(req.user.id, param.id);
   }
 }
