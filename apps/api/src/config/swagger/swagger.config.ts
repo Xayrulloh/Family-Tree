@@ -6,7 +6,7 @@ import { patchNestJsSwagger } from 'nestjs-zod';
 class SwaggerBuilder {
   static make(app: INestApplication): void {
     app.use(
-      '/docs*',
+      '/docs',
       basicAuth({
         challenge: true,
         users: {

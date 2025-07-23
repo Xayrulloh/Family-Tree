@@ -78,9 +78,15 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
             height: 140,
             background: '#eee',
             display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
             overflow: 'hidden',
+            ...(tree.image
+              ? {
+                  // Image: don't center, just fill
+                }
+              : {
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }),
           }}
         >
           {tree.image ? (
@@ -97,7 +103,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
               }}
             />
           ) : (
-            <span role="img" aria-label="tree" style={{ fontSize: 40 }}>
+            <span role="img" aria-label="tree" style={{ fontSize: 40, lineHeight: 1 }}>
               🌲
             </span>
           )}

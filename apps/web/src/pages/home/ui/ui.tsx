@@ -6,7 +6,6 @@ const HomePage: React.FC = () => {
   return (
     <div
       style={{
-        // backgroundImage: "url('/family-tree.jpg')",
         backgroundSize: 'cover',
         height: '100vh',
       }}
