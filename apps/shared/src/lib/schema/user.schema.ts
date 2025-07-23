@@ -14,7 +14,7 @@ const UserSchema = z
       .email()
       .nullable()
       .describe('Registered google email account'),
-    name: z.string().min(1).min(3).describe('Default google account name'),
+    name: z.string().min(3).describe('Default google account name'),
     username: z
       .string()
       .nullable()

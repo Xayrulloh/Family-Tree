@@ -27,7 +27,7 @@ export const routesMap = [
   {
     path: '/family-trees',
     route: routes.trees,
-  },
+  }
 ];
 
 export const routerControls = createRouterControls();

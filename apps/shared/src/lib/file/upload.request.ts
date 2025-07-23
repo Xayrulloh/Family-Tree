@@ -1,7 +1,12 @@
 import { z } from 'zod';
 
+enum FileUploadFolderEnum {
+  AVATAR = 'avatar',
+  TREE = 'tree',
+}
+
 const FileUploadParamSchema = z.object({
-  folder: z.enum(['avatar', 'tree']),
+  folder: z.nativeEnum(FileUploadFolderEnum),
 });
 
 const FileDeleteParamSchema = z.object({
@@ -12,6 +17,7 @@ type FileUploadParamType = z.infer<typeof FileUploadParamSchema>;
 type FileDeleteParamType = z.infer<typeof FileDeleteParamSchema>;
 
 export {
+  FileUploadFolderEnum,
   FileUploadParamSchema,
   FileUploadParamType,
   FileDeleteParamSchema,
