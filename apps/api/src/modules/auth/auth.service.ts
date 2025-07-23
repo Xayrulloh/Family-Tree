@@ -19,13 +19,13 @@ export class AuthService {
   }
 
   async signIn(user: UserSchemaType) {
-    if (!user) {
+    if (!user || !user.email) {
       throw new BadRequestException('Unauthenticated');
     }
 
     const userExists = await this.db.query.usersSchema.findFirst({
       where: and(
-        eq(schema.usersSchema.email, user.email!),
+        eq(schema.usersSchema.email, user.email),
         isNull(schema.usersSchema.deletedAt)
       ),
     });
@@ -36,17 +36,21 @@ export class AuthService {
 
     return this.generateJwt({
       sub: userExists.id,
-      email: userExists.email!,
+      email: userExists.email as string,
     });
   }
 
   async registerUser(user: UserSchemaType) {
+    if (!user || !user.email) {
+      throw new BadRequestException('Unauthenticated');
+    }
+
     const [newUser] = await this.db
       .insert(schema.usersSchema)
       .values({
         email: user.email,
         name: user.name,
-        username: user.email!.split('@')[0] + `-${user.id}`,
+        username: user.email.split('@')[0] + `-${user.id}`,
         image: user.image,
         gender: user.gender,
       })
@@ -54,7 +58,7 @@ export class AuthService {
 
     return this.generateJwt({
       sub: newUser.id,
-      email: newUser.email!,
+      email: newUser.email as string,
     });
   }
 }

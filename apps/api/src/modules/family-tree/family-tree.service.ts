@@ -15,14 +15,22 @@ import {
   FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
+import { ConfigService } from '@nestjs/config';
+import { EnvType } from '~/config/env/env-validation';
 
 @Injectable()
 export class FamilyTreeService {
+  private cloudflareR2Path: string;
+
   constructor(
     @Inject(DrizzleAsyncProvider)
     private db: NodePgDatabase<typeof schema>,
-    private cloudflareConfig: CloudflareConfig
-  ) {}
+    private cloudflareConfig: CloudflareConfig,
+    private configService: ConfigService<EnvType>
+  ) {
+    this.cloudflareR2Path =
+      configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
+  }
 
   async getFamilyTreesOfUser(
     userId: string
@@ -81,6 +89,10 @@ export class FamilyTreeService {
       );
     }
 
+    if (!body.image?.includes(this.cloudflareR2Path)) {
+      throw new BadRequestException('Image is not uploaded');
+    }
+
     const [familyTree] = await this.db
       .insert(schema.familyTreesSchema)
       .values({
@@ -109,6 +121,10 @@ export class FamilyTreeService {
 
     if (!familyTree) {
       throw new NotFoundException(`Family tree with id ${id} not found`);
+    }
+
+    if (!body.image?.includes(this.cloudflareR2Path)) {
+      throw new BadRequestException('Image is not uploaded');
     }
 
     if (body.image && familyTree.image !== body.image && familyTree.image) {

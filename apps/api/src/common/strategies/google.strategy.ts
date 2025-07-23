@@ -5,7 +5,7 @@ import { Strategy, VerifyCallback } from 'passport-google-oauth2';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '~/database/schema';
-import { GoogleProfileType, UserGenderEnum } from '@family-tree/shared';
+import { GoogleProfileType, UserGenderEnum, UserSchemaType } from '@family-tree/shared';
 import { and, eq, isNull } from 'drizzle-orm';
 import { EnvType } from '~/config/env/env-validation';
 
@@ -35,7 +35,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     _refreshToken: string,
     profile: GoogleProfileType,
     done: VerifyCallback
-  ): Promise<void> {
+  ): Promise<UserSchemaType> {
     const { id, name, emails, photos } = profile;
 
     let user = await this.db.query.usersSchema.findFirst({
@@ -67,5 +67,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     }
 
     done(null, user);
+
+    return user
   }
 }

@@ -13,25 +13,25 @@ export class CloudflareConfig {
   private cloudflareR2Path: string
   private bucketName = 'family-tree';
 
-  constructor(private configService: ConfigService) {
+  constructor(private configService: ConfigService<EnvType>) {
     this.s3 = new S3Client({
-      endpoint: configService.get<EnvType['CLOUDFLARE_ENDPOINT']>(
+      endpoint: configService.getOrThrow<EnvType['CLOUDFLARE_ENDPOINT']>(
         'CLOUDFLARE_ENDPOINT'
-      ) as string,
+      ),
       region: 'auto',
       credentials: {
-        accessKeyId: configService.get<EnvType['CLOUDFLARE_ACCESS_KEY_ID']>(
+        accessKeyId: configService.getOrThrow<EnvType['CLOUDFLARE_ACCESS_KEY_ID']>(
           'CLOUDFLARE_ACCESS_KEY_ID'
-        ) as string,
-        secretAccessKey: configService.get<
+        ),
+        secretAccessKey: configService.getOrThrow<
           EnvType['CLOUDFLARE_SECRET_ACCESS_KEY']
-        >('CLOUDFLARE_SECRET_ACCESS_KEY') as string,
+        >('CLOUDFLARE_SECRET_ACCESS_KEY'),
       },
       forcePathStyle: true,
     });
-    this.cloudflareR2Path = configService.get<EnvType['CLOUDFLARE_URL']>(
+    this.cloudflareR2Path = configService.getOrThrow<EnvType['CLOUDFLARE_URL']>(
       'CLOUDFLARE_URL'
-    )!
+    )
   }
 
   async uploadFile(
