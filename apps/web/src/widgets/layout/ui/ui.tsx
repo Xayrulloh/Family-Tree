@@ -1,7 +1,8 @@
 import { Layout as AntLayout, theme, Typography } from 'antd';
 import { Header, Content, Footer } from 'antd/es/layout/layout';
 import { NotificationDropdown } from '~/features/notification/dropdown';
-import { UserDropdown } from '~/features/user/dropdown';
+import { EditProfileModal } from '~/features/user/edit';
+import { UserDropdown } from './user-dropdown';
 
 export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { token } = theme.useToken();
@@ -34,8 +35,12 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
                 window.open('/family-trees', '_self');
               }
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = token.colorPrimary)}
-            onMouseLeave={(e) => (e.currentTarget.style.color = token.colorText)}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = token.colorPrimary)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color = token.colorText)
+            }
           >
             Family Tree
           </Typography.Title>
@@ -62,9 +67,18 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
         </Content>
 
         {/* Footer part */}
-        <Footer style={{ textAlign: 'center', padding: 10, background: token.colorBgBase }}>
-          © 2025 FamilyTree. All rights reserved.
+        <Footer
+          style={{
+            textAlign: 'center',
+            background: token.colorBgBase,
+            padding: '10px',
+          }}
+        >
+          © {new Date().getFullYear()} FamilyTree. All rights reserved.
         </Footer>
+
+        {/* Edit Profile Modal */}
+        <EditProfileModal />
       </AntLayout>
     </AntLayout>
   );

@@ -1,1 +1,0 @@
-export { $theme, themeToggled } from '~/app/model';
