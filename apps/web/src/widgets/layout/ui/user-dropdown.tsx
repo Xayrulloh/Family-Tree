@@ -12,9 +12,14 @@ import { useUnit } from 'effector-react';
 import { UserGenderEnum } from '@family-tree/shared';
 import { userModel } from '~/entities/user';
 import { editProfileModel } from '~/features/user/edit';
+import { $theme, themeToggled } from '~/app/model';
 
 export const UserDropdown = () => {
-  const [user, logout] = useUnit([userModel.$user, userModel.loggedOut]);
+  const [user, logout, theme] = useUnit([
+    userModel.$user,
+    userModel.loggedOut,
+    $theme,
+  ]);
 
   if (!user) {
     return <Spin size="small" />;
@@ -113,11 +118,11 @@ export const UserDropdown = () => {
       key: 'dark-mode',
       label: (
         <div
-          onClick={() => console.log('Dark mode clicked')}
+          onClick={() => themeToggled()}
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
           <BulbOutlined />
-          Dark Mode
+          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
         </div>
       ),
     },

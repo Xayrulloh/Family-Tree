@@ -1,9 +1,11 @@
 import { GoogleOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
+import { Button, theme } from 'antd';
 
 import * as model from '../model';
 
 export const Auth: React.FC = () => {
+  const { token } = theme.useToken();
+
   return (
     <div
       className="auth"
@@ -13,12 +15,12 @@ export const Auth: React.FC = () => {
         alignItems: 'center',
         height: '100vh',
         width: '100%',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: token.colorBgLayout,
         padding: '20px',
       }}
     >
       <Button
-        type="primary"
+        type="default"
         onClick={() => model.googleLoginFx()}
         style={{
           width: '30%',
@@ -26,14 +28,14 @@ export const Auth: React.FC = () => {
           minHeight: '40px',
           borderRadius: '50px',
           fontSize: '16px',
-          backgroundColor: 'white',
-          color: 'rgba(0, 0, 0, 0.87)',
+          backgroundColor: token.colorBgElevated,
+          color: token.colorText,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'flex-start',
           gap: '25%',
-          boxShadow: '0 2px 4px 0 rgba(0,0,0,0.25)',
-          border: '1px solid #dadce0',
+          boxShadow: token.boxShadowSecondary,
+          border: `1px solid ${token.colorBorder}`,
           padding: '0 24px',
           position: 'relative',
         }}
