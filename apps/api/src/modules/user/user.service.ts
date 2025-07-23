@@ -1,13 +1,13 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import * as schema from '../../database/schema';
+import * as schema from '~/database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DrizzleAsyncProvider } from '../../database/drizzle.provider';
+import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import { UserResponseType } from '@family-tree/shared';
 import { and, eq, isNull } from 'drizzle-orm';
 import { UserUpdateRequestDto } from './dto/user.dto';
-import { CloudflareConfig } from '../../config/cloudflare/cloudflare.config';
-import { CLOUDFLARE_USER_FOLDER } from '../../utils/constants';
-import { env } from '../../config/env/env';
+import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
+import { CLOUDFLARE_USER_FOLDER } from '~/utils/constants';
+import { env } from '~/config/env/env';
 
 @Injectable()
 export class UserService {

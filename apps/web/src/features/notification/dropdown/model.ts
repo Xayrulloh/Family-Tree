@@ -5,10 +5,10 @@ import {
   createStore,
   sample,
 } from 'effector';
-import { notification as notificationApi } from '../../../shared/api/notification';
-import { user as userApi } from '../../../shared/api/user';
+import { notification as notificationApi } from '~/shared/api/notification';
+import { user as userApi } from '~/shared/api/user';
 import { NotificationResponseType } from '@family-tree/shared';
-import { formatTimeAgo } from '../../../shared/lib/time-ago';
+import { formatTimeAgo } from '~/shared/lib/time-ago';
 
 export const opened = createEvent();
 export const markedAllAsRead = createEvent();

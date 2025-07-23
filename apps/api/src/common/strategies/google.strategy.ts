@@ -2,12 +2,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth2';
-import { DrizzleAsyncProvider } from '../../database/drizzle.provider';
+import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as schema from '../../database/schema';
+import * as schema from '~/database/schema';
 import { GoogleProfileType, UserGenderEnum } from '@family-tree/shared';
 import { and, eq, isNull } from 'drizzle-orm';
-import { EnvType } from '../../config/env/env-validation';
+import { EnvType } from '~/config/env/env-validation';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {

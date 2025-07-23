@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import * as schema from '../../database/schema';
+import * as schema from '~/database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DrizzleAsyncProvider } from '../../database/drizzle.provider';
+import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import { NotificationResponseType } from '@family-tree/shared';
 import { and, desc, eq, gt, isNull, notInArray } from 'drizzle-orm';
 

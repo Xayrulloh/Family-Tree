@@ -22,8 +22,8 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
-import { JWTAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { COOKIES_ACCESS_TOKEN_KEY } from '../../utils/constants';
+import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
+import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import { Request } from 'express';
 import { UserResponseSchema } from '@family-tree/shared';
 import { ZodSerializerDto } from 'nestjs-zod';

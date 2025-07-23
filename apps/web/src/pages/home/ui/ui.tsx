@@ -1,6 +1,6 @@
 import { Link } from 'atomic-router-react';
 import { factory } from '../model';
-import { routes } from '../../../shared/config/routing';
+import { routes } from '~/shared/config/routing';
 
 const HomePage: React.FC = () => {
   return (

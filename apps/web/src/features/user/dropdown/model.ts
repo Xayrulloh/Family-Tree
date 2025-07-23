@@ -1,5 +1,5 @@
 import { createEvent } from 'effector';
-import { $user } from '../../../entities/user/model';
+import { $user } from '~/entities/user/model';
 
 // Event to open profile (if needed for future analytics)
 export const profileOpened = createEvent();

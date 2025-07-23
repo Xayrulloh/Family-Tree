@@ -31,8 +31,8 @@ import {
 } from './dto/file.dto';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { ConfigService } from '@nestjs/config';
-import { EnvType } from '../../config/env/env-validation';
-import generateRandomString from '../../helpers/random-string.helper';
+import { EnvType } from '~/config/env/env-validation';
+import generateRandomString from '~/helpers/random-string.helper';
 
 @ApiTags('File')
 @Controller('files')
