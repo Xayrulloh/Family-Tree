@@ -78,6 +78,9 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
             height: 140,
             background: '#eee',
             display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            overflow: 'hidden',
           }}
         >
           {tree.image ? (
@@ -85,10 +88,12 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
               src={tree.image}
               alt={tree.name}
               style={{
-                height: 140,
+                height: '100%',
                 width: '100%',
                 objectFit: 'cover',
+                objectPosition: 'center',
                 transition: 'transform 0.3s',
+                display: 'block',
               }}
             />
           ) : (
