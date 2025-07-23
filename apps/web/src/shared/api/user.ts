@@ -10,7 +10,7 @@ export const user = {
     return base.get<UserResponseType>(`/users?email=${email}`, config);
   },
   update: (body: UserUpdateRequestType, config?: AxiosRequestConfig) => {
-    return base.put('/users/me', body, config);
+    return base.put('/users', body, config);
   },
   findById: (id: string, config?: AxiosRequestConfig) => {
     return base.get<UserResponseType>(`/users/${id}`, config);

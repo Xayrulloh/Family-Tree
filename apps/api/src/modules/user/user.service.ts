@@ -6,8 +6,6 @@ import { UserResponseType } from '@family-tree/shared';
 import { and, eq, isNull } from 'drizzle-orm';
 import { UserUpdateRequestDto } from './dto/user.dto';
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
-import { CLOUDFLARE_USER_FOLDER } from '~/utils/constants';
-import { env } from '~/config/env/env';
 
 @Injectable()
 export class UserService {
@@ -59,10 +57,6 @@ export class UserService {
       throw new NotFoundException(`User with id ${id} not found`);
     }
 
-    if (user.image && !user.image.startsWith('http')) {
-      user.image = `${env().CLOUDFLARE_URL}/avatar/${user.image}`;
-    }
-
     return user;
   }
 
@@ -83,7 +77,7 @@ export class UserService {
     }
 
     if (user.image && user.image !== body.image) {
-      this.cloudflareConfig.deleteFile(CLOUDFLARE_USER_FOLDER, user.image);
+      this.cloudflareConfig.deleteFile(user.image);
     }
 
     await this.db

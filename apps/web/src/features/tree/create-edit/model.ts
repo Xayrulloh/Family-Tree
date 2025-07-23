@@ -12,12 +12,13 @@ import { z } from 'zod';
 import { api } from '~/shared/api';
 import { RcFile } from 'antd/es/upload';
 import { delay, or, spread } from 'patronum';
+import { FileUploadFolderEnum } from '@family-tree/shared';
 
 // Base
 export type FormValues = z.infer<typeof formSchema>;
 
 export const formSchema = z.object({
-  name: z.string().min(1, { message: 'Required field' }),
+  name: z.string().min(3, { message: 'Required field' }),
   image: z
     .string()
     .nullable()
@@ -77,7 +78,7 @@ const uploadImageFx = attach({
 
     formData.append('file', file);
 
-    return api.file.upload('tree', formData);
+    return api.file.upload('tree' as FileUploadFolderEnum.TREE, formData);
   },
 });
 
@@ -210,15 +211,6 @@ sample({
 // If setPreviewToFormFx is done, send it to createTreeFx/editTreeFx by mode
 split({
   source: delay(setPathToFormFx.done, 0), // FIXME: need to remove delay without breaking anything
-  match: $mode,
-  cases: {
-    create: createTreeFx,
-    edit: editTreeFx,
-  },
-});
-
-split({
-  source: setPathToFormFx.done,
   match: $mode,
   cases: {
     create: createTreeFx,
