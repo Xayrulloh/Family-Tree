@@ -1,1 +1,0 @@
-export { $user } from '~/entities/user/model';

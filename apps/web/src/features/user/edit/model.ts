@@ -1,9 +1,4 @@
-import {
-  attach,
-  createEvent,
-  createStore,
-  sample,
-} from 'effector';
+import { attach, createEvent, createStore, sample } from 'effector';
 import { createDisclosure } from '~/shared/lib/disclosure';
 import { createForm } from '~/shared/lib/create-form';
 import { z } from 'zod';
@@ -60,13 +55,7 @@ const uploadImageFx = attach({
 // Sends form values to update user profile
 const editProfileFx = attach({
   source: form.$formValues,
-  effect: (values) => {
-    if (!values.name) {
-      throw new Error('Local: no user name');
-    }
-
-    return api.user.update(values);
-  },
+  effect: (values) => api.user.update(values),
 });
 
 // Generates preview URL and assigns it to form image field
@@ -86,7 +75,6 @@ const setPathToFormFx = attach({
     return instance?.setValue('image', path);
   },
 });
-
 
 // Derived State
 export const $mutating = or(uploadImageFx.pending, editProfileFx.pending);

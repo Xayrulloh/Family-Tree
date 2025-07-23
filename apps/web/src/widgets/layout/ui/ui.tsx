@@ -1,8 +1,8 @@
 import { Layout as AntLayout, theme, Typography } from 'antd';
 import { Header, Content, Footer } from 'antd/es/layout/layout';
 import { NotificationDropdown } from '~/features/notification/dropdown';
-import { UserDropdown } from '~/features/user/dropdown';
 import { EditProfileModal } from '~/features/user/edit';
+import { UserDropdown } from './user-dropdown';
 
 export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { token } = theme.useToken();
@@ -54,7 +54,7 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
           </div>
         </Content>
         <Footer style={{ textAlign: 'center', background: token.colorWhite }}>
-          © 2025 FamilyTree. All rights reserved.
+          © {new Date().getFullYear()} FamilyTree. All rights reserved.
         </Footer>
 
         {/* Edit Profile Modal */}

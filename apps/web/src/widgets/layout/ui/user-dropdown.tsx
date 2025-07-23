@@ -9,12 +9,12 @@ import {
   EditOutlined,
 } from '@ant-design/icons';
 import { useUnit } from 'effector-react';
-import { $user } from './model';
 import { UserGenderEnum } from '@family-tree/shared';
-import { editProfileModel } from '../edit';
+import { userModel } from '~/entities/user';
+import { editProfileModel } from '~/features/user/edit';
 
 export const UserDropdown = () => {
-  const user = useUnit($user);
+  const user = useUnit(userModel.$user);
 
   if (!user) {
     return <Spin size="small" />;
@@ -95,7 +95,10 @@ export const UserDropdown = () => {
             editProfileModel.editTriggered({
               name: user.name,
               image: user.image as string,
-              gender: user.gender as [UserGenderEnum.MALE, UserGenderEnum.FEMALE][number],
+              gender: user.gender as [
+                UserGenderEnum.MALE,
+                UserGenderEnum.FEMALE
+              ][number],
               birthdate: user.birthdate,
             })
           }
