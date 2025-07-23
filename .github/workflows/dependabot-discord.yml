@@ -1,0 +1,31 @@
+name: Notify Discord for Dependabot PRs
+
+on:
+  pull_request:
+    types: [opened]
+    branches:
+      - main
+      - develop
+      - feature/**
+      - fix/**
+
+jobs:
+  notify:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send message to Discord
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_DEPENDABOT_WEBHOOK }}
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d '{
+              "username": "Dependabot",
+              "embeds": [{
+                "title": "📦 New Dependency PR",
+                "description": "[${{ github.event.pull_request.title }}](${{ github.event.pull_request.html_url }}) opened by Dependabot",
+                "color": 5814783
+              }]
+            }' \
+            "$WEBHOOK_URL"
