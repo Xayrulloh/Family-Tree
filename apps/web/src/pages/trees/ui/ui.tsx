@@ -36,6 +36,8 @@ type TreeCardProps = {
 
 // Tree Card Component for Already Created Tree
 export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
+  const { token } = theme.useToken();
+
   const menuItems: MenuProps['items'] = [
     {
       key: 'edit',
@@ -76,7 +78,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
         <div
           style={{
             height: 140,
-            background: '#eee',
+            background: token.colorFillContent,
             display: 'flex',
             overflow: 'hidden',
             ...(tree.image
