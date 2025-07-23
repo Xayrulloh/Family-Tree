@@ -1,11 +1,11 @@
 version: 2
 updates:
-  - package-ecosystem: 'pnpm'
+  - package-ecosystem: 'npm'
     directory: '/'
     schedule:
       interval: 'weekly'
       day: 'friday'
-      time: '18:00'
+      time: '08:00'
     allow:
       - dependency-type: "all"
     open-pull-requests-limit: 100
