@@ -1,4 +1,10 @@
-import { attach, createEffect, createEvent, createStore, sample } from 'effector';
+import {
+  attach,
+  createEffect,
+  createEvent,
+  createStore,
+  sample,
+} from 'effector';
 import { createDisclosure } from '~/shared/lib/disclosure';
 import { createForm } from '~/shared/lib/create-form';
 import { z } from 'zod';
@@ -15,9 +21,9 @@ export const formSchema = z.object({
   name: z.string().min(3, { message: 'Required field' }),
   image: z.string().min(10, { message: 'Required field' }),
   gender: z.enum([
-    'MALE' as UserGenderEnum.MALE,
-    'FEMALE' as UserGenderEnum.FEMALE,
-    'UNKNOWN' as UserGenderEnum.UNKNOWN,
+    UserGenderEnum.MALE,
+    UserGenderEnum.FEMALE,
+    UserGenderEnum.UNKNOWN,
   ]),
   birthdate: z.string().date().nullable(),
 });
@@ -49,7 +55,7 @@ const uploadImageFx = attach({
 
     formData.append('file', file);
 
-    return api.file.upload('avatar' as FileUploadFolderEnum.AVATAR, formData);
+    return api.file.upload(FileUploadFolderEnum.AVATAR, formData);
   },
 });
 
@@ -154,4 +160,4 @@ sample({
 sample({
   clock: randomAvatarFx.doneData,
   target: sessionFx,
-})
+});
