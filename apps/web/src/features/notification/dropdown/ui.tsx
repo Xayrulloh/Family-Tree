@@ -158,7 +158,7 @@ export const NotificationDropdown = () => {
       onOpenChange={setOpen}
       open={open}
       placement="bottomRight"
-      dropdownRender={(menu) => (
+      popupRender={(menu) => (
         <div
           style={{
             boxShadow:

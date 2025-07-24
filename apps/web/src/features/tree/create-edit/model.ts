@@ -158,7 +158,7 @@ split({
 
 // If image is uploaded, send it to uploadImageFx
 sample({
-  clock: created,
+  clock: [created, edited],
   source: form.$formValues,
   filter: (values) => !!values.image,
   target: uploadImageFx,
@@ -169,16 +169,7 @@ sample({
   clock: created,
   source: form.$formValues,
   filter: (values) => !values.image,
-  fn: () => undefined,
   target: createTreeFx,
-});
-
-// If image is uploaded, send it to uploadImageFx
-sample({
-  clock: edited,
-  source: form.$formValues,
-  filter: (values) => !!values.image && values.image.startsWith('blob'),
-  target: uploadImageFx,
 });
 
 // Events of Image Samples
@@ -186,7 +177,7 @@ sample({
 sample({
   clock: edited,
   source: form.$formValues,
-  filter: (values) => !!values.image && values.image.startsWith('https'),
+  filter: (values) => !values.image,
   target: editTreeFx,
 });
 
