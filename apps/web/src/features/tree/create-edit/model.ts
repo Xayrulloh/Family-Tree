@@ -93,6 +93,7 @@ const editTreeFx = attach({
     id: $id,
   },
   effect: ({ values, id }) => {
+    console.log('wtf')
     if (!id) {
       throw new Error('Local: no id');
     }
@@ -158,7 +159,7 @@ split({
 
 // If image is uploaded, send it to uploadImageFx
 sample({
-  clock: [created, edited],
+  clock: created,
   source: form.$formValues,
   filter: (values) => !!values.image,
   target: uploadImageFx,
@@ -172,8 +173,23 @@ sample({
   target: createTreeFx,
 });
 
-// Events of Image Samples
+// If blob image is exist then go with upload
+sample({
+  clock: edited,
+  source: form.$formValues,
+  filter: (values) => !!values.image && values.image.startsWith('blob'),
+  target: uploadImageFx,
+});
+
 // If image was uploaded before and not changed, send it to editTreeFx
+sample({
+  clock: edited,
+  source: form.$formValues,
+  filter: (values) => !!values.image && values.image.startsWith('https'),
+  target: editTreeFx,
+});
+
+// If there's no image at all, send it to editTreeFx
 sample({
   clock: edited,
   source: form.$formValues,
@@ -181,6 +197,7 @@ sample({
   target: editTreeFx,
 });
 
+// Events of Image Samples
 // If image is uploaded, send it to setPreviewToFormFx
 sample({
   clock: uploadImageFx.doneData,
