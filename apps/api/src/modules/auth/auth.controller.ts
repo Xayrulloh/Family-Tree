@@ -2,7 +2,7 @@ import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GoogleOauthGuard } from '~/common/guards/google-oauth.guard';
 import { Response } from 'express';
-import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
+import { CLIENT_URL, COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import { AuthenticatedRequest } from '~/shared/types/request-with-user';
 
 @Controller('auth')
@@ -37,7 +37,7 @@ export class AuthController {
       secure: true,
     });
 
-    res.redirect('http://localhost:4200/family-trees'); // FIXME: base url should be dynamic (in .env file)
+    res.redirect(`${CLIENT_URL}/family-trees`);
   }
 
   @Get('logout')

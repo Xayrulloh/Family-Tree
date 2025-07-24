@@ -1,4 +1,4 @@
-import { attach, createEvent, createStore, sample } from 'effector';
+import { attach, createEffect, createEvent, createStore, sample } from 'effector';
 import { createDisclosure } from '~/shared/lib/disclosure';
 import { createForm } from '~/shared/lib/create-form';
 import { z } from 'zod';
@@ -24,6 +24,7 @@ export const formSchema = z.object({
 
 // Events
 export const editTriggered = createEvent<FormValues>();
+export const randomAvatarTriggered = createEvent();
 export const formValidated = createEvent();
 export const reset = createEvent();
 export const uploaded = createEvent<RcFile>();
@@ -75,6 +76,9 @@ const setPathToFormFx = attach({
     return instance?.setValue('image', path);
   },
 });
+
+// Sends request to random avatar endpoint
+const randomAvatarFx = createEffect(() => api.user.randomAvatar());
 
 // Derived State
 export const $mutating = or(uploadImageFx.pending, editProfileFx.pending);
@@ -139,3 +143,15 @@ sample({
   clock: disclosure.closed,
   target: [$file.reinit],
 });
+
+// If user clicks random avatar, trigger random avatar request
+sample({
+  clock: randomAvatarTriggered,
+  target: randomAvatarFx,
+});
+
+// After random avatar request completes, call sessionFx
+sample({
+  clock: randomAvatarFx.doneData,
+  target: sessionFx,
+})

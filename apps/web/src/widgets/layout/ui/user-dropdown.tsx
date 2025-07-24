@@ -93,6 +93,20 @@ export const UserDropdown = () => {
       type: 'divider',
     },
     {
+      key: 'random-avatar',
+      label: (
+        <div
+          onClick={() => editProfileModel.randomAvatarTriggered()}
+          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          <span role="img" aria-label="dice">
+            🎲
+          </span>
+          Random Avatar
+        </div>
+      ),
+    },
+    {
       key: 'edit-profile',
       label: (
         <div
@@ -102,7 +116,7 @@ export const UserDropdown = () => {
               image: user.image as string,
               gender: user.gender as [
                 UserGenderEnum.MALE,
-                UserGenderEnum.FEMALE
+                UserGenderEnum.FEMALE,
               ][number],
               birthdate: user.birthdate,
             })

@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { env } from './config/env/env';
 import cookieParser from 'cookie-parser';
-import { GLOBAL_PREFIX } from './utils/constants';
+import { CLIENT_URL, GLOBAL_PREFIX } from './utils/constants';
 import SwaggerBuilder from './config/swagger/swagger.config';
 import cors from 'cors';
 
@@ -14,8 +14,8 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(
     cors({
-      origin: 'http://localhost:4200',
-      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      origin: CLIENT_URL,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
       allowedHeaders: 'Content-Type, Authorization',
       credentials: true,
     })

@@ -13,6 +13,8 @@ import { UserUpdateRequestDto } from './dto/user.dto';
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import { EnvType } from '~/config/env/env-validation';
 import { ConfigService } from '@nestjs/config';
+import { DICEBAR_URL } from '~/utils/constants';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class UserService {
@@ -22,7 +24,7 @@ export class UserService {
     @Inject(DrizzleAsyncProvider)
     private db: NodePgDatabase<typeof schema>,
     private cloudflareConfig: CloudflareConfig,
-    private configService: ConfigService<EnvType>
+    private configService: ConfigService<EnvType>,
   ) {
     this.cloudflareR2Path =
       configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
@@ -32,7 +34,7 @@ export class UserService {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.email, email),
-        isNull(schema.usersSchema.deletedAt)
+        isNull(schema.usersSchema.deletedAt),
       ),
     });
 
@@ -47,7 +49,7 @@ export class UserService {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.id, id),
-        isNull(schema.usersSchema.deletedAt)
+        isNull(schema.usersSchema.deletedAt),
       ),
     });
 
@@ -62,7 +64,7 @@ export class UserService {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.id, id),
-        isNull(schema.usersSchema.deletedAt)
+        isNull(schema.usersSchema.deletedAt),
       ),
     });
 
@@ -77,7 +79,7 @@ export class UserService {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.id, id),
-        isNull(schema.usersSchema.deletedAt)
+        isNull(schema.usersSchema.deletedAt),
       ),
     });
 
@@ -85,15 +87,11 @@ export class UserService {
       throw new NotFoundException(`User with id ${id} not found`);
     }
 
-    if (!user.image?.includes(this.cloudflareR2Path)) {
-      throw new BadRequestException('Image is not uploaded');
-    }
-
     if (user.gender !== body.gender) {
       // FIXME: Need to think about related family trees
     }
 
-    if (user.image && user.image !== body.image) {
+    if (user.image && user.image !== body.image && user.image?.includes(this.cloudflareR2Path)) {
       this.cloudflareConfig.deleteFile(user.image);
     }
 
@@ -103,5 +101,32 @@ export class UserService {
         ...body,
       })
       .where(eq(schema.usersSchema.id, id));
+  }
+
+  async updateUserAvatar(id: string): Promise<UserResponseType> {
+    const user = await this.db.query.usersSchema.findFirst({
+      where: and(
+        eq(schema.usersSchema.id, id),
+        isNull(schema.usersSchema.deletedAt),
+      ),
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+
+    if (user.image?.includes(this.cloudflareR2Path)) {
+      this.cloudflareConfig.deleteFile(user.image);
+    }
+
+    const [updatedUser] = await this.db
+      .update(schema.usersSchema)
+      .set({
+        image: DICEBAR_URL + `/7.x/notionists/svg?seed=${randomUUID()}`,
+      })
+      .where(eq(schema.usersSchema.id, id))
+      .returning();
+
+    return updatedUser;
   }
 }
