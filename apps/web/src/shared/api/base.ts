@@ -25,7 +25,7 @@ base.interceptors.response.use(
   (response: AxiosResponse) => {
     const method = response.config.method?.toLowerCase();
 
-    if (method && successMessages[method]) {
+    if (method && successMessages[method] && response.config.url !== '/files/tree') {
       messageApi.success(successMessages[method]);
     }
 
