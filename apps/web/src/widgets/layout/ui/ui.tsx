@@ -53,10 +53,10 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
         </Header>
 
         {/* Content part (Trees Grid) */}
-        <Content style={{ margin: '24px 16px 0' }}>
+        <Content style={{ marginLeft: 24 }}>
           <div
             style={{
-              padding: 12,
+              padding: 0,
               minHeight: 360,
               borderRadius: token.borderRadiusLG,
               background: token.colorBgContainer,
