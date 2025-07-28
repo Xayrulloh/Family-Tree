@@ -192,7 +192,6 @@ sample({
   target: uploadImageFx,
 });
 
-// If image was uploaded before and not changed or if there's no image at all, send it to editTreeFx
 sample({
   clock: edited,
   source: {
@@ -200,16 +199,18 @@ sample({
     edited: form.$formValues,
   },
   filter: ({ original, edited }) => {
-    if (((!!edited.image && edited.image.startsWith('https')) || !edited.image) && isEqual(original, edited)) {
-      messageApi.info('No changes detected');
+    const noChanges = isEqual(original, edited);
+    const isBlob = edited.image?.startsWith('blob');
 
-      return false
+    if (noChanges && !isBlob) {
+      messageApi.info('No changes detected');
     }
 
-    return true
+    return !noChanges && !isBlob;
   },
   target: editTreeFx,
 });
+
 
 // Events of Image Samples
 // If image is uploaded, send it to setPreviewToFormFx
