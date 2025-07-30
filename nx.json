@@ -16,7 +16,7 @@
   },
   "plugins": [
     {
-      "plugin": "@nx/webpack/plugin",
+      "plugin": "@nx/rspack/plugin",
       "options": {
         "buildTargetName": "build",
         "serveTargetName": "serve",
