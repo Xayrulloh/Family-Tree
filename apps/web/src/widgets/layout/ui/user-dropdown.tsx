@@ -29,9 +29,9 @@ export const UserDropdown = () => {
 
   const getGenderIcon = (gender: string) => {
     switch (gender) {
-      case 'MALE' as UserGenderEnum.MALE:
+      case UserGenderEnum.MALE:
         return <ManOutlined style={{ color: '#1890ff' }} />;
-      case 'FEMALE' as UserGenderEnum.FEMALE:
+      case UserGenderEnum.FEMALE:
         return <WomanOutlined style={{ color: '#eb2f96' }} />;
       default:
         return false;

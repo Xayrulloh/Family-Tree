@@ -76,7 +76,7 @@ const uploadImageFx = attach({
 
     formData.append('file', file);
 
-    return api.file.upload('tree' as FileUploadFolderEnum.TREE, formData);
+    return api.file.upload(FileUploadFolderEnum.TREE, formData);
   },
 });
 
