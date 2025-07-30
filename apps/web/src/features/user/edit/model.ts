@@ -12,7 +12,7 @@ import { api } from '~/shared/api';
 import { RcFile } from 'antd/es/upload';
 import { delay, or } from 'patronum';
 import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
-import { sessionFx } from '~/entities/user/model';
+import { userModel } from '~/entities/user';
 
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
@@ -135,7 +135,7 @@ sample({
 // After successful profile update, refresh session user
 sample({
   clock: editProfileFx.done,
-  target: sessionFx,
+  target: userModel.sessionFx,
 });
 
 // Close modal on reset or successful update
@@ -159,5 +159,5 @@ sample({
 // After random avatar request completes, call sessionFx
 sample({
   clock: randomAvatarFx.doneData,
-  target: sessionFx,
-});
+  target: userModel.sessionFx,
+})
