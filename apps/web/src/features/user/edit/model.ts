@@ -1,4 +1,4 @@
-import { attach, createEvent, createStore, sample } from 'effector';
+import { attach, createEffect, createEvent, createStore, sample } from 'effector';
 import { createDisclosure } from '~/shared/lib/disclosure';
 import { createForm } from '~/shared/lib/create-form';
 import { z } from 'zod';
@@ -6,7 +6,7 @@ import { api } from '~/shared/api';
 import { RcFile } from 'antd/es/upload';
 import { delay, or } from 'patronum';
 import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
-import { sessionFx } from '~/entities/user/model';
+import { userModel } from '~/entities/user';
 
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
@@ -24,6 +24,7 @@ export const formSchema = z.object({
 
 // Events
 export const editTriggered = createEvent<FormValues>();
+export const randomAvatarTriggered = createEvent();
 export const formValidated = createEvent();
 export const reset = createEvent();
 export const uploaded = createEvent<RcFile>();
@@ -76,6 +77,9 @@ const setPathToFormFx = attach({
   },
 });
 
+// Sends request to random avatar endpoint
+const randomAvatarFx = createEffect(() => api.user.randomAvatar());
+
 // Derived State
 export const $mutating = or(uploadImageFx.pending, editProfileFx.pending);
 export const mutated = editProfileFx.done;
@@ -125,7 +129,7 @@ sample({
 // After successful profile update, refresh session user
 sample({
   clock: editProfileFx.done,
-  target: sessionFx,
+  target: userModel.sessionFx,
 });
 
 // Close modal on reset or successful update
@@ -139,3 +143,15 @@ sample({
   clock: disclosure.closed,
   target: [$file.reinit],
 });
+
+// If user clicks random avatar, trigger random avatar request
+sample({
+  clock: randomAvatarTriggered,
+  target: randomAvatarFx,
+});
+
+// After random avatar request completes, call sessionFx
+sample({
+  clock: randomAvatarFx.doneData,
+  target: userModel.sessionFx,
+})

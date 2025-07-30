@@ -22,13 +22,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 import {
   FileUploadResponseSchema,
-  FileDeleteResponseSchema,
 } from '@family-tree/shared';
 import {
   FileUploadParamDto,
-  FileDeleteParamDto,
   FileUploadResponseDto,
-  FileDeleteResponseDto,
 } from './dto/file.dto';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { ConfigService } from '@nestjs/config';
@@ -95,20 +92,5 @@ export class FileController {
       message: 'File uploaded successfully',
       path: `${path}/${param.folder}/${key}`,
     };
-  }
-
-  @Delete(':folder/:key')
-  @ApiParam({ name: 'folder', required: true, enum: ['avatar', 'tree'] })
-  @ApiParam({ name: 'key', required: true, type: String })
-  @ApiOperation({ summary: 'Delete a file from Cloudflare R2' })
-  @ApiResponse({ status: 200, description: 'File deleted successfully.' })
-  @ApiResponse({ status: 404, description: 'File not found.' })
-  @ZodSerializerDto(FileDeleteResponseSchema)
-  async deleteFile(
-    @Param() param: FileDeleteParamDto
-  ): Promise<FileDeleteResponseDto> {
-    await this.fileService.deleteFile(param.path);
-
-    return { message: 'File deleted successfully' };
   }
 }
