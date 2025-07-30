@@ -40,7 +40,7 @@ export const EditProfileModal: React.FC = () => {
       onCancel={() => model.disclosure.closed()}
       okButtonProps={{ htmlType: 'submit', form: formId, loading: mutating }}
       width={480}
-      destroyOnClose
+      destroyOnHidden
     >
       <form
         onSubmit={form.handleSubmit(() => model.formValidated())}

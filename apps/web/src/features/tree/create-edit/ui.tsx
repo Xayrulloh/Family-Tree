@@ -32,7 +32,7 @@ export const CreateEditTreeModal: React.FC = () => {
       onCancel={() => model.disclosure.closed()}
       okButtonProps={{ htmlType: 'submit', form: formId, loading: mutating }}
       width={480}
-      destroyOnClose
+      destroyOnHidden
     >
       {/* === 🧾 Form Start === */}
       <form
