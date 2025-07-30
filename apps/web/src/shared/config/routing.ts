@@ -13,12 +13,8 @@ export const routes = {
 
 export const routesMap = [
   {
-    route: routes.browse,
     path: '/',
-  },
-  {
-    route: routes.notFound,
-    path: '/404',
+    route: routes.browse,
   },
   {
     path: '/register',
