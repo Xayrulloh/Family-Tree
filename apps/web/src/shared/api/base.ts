@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { ZodIssue } from 'zod';
-import { messageApi } from '~/shared/lib/antd/message';
+import { errorFx, successFx } from '~/shared/lib/message';
 
 const successMessages: Record<string, string> = {
   post: 'Created successfully',
@@ -26,7 +26,7 @@ base.interceptors.response.use(
     const method = response.config.method?.toLowerCase();
 
     if (method && successMessages[method]) {
-      messageApi.success(successMessages[method]);
+      successFx(successMessages[method]);
     }
 
     return response;
@@ -43,7 +43,7 @@ base.interceptors.response.use(
       errorMsg = error.message;
     }
 
-    messageApi.error(errorMsg);
+    errorFx(errorMsg);
 
     return Promise.reject(error);
   }

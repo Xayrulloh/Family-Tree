@@ -6,12 +6,13 @@ import { Routing } from '~/pages';
 import { ConfigProvider, theme } from 'antd';
 import { $theme } from './model';
 import { useUnit } from 'effector-react';
-import { MessageProvider } from './providers/message-provider';
+import { useMessageApi } from '~/shared/lib/message';
 
 appStarted();
 
 export const App: React.FC = () => {
   const currentTheme = useUnit($theme);
+  const contextHolder = useMessageApi();
 
   return (
     <ConfigProvider
@@ -22,10 +23,10 @@ export const App: React.FC = () => {
             : theme.defaultAlgorithm,
       }}
     >
-      <MessageProvider />
       <RouterProvider router={router}>
         <Routing />
       </RouterProvider>
+      {contextHolder}
     </ConfigProvider>
   );
 };
