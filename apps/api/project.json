@@ -28,6 +28,13 @@
         }
       }
     },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "biome check",
+        "cwd": "apps/api"
+      }
+    },
     "serve": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",

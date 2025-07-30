@@ -24,12 +24,6 @@
       }
     },
     {
-      "plugin": "@nx/eslint/plugin",
-      "options": {
-        "targetName": "lint"
-      }
-    },
-    {
       "plugin": "@nx/jest/plugin",
       "options": {
         "targetName": "test"
@@ -53,15 +47,13 @@
       "application": {
         "babel": true,
         "style": "tailwind",
-        "linter": "eslint",
         "bundler": "vite"
       },
       "component": {
         "style": "tailwind"
       },
       "library": {
-        "style": "tailwind",
-        "linter": "eslint"
+        "style": "tailwind"
       }
     }
   }
