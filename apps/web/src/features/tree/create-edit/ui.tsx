@@ -39,7 +39,7 @@ export const CreateEditTreeModal: React.FC = () => {
         onSubmit={form.handleSubmit(() => model.formValidated())}
         id={formId}
       >
-        <Flex vertical gap={16}>
+        <Flex vertical gap={16} style={{ paddingInline: 8 }}>
           {/* === 🌳 Tree Name Input === */}
           <Controller
             control={form.control}
@@ -84,12 +84,12 @@ export const CreateEditTreeModal: React.FC = () => {
               <img
                 src={img}
                 alt="Preview"
-                height={160}
                 style={{
-                  objectFit: 'contain',
+                  objectFit: 'cover',
                   borderRadius: 6,
                   width: '100%',
-                  height: 160,
+                  height: 'auto',
+                  maxHeight: 200,
                 }}
               />
             )}
