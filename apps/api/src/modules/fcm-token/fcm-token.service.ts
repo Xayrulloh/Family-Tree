@@ -7,11 +7,9 @@ import {
 import * as schema from '~/database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
-import {
-  FCMTokenCreateDeleteRequestType,
-  FCMTokenResponseType,
-} from '@family-tree/shared';
+import { FCMTokenResponseType } from '@family-tree/shared';
 import { and, eq, isNull } from 'drizzle-orm';
+import { FCMTokenCreateDeleteRequestDto } from './dto/fcm-token.dto';
 
 @Injectable()
 export class FCMTokenService {
@@ -22,7 +20,7 @@ export class FCMTokenService {
 
   async createFcmToken(
     userId: string,
-    body: FCMTokenCreateDeleteRequestType
+    body: FCMTokenCreateDeleteRequestDto
   ): Promise<FCMTokenResponseType> {
     const isFCMTokenExist = await this.db.query.FCMTokensSchema.findFirst({
       where: and(
@@ -53,7 +51,7 @@ export class FCMTokenService {
 
   async deleteFcmToken(
     userId: string,
-    body: FCMTokenCreateDeleteRequestType
+    body: FCMTokenCreateDeleteRequestDto
   ): Promise<void> {
     const FCMToken = await this.db.query.FCMTokensSchema.findFirst({
       where: and(

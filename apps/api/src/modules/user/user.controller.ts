@@ -16,6 +16,7 @@ import {
   UserIdParamDto,
 } from './dto/user.dto';
 import {
+  ApiBody,
   ApiCookieAuth,
   ApiNoContentResponse,
   ApiOkResponse,

@@ -89,7 +89,7 @@ export class FamilyTreeService {
       );
     }
 
-    if (!body.image?.includes(this.cloudflareR2Path)) {
+    if ( body.image && !body.image?.includes(this.cloudflareR2Path)) {
       throw new BadRequestException('Image is not uploaded');
     }
 
@@ -123,7 +123,7 @@ export class FamilyTreeService {
       throw new NotFoundException(`Family tree with id ${id} not found`);
     }
 
-    if (!body.image?.includes(this.cloudflareR2Path)) {
+    if (body.image && !body.image?.includes(this.cloudflareR2Path)) {
       throw new BadRequestException('Image is not uploaded');
     }
 

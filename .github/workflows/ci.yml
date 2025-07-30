@@ -28,7 +28,7 @@ jobs:
           node-version: 20
           cache: 'pnpm'
 
-      - run: pnpm install --frozen-lockfile --no-optional
+      - run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
       - uses: nrwl/nx-set-shas@v4
 
       # Check for formatting issues
