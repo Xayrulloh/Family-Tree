@@ -1,6 +1,11 @@
-import { Inject, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  Inject,
+  type MiddlewareConsumer,
+  Module,
+  type NestModule,
+} from '@nestjs/common';
+import { ConfigModule, type ConfigType } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
-import { ConfigModule, ConfigType } from '@nestjs/config';
 import cookiesConfig from './cookies.config';
 
 @Module({
@@ -9,7 +14,7 @@ import cookiesConfig from './cookies.config';
 export class CookiesModule implements NestModule {
   constructor(
     @Inject(cookiesConfig.KEY)
-    private readonly config: ConfigType<typeof cookiesConfig>
+    private readonly config: ConfigType<typeof cookiesConfig>,
   ) {}
 
   configure(consumer: MiddlewareConsumer) {

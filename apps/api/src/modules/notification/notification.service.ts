@@ -1,19 +1,19 @@
+import type { NotificationResponseType } from '@family-tree/shared';
 import { Inject, Injectable } from '@nestjs/common';
-import * as schema from '~/database/schema';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
-import { NotificationResponseType } from '@family-tree/shared';
 import { and, desc, eq, gt, isNull, notInArray } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
+import * as schema from '~/database/schema';
 
 @Injectable()
 export class NotificationService {
   constructor(
     @Inject(DrizzleAsyncProvider)
-    private db: NodePgDatabase<typeof schema>
+    private db: NodePgDatabase<typeof schema>,
   ) {}
 
   async getUserNotifications(
-    userId: string
+    userId: string,
   ): Promise<NotificationResponseType> {
     const lastReadNotification =
       await this.db.query.notificationReadsSchema.findFirst({
@@ -29,9 +29,9 @@ export class NotificationService {
           lastReadNotification?.updatedAt
             ? gt(
                 schema.notificationsSchema.createdAt,
-                lastReadNotification?.updatedAt
+                lastReadNotification?.updatedAt,
               )
-            : undefined
+            : undefined,
         ),
       });
 
@@ -42,12 +42,12 @@ export class NotificationService {
           isNull(schema.notificationsSchema.deletedAt),
           notInArray(
             schema.notificationsSchema.id,
-            unReadNotifications.map((notification) => notification.id)
-          )
+            unReadNotifications.map((notification) => notification.id),
+          ),
         ),
         limit: 5,
         orderBy: desc(schema.notificationsSchema.createdAt),
-      }
+      },
     );
 
     return {

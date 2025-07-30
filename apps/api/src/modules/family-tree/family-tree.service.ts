@@ -4,19 +4,19 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import * as schema from '~/database/schema';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
+import type { ConfigService } from '@nestjs/config';
 import { and, asc, eq, ilike, isNull } from 'drizzle-orm';
-import {
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
+import type { EnvType } from '~/config/env/env-validation';
+import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
+import * as schema from '~/database/schema';
+import type {
   FamilyTreeArrayResponseDto,
   FamilyTreeCreateRequestDto,
   FamilyTreeResponseDto,
   FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
-import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
-import { ConfigService } from '@nestjs/config';
-import { EnvType } from '~/config/env/env-validation';
 
 @Injectable()
 export class FamilyTreeService {
@@ -26,32 +26,32 @@ export class FamilyTreeService {
     @Inject(DrizzleAsyncProvider)
     private db: NodePgDatabase<typeof schema>,
     private cloudflareConfig: CloudflareConfig,
-    private configService: ConfigService<EnvType>
+    configService: ConfigService<EnvType>,
   ) {
     this.cloudflareR2Path =
       configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
   }
 
   async getFamilyTreesOfUser(
-    userId: string
+    userId: string,
   ): Promise<FamilyTreeArrayResponseDto> {
     return this.db.query.familyTreesSchema.findMany({
       where: and(
         eq(schema.familyTreesSchema.createdBy, userId),
-        isNull(schema.familyTreesSchema.deletedAt)
+        isNull(schema.familyTreesSchema.deletedAt),
       ),
       orderBy: asc(schema.familyTreesSchema.createdAt),
     });
   }
 
   async getFamilyTreesByName(
-    name: string
+    name: string,
   ): Promise<FamilyTreeArrayResponseDto> {
     return this.db.query.familyTreesSchema.findMany({
       where: and(
         ilike(schema.familyTreesSchema.name, `%${name}%`),
         eq(schema.familyTreesSchema.public, true),
-        isNull(schema.familyTreesSchema.deletedAt)
+        isNull(schema.familyTreesSchema.deletedAt),
       ),
       limit: 5,
     });
@@ -61,7 +61,7 @@ export class FamilyTreeService {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
       where: and(
         eq(schema.familyTreesSchema.id, id),
-        isNull(schema.familyTreesSchema.deletedAt)
+        isNull(schema.familyTreesSchema.deletedAt),
       ),
     });
 
@@ -74,22 +74,22 @@ export class FamilyTreeService {
 
   async createFamilyTree(
     userId: string,
-    body: FamilyTreeCreateRequestDto
+    body: FamilyTreeCreateRequestDto,
   ): Promise<FamilyTreeResponseDto> {
     const isFamilyTreeExist = await this.db.query.familyTreesSchema.findFirst({
       where: and(
         eq(schema.familyTreesSchema.createdBy, userId),
-        ilike(schema.familyTreesSchema.name, `%${body.name}%`)
+        ilike(schema.familyTreesSchema.name, `%${body.name}%`),
       ),
     });
 
     if (isFamilyTreeExist) {
       throw new BadRequestException(
-        `Family tree with name ${body.name} already exist`
+        `Family tree with name ${body.name} already exist`,
       );
     }
 
-    if ( body.image && !body.image?.includes(this.cloudflareR2Path)) {
+    if (body.image && !body.image?.includes(this.cloudflareR2Path)) {
       throw new BadRequestException('Image is not uploaded');
     }
 
@@ -109,13 +109,13 @@ export class FamilyTreeService {
   async updateFamilyTree(
     userId: string,
     id: string,
-    body: FamilyTreeUpdateRequestDto
+    body: FamilyTreeUpdateRequestDto,
   ): Promise<void> {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
       where: and(
         eq(schema.familyTreesSchema.id, id),
         eq(schema.familyTreesSchema.createdBy, userId),
-        isNull(schema.familyTreesSchema.deletedAt)
+        isNull(schema.familyTreesSchema.deletedAt),
       ),
     });
 
@@ -145,7 +145,7 @@ export class FamilyTreeService {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
       where: and(
         eq(schema.familyTreesSchema.id, id),
-        eq(schema.familyTreesSchema.createdBy, userId)
+        eq(schema.familyTreesSchema.createdBy, userId),
       ),
     });
 

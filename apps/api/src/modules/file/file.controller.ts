@@ -1,4 +1,8 @@
 import {
+  FileDeleteResponseSchema,
+  FileUploadResponseSchema,
+} from '@family-tree/shared';
+import {
   Controller,
   Delete,
   HttpStatus,
@@ -8,7 +12,8 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileService } from './file.service';
+import type { ConfigService } from '@nestjs/config';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBody,
   ApiConsumes,
@@ -17,30 +22,23 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
-import { FileInterceptor } from '@nestjs/platform-express';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Multer } from 'multer';
-import {
-  FileUploadResponseSchema,
-  FileDeleteResponseSchema,
-} from '@family-tree/shared';
-import {
-  FileUploadParamDto,
-  FileDeleteParamDto,
-  FileUploadResponseDto,
-  FileDeleteResponseDto,
-} from './dto/file.dto';
 import { ZodSerializerDto } from 'nestjs-zod';
-import { ConfigService } from '@nestjs/config';
-import { EnvType } from '~/config/env/env-validation';
+import type { EnvType } from '~/config/env/env-validation';
 import generateRandomString from '~/helpers/random-string.helper';
+import type {
+  FileDeleteParamDto,
+  FileDeleteResponseDto,
+  FileUploadParamDto,
+  FileUploadResponseDto,
+} from './dto/file.dto';
+import type { FileService } from './file.service';
 
 @ApiTags('File')
 @Controller('files')
 export class FileController {
   constructor(
     private readonly fileService: FileService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {}
 
   @Post(':folder')
@@ -73,10 +71,10 @@ export class FileController {
         })
         .build({
           errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-        })
+        }),
     )
     file: Express.Multer.File,
-    @Param() param: FileUploadParamDto
+    @Param() param: FileUploadParamDto,
   ): Promise<FileUploadResponseDto> {
     const key = generateRandomString(15);
 
@@ -84,11 +82,11 @@ export class FileController {
       param.folder,
       key,
       file.buffer,
-      file.mimetype
+      file.mimetype,
     );
 
     const path = this.configService.get<EnvType['CLOUDFLARE_URL']>(
-      'CLOUDFLARE_URL'
+      'CLOUDFLARE_URL',
     ) as string;
 
     return {
@@ -105,7 +103,7 @@ export class FileController {
   @ApiResponse({ status: 404, description: 'File not found.' })
   @ZodSerializerDto(FileDeleteResponseSchema)
   async deleteFile(
-    @Param() param: FileDeleteParamDto
+    @Param() param: FileDeleteParamDto,
   ): Promise<FileDeleteResponseDto> {
     await this.fileService.deleteFile(param.path);
 

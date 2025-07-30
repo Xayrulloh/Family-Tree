@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { NotificationService } from './notification.service';
-import { NotificationController } from './notification.controller';
-import { DrizzleModule } from '~/database/drizzle.module';
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
+import { DrizzleModule } from '~/database/drizzle.module';
+import { NotificationController } from './notification.controller';
+import { NotificationService } from './notification.service';
 
 @Module({
   imports: [DrizzleModule],

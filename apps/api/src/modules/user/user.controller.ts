@@ -1,3 +1,4 @@
+import { UserResponseSchema } from '@family-tree/shared';
 import {
   Body,
   Controller,
@@ -9,25 +10,23 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { UserService } from './user.service';
 import {
-  UserResponseDto,
-  UserUpdateRequestDto,
-  UserIdParamDto,
-} from './dto/user.dto';
-import {
-  ApiBody,
   ApiCookieAuth,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
-import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
-import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
-import { UserResponseSchema } from '@family-tree/shared';
 import { ZodSerializerDto } from 'nestjs-zod';
-import { AuthenticatedRequest } from '~/shared/types/request-with-user';
+import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
+import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
+import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
+import {
+  type UserIdParamDto,
+  UserResponseDto,
+  type UserUpdateRequestDto,
+} from './dto/user.dto';
+import type { UserService } from './user.service';
 
 @ApiTags('User')
 @Controller('users')
@@ -42,7 +41,7 @@ export class UserController {
   @ApiOkResponse({ type: UserResponseDto })
   @ZodSerializerDto(UserResponseSchema)
   async getUserThemselves(
-    @Req() req: AuthenticatedRequest
+    @Req() req: AuthenticatedRequest,
   ): Promise<UserResponseDto> {
     return this.userService.getUserThemselves(req.user.id);
   }
@@ -81,7 +80,7 @@ export class UserController {
   @ApiNoContentResponse()
   updateUser(
     @Req() req: AuthenticatedRequest,
-    @Body() body: UserUpdateRequestDto
+    @Body() body: UserUpdateRequestDto,
   ): Promise<void> {
     return this.userService.updateUser(req.user.id, body);
   }

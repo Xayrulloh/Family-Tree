@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common';
 import {
-  S3Client,
-  PutObjectCommand,
   DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
 } from '@aws-sdk/client-s3';
-import { ConfigService } from '@nestjs/config';
-import { EnvType } from '../env/env-validation';
+import { Injectable } from '@nestjs/common';
+import type { EnvType } from '../env/env-validation';
 
 @Injectable()
 export class CloudflareConfig {
@@ -13,10 +12,10 @@ export class CloudflareConfig {
   private cloudflareR2Path: string;
   private bucketName = 'family-tree';
 
-  constructor(private configService: ConfigService<EnvType>) {
+  constructor() {
     this.s3 = new S3Client({
       endpoint: configService.getOrThrow<EnvType['CLOUDFLARE_ENDPOINT']>(
-        'CLOUDFLARE_ENDPOINT'
+        'CLOUDFLARE_ENDPOINT',
       ),
       region: 'auto',
       credentials: {
@@ -37,7 +36,7 @@ export class CloudflareConfig {
     folder: string,
     key: string,
     body: Buffer,
-    mimetype: string
+    mimetype: string,
   ): Promise<void> {
     const command = new PutObjectCommand({
       Bucket: this.bucketName,

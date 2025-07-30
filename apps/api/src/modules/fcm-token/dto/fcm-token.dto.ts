@@ -6,7 +6,7 @@ import { createZodDto } from 'nestjs-zod';
 
 // request
 class FCMTokenCreateDeleteRequestDto extends createZodDto(
-  FCMTokenCreateDeleteRequestSchema
+  FCMTokenCreateDeleteRequestSchema,
 ) {}
 
 // response

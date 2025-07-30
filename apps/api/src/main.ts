@@ -1,11 +1,11 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import { AppModule } from './app.module';
 import { env } from './config/env/env';
-import cookieParser from 'cookie-parser';
-import { GLOBAL_PREFIX } from './utils/constants';
 import SwaggerBuilder from './config/swagger/swagger.config';
-import cors from 'cors';
+import { GLOBAL_PREFIX } from './utils/constants';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,7 +18,7 @@ async function bootstrap() {
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
       allowedHeaders: 'Content-Type, Authorization',
       credentials: true,
-    })
+    }),
   );
 
   const port = env().PORT;
@@ -29,7 +29,7 @@ async function bootstrap() {
   await app.listen(port);
 
   Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${GLOBAL_PREFIX}`
+    `🚀 Application is running on: http://localhost:${port}/${GLOBAL_PREFIX}`,
   );
 }
 

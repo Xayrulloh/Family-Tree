@@ -1,6 +1,6 @@
 // @ts-check
 const { NxAppRspackPlugin } = require('@nx/rspack/app-plugin');
-const { join } = require('path');
+const { join } = require('node:path');
 
 module.exports = {
   output: {
