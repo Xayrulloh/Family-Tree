@@ -1,10 +1,6 @@
-import {
-  FileDeleteResponseSchema,
-  FileUploadResponseSchema,
-} from '@family-tree/shared';
+import { FileUploadResponseSchema } from '@family-tree/shared';
 import {
   Controller,
-  Delete,
   HttpStatus,
   Param,
   ParseFilePipeBuilder,
@@ -25,13 +21,9 @@ import {
 import { ZodSerializerDto } from 'nestjs-zod';
 import type { EnvType } from '~/config/env/env-validation';
 import generateRandomString from '~/helpers/random-string.helper';
-import type {
-  FileDeleteParamDto,
-  FileDeleteResponseDto,
-  FileUploadParamDto,
-  FileUploadResponseDto,
-} from './dto/file.dto';
+import type { FileUploadParamDto, FileUploadResponseDto } from './dto/file.dto';
 import type { FileService } from './file.service';
+import 'multer';
 
 @ApiTags('File')
 @Controller('files')
@@ -93,20 +85,5 @@ export class FileController {
       message: 'File uploaded successfully',
       path: `${path}/${param.folder}/${key}`,
     };
-  }
-
-  @Delete(':folder/:key')
-  @ApiParam({ name: 'folder', required: true, enum: ['avatar', 'tree'] })
-  @ApiParam({ name: 'key', required: true, type: String })
-  @ApiOperation({ summary: 'Delete a file from Cloudflare R2' })
-  @ApiResponse({ status: 200, description: 'File deleted successfully.' })
-  @ApiResponse({ status: 404, description: 'File not found.' })
-  @ZodSerializerDto(FileDeleteResponseSchema)
-  async deleteFile(
-    @Param() param: FileDeleteParamDto,
-  ): Promise<FileDeleteResponseDto> {
-    await this.fileService.deleteFile(param.path);
-
-    return { message: 'File deleted successfully' };
   }
 }

@@ -1,7 +1,7 @@
 import * as z from 'zod';
 import { BaseSchema } from './base.schema';
 
-enum UserGenderEnum {
+const enum UserGenderEnum {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
   UNKNOWN = 'UNKNOWN',
@@ -28,7 +28,7 @@ const UserSchema = z
         'Image url which comes only from client side but may delete from back on updates'
       ),
     gender: z
-      .nativeEnum(UserGenderEnum)
+      .enum([UserGenderEnum.MALE, UserGenderEnum.FEMALE, UserGenderEnum.UNKNOWN])
       .describe(
         "Only male or female and for the beginning as we don't know we put unknown"
       ),

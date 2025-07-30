@@ -6,6 +6,7 @@ import { Routing } from '~/pages';
 import { ConfigProvider, theme } from 'antd';
 import { $theme } from './model';
 import { useUnit } from 'effector-react';
+import { MessageProvider } from './providers/message-provider';
 
 appStarted();
 
@@ -21,6 +22,7 @@ export const App: React.FC = () => {
             : theme.defaultAlgorithm,
       }}
     >
+      <MessageProvider />
       <RouterProvider router={router}>
         <Routing />
       </RouterProvider>

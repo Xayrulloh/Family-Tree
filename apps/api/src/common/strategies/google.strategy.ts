@@ -12,6 +12,7 @@ import { Strategy, type VerifyCallback } from 'passport-google-oauth2';
 import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
+import { DICEBAR_URL } from '~/utils/constants';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -58,8 +59,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
           name: `${name.givenName} ${name.familyName}`,
           username: `${emails[0].value.split('@')[0]}-${id}`,
           image:
-            photos[0].value ||
-            `https://api.dicebear.com/7.x/notionists/svg?seed=${id}`,
+            photos[0].value || DICEBAR_URL + `/7.x/notionists/svg?seed=${id}`,
           gender: UserGenderEnum.UNKNOWN,
         })
         .returning();

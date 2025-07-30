@@ -1,7 +1,7 @@
 import * as z from 'zod';
 import { BaseSchema } from './base.schema';
 
-enum FCMTokenDeviceEnum {
+const enum FCMTokenDeviceEnum {
   ANDROID = 'ANDROID',
   IOS = 'IOS',
   WEB = 'WEB',
@@ -12,7 +12,7 @@ const FCMTokenSchema = z
     userId: z.string().uuid().describe('Defines to whom it belongs'),
     token: z.string().min(1).describe('Unique token from FCM'),
     deviceType: z
-      .nativeEnum(FCMTokenDeviceEnum)
+      .enum([FCMTokenDeviceEnum.ANDROID, FCMTokenDeviceEnum.IOS, FCMTokenDeviceEnum.WEB])
       .describe('To send all devices of user'),
   })
   .merge(BaseSchema);

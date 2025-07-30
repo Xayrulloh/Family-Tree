@@ -20,6 +20,8 @@ import {
   LockOutlined,
   GlobalOutlined,
   EllipsisOutlined,
+  DeleteOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 import {
   CreateEditTreeModal,
@@ -42,6 +44,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
     {
       key: 'edit',
       label: 'Edit',
+      icon: <EditOutlined />,
       onClick: () =>
         createEditTreeModel.editTriggered({
           id: tree.id,
@@ -55,6 +58,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
     {
       key: 'delete',
       label: 'Delete',
+      icon: <DeleteOutlined />,
       danger: true,
       onClick: () => {
         deleteTreeModel.deleteTriggered({ id: tree.id });
@@ -65,14 +69,22 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
   return (
     <Card
       hoverable
-      styles={{ body: { padding: 10 } }}
+      styles={{ 
+        body: { 
+          padding: '12px 16px 16px',
+          height: 'calc(100% - 140px)'
+        }
+      }}
       style={{
         height: '100%',
         minHeight: 220,
         position: 'relative',
         borderRadius: 12,
         overflow: 'hidden',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        transition: 'all 0.2s ease',
+        display: 'flex',
+        flexDirection: 'column',
       }}
       cover={
         <div
@@ -81,13 +93,13 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
             background: token.colorFillContent,
             display: 'flex',
             overflow: 'hidden',
+            position: 'relative',
             ...(tree.image
-              ? {
-                  // Image: don't center, just fill
-                }
+              ? {}
               : {
                   justifyContent: 'center',
                   alignItems: 'center',
+                  backgroundColor: token.colorFillSecondary,
                 }),
           }}
         >
@@ -101,11 +113,19 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
                 objectFit: 'cover',
                 objectPosition: 'center',
                 transition: 'transform 0.3s',
-                display: 'block',
               }}
+              preview={false}
             />
           ) : (
-            <span role="img" aria-label="tree" style={{ fontSize: 40, lineHeight: 1 }}>
+            <span
+              role="img"
+              aria-label="tree"
+              style={{ 
+                fontSize: 48, 
+                lineHeight: 1,
+                color: token.colorTextDescription
+              }}
+            >
               🌲
             </span>
           )}
@@ -139,6 +159,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
         level={5}
         style={{
           marginBottom: 4,
+          marginTop: 0,
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -169,14 +190,14 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
       <Row gutter={[16, 16]}>
         {/* Exist Trees */}
         {trees.map((tree) => (
-          <Col key={tree.id} xs={24} sm={12} md={8} lg={6} xl={4}>
+          <Col xs={12} sm={8} md={6} lg={6} xl={4} key={tree.id}>
             <TreeCard tree={tree} />
           </Col>
         ))}
 
         {/* Create A New Tree */}
         {
-          <Col xs={24} sm={12} md={8} lg={6} xl={4}>
+          <Col xs={12} sm={8} md={6} lg={6} xl={4}>
             <Card
               hoverable
               onClick={() => createEditTreeModel.createTriggered()}

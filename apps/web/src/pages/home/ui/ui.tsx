@@ -4,14 +4,19 @@ import { routes } from '~/shared/config/routing';
 
 const HomePage: React.FC = () => {
   return (
-    <div
-      style={{
-        backgroundSize: 'cover',
-        height: '100vh',
-      }}
-    >
-      <Link to={routes.trees}>Family trees</Link>
-    </div>
+    <main className="min-h-screen bg-cover bg-center flex items-center justify-center px-4 sm:px-6 md:px-8">
+      <section className="text-center">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
+          Welcome to Family Tree
+        </h1>
+        <Link
+          to={routes.trees}
+          className="text-lg text-white bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg transition"
+        >
+          View Family Trees
+        </Link>
+      </section>
+    </main>
   );
 };
 

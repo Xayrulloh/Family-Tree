@@ -29,9 +29,9 @@ export const UserDropdown = () => {
 
   const getGenderIcon = (gender: string) => {
     switch (gender) {
-      case 'MALE' as UserGenderEnum.MALE:
+      case UserGenderEnum.MALE:
         return <ManOutlined style={{ color: '#1890ff' }} />;
-      case 'FEMALE' as UserGenderEnum.FEMALE:
+      case UserGenderEnum.FEMALE:
         return <WomanOutlined style={{ color: '#eb2f96' }} />;
       default:
         return false;
@@ -44,19 +44,12 @@ export const UserDropdown = () => {
     {
       key: 'user-info',
       label: (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: '5px 0',
-          }}
-        >
+        <div className="flex flex-col items-center py-2 pointer-events-none">
           <Avatar
             size={64}
             src={avatarSource}
             icon={<UserOutlined />}
-            style={{ marginBottom: 8 }}
+            className="mb-2"
           />
           <Typography.Text strong>{user.name}</Typography.Text>
           {user.email && (
@@ -66,7 +59,7 @@ export const UserDropdown = () => {
           )}
           {/* Gender and Birthdate */}
           {(userGenderIcon || user.birthdate) && (
-            <Space direction="vertical" size={4} style={{ marginTop: 8 }}>
+            <Space direction="vertical" size={4} className="mt-2">
               {user.gender && userGenderIcon && (
                 <Space>
                   {userGenderIcon}
@@ -93,6 +86,20 @@ export const UserDropdown = () => {
       type: 'divider',
     },
     {
+      key: 'random-avatar',
+      label: (
+        <div
+          onClick={() => editProfileModel.randomAvatarTriggered()}
+          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          <span role="img" aria-label="dice">
+            🎲
+          </span>
+          Random Avatar
+        </div>
+      ),
+    },
+    {
       key: 'edit-profile',
       label: (
         <div
@@ -102,7 +109,7 @@ export const UserDropdown = () => {
               image: user.image as string,
               gender: user.gender as [
                 UserGenderEnum.MALE,
-                UserGenderEnum.FEMALE
+                UserGenderEnum.FEMALE,
               ][number],
               birthdate: user.birthdate,
             })

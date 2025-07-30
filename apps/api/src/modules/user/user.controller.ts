@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Put,
   Req,
   UseGuards,
@@ -78,10 +79,23 @@ export class UserController {
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
-  updateUser(
+  async updateUser(
     @Req() req: AuthenticatedRequest,
     @Body() body: UserUpdateRequestDto,
   ): Promise<void> {
     return this.userService.updateUser(req.user.id, body);
+  }
+
+  // Random image for user
+  @Patch('/avatar')
+  @UseGuards(JWTAuthGuard)
+  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: UserResponseDto })
+  @ZodSerializerDto(UserResponseSchema)
+  async updateUserAvatar(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<UserResponseDto> {
+    return this.userService.updateUserAvatar(req.user.id);
   }
 }
