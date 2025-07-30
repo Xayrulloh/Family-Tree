@@ -123,7 +123,11 @@ export class FamilyTreeService {
       throw new NotFoundException(`Family tree with id ${id} not found`);
     }
 
-    if (body.image && familyTree.image !== body.image && familyTree.image?.includes(this.cloudflareR2Path)) {
+    if (
+      body.image &&
+      familyTree.image !== body.image &&
+      familyTree.image?.includes(this.cloudflareR2Path)
+    ) {
       this.cloudflareConfig.deleteFile(familyTree.image);
     }
 

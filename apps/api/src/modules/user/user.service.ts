@@ -1,7 +1,7 @@
+import { randomUUID } from 'node:crypto';
 import type { UserResponseType } from '@family-tree/shared';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
-import { randomUUID } from 'crypto';
 import { and, eq, isNull } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
@@ -19,7 +19,7 @@ export class UserService {
     @Inject(DrizzleAsyncProvider)
     private db: NodePgDatabase<typeof schema>,
     private cloudflareConfig: CloudflareConfig,
-    private configService: ConfigService<EnvType>,
+    configService: ConfigService<EnvType>,
   ) {
     this.cloudflareR2Path =
       configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
@@ -121,7 +121,7 @@ export class UserService {
     const [updatedUser] = await this.db
       .update(schema.usersSchema)
       .set({
-        image: DICEBAR_URL + `/7.x/notionists/svg?seed=${randomUUID()}`,
+        image: `${DICEBAR_URL}/7.x/notionists/svg?seed=${randomUUID()}`,
       })
       .where(eq(schema.usersSchema.id, id))
       .returning();
