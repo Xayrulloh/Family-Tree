@@ -16,7 +16,7 @@
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
     "@aws-sdk/client-s3": "^3.850.0",
-    "@hookform/resolvers": "^5.1.1",
+    "@hookform/resolvers": "3.9.0",
     "@nestjs/common": "^11.1.5",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.5",
@@ -49,7 +49,7 @@
     "pg": "^8.16.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-hook-form": "^7.54.2",
+    "react-hook-form": "7.53.0",
     "rxjs": "^7.8.2",
     "zod": "^3.25.76"
   },

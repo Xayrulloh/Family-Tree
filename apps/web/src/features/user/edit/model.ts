@@ -12,9 +12,9 @@ import { api } from '~/shared/api';
 import { RcFile } from 'antd/es/upload';
 import { delay, or } from 'patronum';
 import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
-import { $user, sessionFx } from '~/entities/user/model';
 import { isEqual } from 'lodash';
-import { messageApi } from '~/shared/lib/antd/message';
+import { userModel } from '~/entities/user';
+import { infoFx } from '~/shared/lib/message';
 
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
@@ -117,7 +117,7 @@ sample({
 sample({
   clock: formValidated,
   source: {
-    original: $user,
+    original: userModel.$user,
     edited: form.$formValues,
   },
   filter: ({ original, edited }) => {
@@ -127,7 +127,7 @@ sample({
       name: original?.name,
       image: original?.image,
     }, edited)) {
-      messageApi.info('No changes detected');
+      infoFx('No changes detected');
 
       return false
     }
@@ -153,7 +153,7 @@ sample({
 // After successful profile edit, refresh session user
 sample({
   clock: editProfileFx.done,
-  target: sessionFx,
+  target: userModel.sessionFx,
 });
 
 // Close modal on reset or successful edit
@@ -177,5 +177,5 @@ sample({
 // After random avatar request completes, call sessionFx
 sample({
   clock: randomAvatarFx.doneData,
-  target: sessionFx,
-});
+  target: userModel.sessionFx,
+})
