@@ -6,11 +6,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { and, eq, isNull, not, or } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
-import type {
+import {
   FamilyTreeRelationshipCreateRequestDto,
   FamilyTreeRelationshipCreateSonOrDaughterRequestDto,
   FamilyTreeRelationshipResponseDto,

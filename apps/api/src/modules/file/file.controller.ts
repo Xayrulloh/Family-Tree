@@ -8,7 +8,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBody,
@@ -21,8 +21,8 @@ import {
 import { ZodSerializerDto } from 'nestjs-zod';
 import type { EnvType } from '~/config/env/env-validation';
 import generateRandomString from '~/helpers/random-string.helper';
-import type { FileUploadParamDto, FileUploadResponseDto } from './dto/file.dto';
-import type { FileService } from './file.service';
+import { FileUploadParamDto, FileUploadResponseDto } from './dto/file.dto';
+import { FileService } from './file.service';
 import 'multer';
 
 @ApiTags('File')

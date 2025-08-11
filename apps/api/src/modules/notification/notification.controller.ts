@@ -17,7 +17,7 @@ import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import { NotificationResponseDto } from './dto/notification.dto';
-import type { NotificationService } from './notification.service';
+import { NotificationService } from './notification.service';
 
 @ApiTags('Notification')
 @Controller('notifications')

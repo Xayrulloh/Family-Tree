@@ -3,7 +3,7 @@ import type { Response } from 'express';
 import { GoogleOauthGuard } from '~/common/guards/google-oauth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { CLIENT_URL, COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
-import type { AuthService } from './auth.service';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {

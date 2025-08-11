@@ -27,7 +27,7 @@ import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
-import type { FamilyTreeRelationshipService } from '../family-tree-relationship/family-tree-relationship.service';
+import { FamilyTreeRelationshipService } from '../family-tree-relationship/family-tree-relationship.service';
 import {
   FamilyTreeArrayResponseDto,
   type FamilyTreeCreateRequestDto,
@@ -36,7 +36,7 @@ import {
   FamilyTreeResponseDto,
   type FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
-import type { FamilyTreeService } from './family-tree.service';
+import { FamilyTreeService } from './family-tree.service';
 
 @ApiTags('Family Tree')
 @Controller('family-trees')

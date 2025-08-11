@@ -6,10 +6,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { and, eq, isNull } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
-import type { FCMTokenCreateDeleteRequestDto } from './dto/fcm-token.dto';
+import { FCMTokenCreateDeleteRequestDto } from './dto/fcm-token.dto';
 
 @Injectable()
 export class FCMTokenService {

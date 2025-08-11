@@ -36,7 +36,7 @@ import {
   FamilyTreeRelationshipUserArrayResponseDto,
   FamilyTreeRelationshipUserResponseDto,
 } from './dto/family-tree-relationship.dto';
-import type { FamilyTreeRelationshipService } from './family-tree-relationship.service';
+import { FamilyTreeRelationshipService } from './family-tree-relationship.service';
 
 @ApiTags('Family Tree')
 @Controller('family-trees')

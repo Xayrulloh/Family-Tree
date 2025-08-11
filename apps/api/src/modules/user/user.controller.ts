@@ -27,7 +27,7 @@ import {
   UserResponseDto,
   type UserUpdateRequestDto,
 } from './dto/user.dto';
-import type { UserService } from './user.service';
+import { UserService } from './user.service';
 
 @ApiTags('User')
 @Controller('users')

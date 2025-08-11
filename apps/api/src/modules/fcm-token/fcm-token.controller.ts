@@ -23,7 +23,7 @@ import {
   type FCMTokenCreateDeleteRequestDto,
   FCMTokenResponseDto,
 } from './dto/fcm-token.dto';
-import type { FCMTokenService } from './fcm-token.service';
+import { FCMTokenService } from './fcm-token.service';
 
 @ApiTags('FCM Token')
 @Controller('fcm-tokens')

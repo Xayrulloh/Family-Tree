@@ -56,5 +56,8 @@
         "style": "tailwind"
       }
     }
+  },
+  "tui": {
+    "enabled": false
   }
 }

@@ -9,6 +9,7 @@
       "executor": "@nx/rspack:rspack",
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "development",
+      "cache": true,
       "options": {
         "target": "node",
         "outputPath": "dist/apps/api",
@@ -38,11 +39,11 @@
     "serve": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "dependsOn": ["build"],
       "options": {
         "buildTarget": "api:build",
         "runBuildTargetDependencies": false,
-        "inspect": false
+        "inspect": false,
+        "watch": true
       },
       "configurations": {
         "development": {
