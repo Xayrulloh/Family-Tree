@@ -7,7 +7,12 @@
   "wrap_guides": [100],
   "tab_size": 2,
   "hard_tabs": false,
-  "language_servers": ["!typescript-language-server", "...", "biome"],
+  "language_servers": [
+    "!typescript-language-server",
+    "!eslint",
+    "...",
+    "biome"
+  ],
   "languages": {
     "TypeScript": {
       "formatter": {

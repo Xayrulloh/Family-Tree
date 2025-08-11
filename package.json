@@ -112,5 +112,9 @@
       "stylus": "0.0.1-security"
     }
   },
-  "packageManager": "pnpm@10.13.1"
+  "packageManager": "pnpm@10.13.1",
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ]
 }

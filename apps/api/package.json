@@ -1,0 +1,8 @@
+{
+  "name": "@family-tree/api",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@family-tree/shared": "workspace:*"
+  }
+}

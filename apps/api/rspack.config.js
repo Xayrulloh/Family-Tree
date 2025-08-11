@@ -1,13 +1,19 @@
 // @ts-check
 const { NxAppRspackPlugin } = require('@nx/rspack/app-plugin');
-const { join } = require('node:path');
+const path = require('node:path');
 
 module.exports = {
   output: {
-    path: join(__dirname, '../../dist/apps/api'),
+    path: path.join(__dirname, '../../dist/apps/api'),
   },
   entry: {
     main: './src/main.ts',
+  },
+  resolve: {
+    tsConfig: {
+      configFile: path.resolve(__dirname, './tsconfig.app.json'),
+      references: 'auto',
+    },
   },
   plugins: [
     new NxAppRspackPlugin({
