@@ -18,6 +18,6 @@ export class CookiesModule implements NestModule {
   ) {}
 
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(cookieParser(this.config.secret)).forRoutes('*');
+    consumer.apply(cookieParser(this.config.secret)).forRoutes('*any');
   }
 }
