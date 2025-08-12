@@ -1,5 +1,5 @@
 {
-  "name": "@family-tree/api",
+  "name": "@family-tree/web",
   "version": "0.0.1",
   "private": true,
   "devDependencies": {

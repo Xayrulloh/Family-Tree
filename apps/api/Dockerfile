@@ -12,13 +12,12 @@ ENV PORT=3000
 WORKDIR /app
 
 RUN addgroup --system api && \
-          adduser --system -G api api
+  adduser --system -G api api
 
-COPY dist/apps/api api/
+COPY dist/apps/api .
 RUN chown -R api:api .
 
-# You can remove this install step if you build with `--bundle` option.
-# The bundled output will include external dependencies.
-RUN npm --prefix api --omit=dev -f install
+RUN corepack enable
+RUN pnpm install --prod
 
-CMD [ "node", "api" ]
+CMD [ "node", "main" ]
