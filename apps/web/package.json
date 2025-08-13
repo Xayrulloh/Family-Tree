@@ -13,13 +13,13 @@
           "command": "biome check",
           "cwd": "apps/web"
         }
-      }
-    },
-    "scan": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "sonar",
-        "cwd": "apps/web"
+      },
+      "scan": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "sonar",
+          "cwd": "apps/web"
+        }
       }
     }
   }
