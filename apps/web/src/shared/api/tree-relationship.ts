@@ -11,78 +11,78 @@ export const treeRelationship = {
   findById: (id: string, config?: AxiosRequestConfig) => {
     return base.get<FamilyTreeRelationshipResponseType[]>(
       `/family-trees${id}/relationships`,
-      config
+      config,
     );
   },
   findMemberByIds: (
     treeId: string,
     userId: string,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ) => {
     return base.get<FamilyTreeRelationshipResponseType[]>(
       `/family-trees/${treeId}/relationships/${userId}`,
-      config
+      config,
     );
   },
   updateRelationship: (
     treeId: string,
     userId: string,
     body: FamilyTreeRelationshipUpdateRequestType,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ) => {
     return base.put(
       `/family-trees/${treeId}/relationships/${userId}`,
       body,
-      config
+      config,
     );
   },
   deleteRelationship: (
     treeId: string,
     userId: string,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ) => {
     return base.delete(
       `/family-trees/${treeId}/relationships/${userId}`,
-      config
+      config,
     );
   },
   addParent: (
     treeId: string,
     body: FamilyTreeRelationshipCreateRequestType,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ) => {
     return base.post(
       `/family-trees/${treeId}/relationships/parent`,
       body,
-      config
+      config,
     );
   },
   addSpouse: (
     treeId: string,
     body: FamilyTreeRelationshipCreateRequestType,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ) => {
     return base.post(
       `/family-trees/${treeId}/relationships/spouse`,
       body,
-      config
+      config,
     );
   },
   addDaughter: (
     treeId: string,
     body: FamilyTreeRelationshipCreateSonOrDaughterRequestType,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ) => {
     return base.post(
       `/family-trees/${treeId}/relationships/daughter`,
       body,
-      config
+      config,
     );
   },
   addSon: (
     treeId: string,
     body: FamilyTreeRelationshipCreateSonOrDaughterRequestType,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ) => {
     return base.post(`/family-trees/${treeId}/relationships/son`, body, config);
   },

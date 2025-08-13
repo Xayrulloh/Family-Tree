@@ -1,12 +1,12 @@
-import { appStarted } from '~/shared/config/system';
-import { router } from '~/shared/config/routing';
 import { RouterProvider } from 'atomic-router-react';
+import { router } from '~/shared/config/routing';
+import { appStarted } from '~/shared/config/system';
 import './model';
-import { Routing } from '~/pages';
 import { ConfigProvider, theme } from 'antd';
-import { $theme } from './model';
 import { useUnit } from 'effector-react';
+import { Routing } from '~/pages';
 import { useMessageApi } from '~/shared/lib/message';
+import { $theme } from './model';
 
 appStarted();
 

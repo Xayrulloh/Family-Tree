@@ -1,3 +1,5 @@
+import { FileUploadFolderEnum } from '@family-tree/shared';
+import { RcFile } from 'antd/es/upload';
 import {
   attach,
   createEvent,
@@ -6,14 +8,12 @@ import {
   sample,
   split,
 } from 'effector';
-import { createDisclosure } from '~/shared/lib/disclosure';
-import { createForm } from '~/shared/lib/create-form';
+import { isEqual } from 'lodash';
+import { delay, or, spread } from 'patronum';
 import { z } from 'zod';
 import { api } from '~/shared/api';
-import { RcFile } from 'antd/es/upload';
-import { delay, or, spread } from 'patronum';
-import { FileUploadFolderEnum } from '@family-tree/shared';
-import { isEqual } from 'lodash';
+import { createForm } from '~/shared/lib/create-form';
+import { createDisclosure } from '~/shared/lib/disclosure';
 import { infoFx } from '~/shared/lib/message';
 
 // Base
@@ -129,7 +129,7 @@ const setPathToFormFx = attach({
 export const $mutating = or(
   uploadImageFx.pending,
   createTreeFx.pending,
-  editTreeFx.pending
+  editTreeFx.pending,
 );
 
 // Resolved effects holder
@@ -210,7 +210,6 @@ sample({
   },
   target: editTreeFx,
 });
-
 
 // Events of Image Samples
 // If image is uploaded, send it to setPreviewToFormFx

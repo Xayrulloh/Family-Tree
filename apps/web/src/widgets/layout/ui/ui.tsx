@@ -1,5 +1,5 @@
-import { Layout as AntLayout, theme, Typography } from 'antd';
-import { Header, Content, Footer } from 'antd/es/layout/layout';
+import { Layout as AntLayout, Typography, theme } from 'antd';
+import { Content, Footer, Header } from 'antd/es/layout/layout';
 import { EditProfileModal } from '~/features/user/edit';
 import { UserDropdown } from './user-dropdown';
 

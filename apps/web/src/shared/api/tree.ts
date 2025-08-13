@@ -16,7 +16,7 @@ export const tree = {
   update: (
     id: string,
     body: FamilyTreeUpdateRequestType,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ) => {
     return base.put(`/family-trees/${id}`, body, config);
   },
@@ -26,7 +26,7 @@ export const tree = {
   findPublics: (name: string, config?: AxiosRequestConfig) => {
     return base.get<FamilyTreeResponseType[]>(
       `/family-trees/publics?name=${name}`,
-      config
+      config,
     );
   },
   findById: (id: string, config?: AxiosRequestConfig) => {

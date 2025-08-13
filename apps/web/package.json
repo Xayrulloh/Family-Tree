@@ -11,7 +11,7 @@
         "executor": "nx:run-commands",
         "options": {
           "command": "biome check",
-          "cwd": "libs/shared"
+          "cwd": "apps/web"
         }
       }
     },
