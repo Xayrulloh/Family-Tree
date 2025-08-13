@@ -1,15 +1,15 @@
 import {
-  CallHandler,
-  ExecutionContext,
+  type CallHandler,
+  type ExecutionContext,
   Inject,
   Injectable,
-  NestInterceptor,
+  type NestInterceptor,
   StreamableFile,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { validate, ZodDto, ZodSerializationException } from 'nestjs-zod';
-import { map, Observable } from 'rxjs';
-import { ZodError, ZodSchema } from 'zod';
+import { validate, type ZodDto, ZodSerializationException } from 'nestjs-zod';
+import { map, type Observable } from 'rxjs';
+import type { ZodError, ZodSchema } from 'zod';
 
 const ZodSerializerDtoOptions = 'ZOD_SERIALIZER_DTO_OPTIONS' as const;
 
@@ -35,12 +35,12 @@ export class ZodSerializerInterceptorCustom implements NestInterceptor {
         }
 
         return validate(res, responseSchema, createZodSerializationException);
-      })
+      }),
     );
   }
 
   protected getContextResponseSchema(
-    context: ExecutionContext
+    context: ExecutionContext,
   ): ZodDto | ZodSchema | undefined {
     return this.reflector.getAllAndOverride(ZodSerializerDtoOptions, [
       context.getHandler(),

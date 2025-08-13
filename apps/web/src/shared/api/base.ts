@@ -36,7 +36,7 @@ base.interceptors.response.use(
     let errorMsg = 'Something went wrong';
 
     if (res?.errors?.length) {
-      errorMsg = res.errors.map(err => err.message).join('\n');
+      errorMsg = res.errors.map((err) => err.message).join('\n');
     } else if (res?.message) {
       errorMsg = res.message;
     } else if (error.message) {
@@ -46,5 +46,5 @@ base.interceptors.response.use(
     errorFx(errorMsg);
 
     return Promise.reject(error);
-  }
+  },
 );

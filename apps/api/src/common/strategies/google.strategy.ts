@@ -1,23 +1,23 @@
+import {
+  type GoogleProfileType,
+  UserGenderEnum,
+  type UserSchemaType,
+} from '@family-tree/shared';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-google-oauth2';
-import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as schema from '~/database/schema';
-import {
-  GoogleProfileType,
-  UserGenderEnum,
-  UserSchemaType,
-} from '@family-tree/shared';
 import { and, eq, isNull } from 'drizzle-orm';
-import { EnvType } from '~/config/env/env-validation';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Strategy, type VerifyCallback } from 'passport-google-oauth2';
+import type { EnvType } from '~/config/env/env-validation';
+import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
+import * as schema from '~/database/schema';
 import { DICEBAR_URL } from '~/utils/constants';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
-    private configService: ConfigService,
+    configService: ConfigService,
     @Inject(DrizzleAsyncProvider)
     private db: NodePgDatabase<typeof schema>,
   ) {
@@ -57,9 +57,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         .values({
           email: emails[0].value,
           name: `${name.givenName} ${name.familyName}`,
-          username: emails[0].value.split('@')[0] + `-${id}`,
+          username: `${emails[0].value.split('@')[0]}-${id}`,
           image:
-            photos[0].value || DICEBAR_URL + `/7.x/notionists/svg?seed=${id}`,
+            photos[0].value || `${DICEBAR_URL}/7.x/notionists/svg?seed=${id}`,
           gender: UserGenderEnum.UNKNOWN,
         })
         .returning();

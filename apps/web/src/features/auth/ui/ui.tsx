@@ -8,23 +8,18 @@ export const Auth: React.FC = () => {
 
   return (
     <div
-      className="auth"
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        width: '100%',
-        backgroundColor: token.colorBgLayout,
-        padding: '20px',
-      }}
+      className="flex justify-center items-center h-screen w-full px-4"
+      style={{ backgroundColor: token.colorBgLayout }}
     >
       <Button
         type="default"
         onClick={() => model.googleLoginFx()}
+        className="flex items-center justify-center"
         style={{
-          width: '30%',
-          height: '7%',
+          width: '80%',
+          maxWidth: '400px',
+          minWidth: '280px',
+          height: '52px',
           minHeight: '40px',
           borderRadius: '50px',
           fontSize: '16px',

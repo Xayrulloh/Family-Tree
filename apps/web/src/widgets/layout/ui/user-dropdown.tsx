@@ -44,19 +44,12 @@ export const UserDropdown = () => {
     {
       key: 'user-info',
       label: (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: '5px 0',
-          }}
-        >
+        <div className="flex flex-col items-center py-2 pointer-events-none">
           <Avatar
             size={64}
             src={avatarSource}
             icon={<UserOutlined />}
-            style={{ marginBottom: 8 }}
+            className="mb-2"
           />
           <Typography.Text strong>{user.name}</Typography.Text>
           {user.email && (
@@ -66,7 +59,7 @@ export const UserDropdown = () => {
           )}
           {/* Gender and Birthdate */}
           {(userGenderIcon || user.birthdate) && (
-            <Space direction="vertical" size={4} style={{ marginTop: 8 }}>
+            <Space direction="vertical" size={4} className="mt-2">
               {user.gender && userGenderIcon && (
                 <Space>
                   {userGenderIcon}

@@ -12,6 +12,9 @@ import { api } from '~/shared/api';
 import { RcFile } from 'antd/es/upload';
 import { delay, or } from 'patronum';
 import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
+import { $user, sessionFx } from '~/entities/user/model';
+import { isEqual } from 'lodash';
+import { messageApi } from '~/shared/lib/antd/message';
 import { userModel } from '~/entities/user';
 
 // Schema and Types
@@ -59,7 +62,7 @@ const uploadImageFx = attach({
   },
 });
 
-// Sends form values to update user profile
+// Sends form values to edit user profile
 const editProfileFx = attach({
   source: form.$formValues,
   effect: (values) => api.user.update(values),
@@ -111,11 +114,27 @@ sample({
   target: uploadImageFx,
 });
 
-// If image is already a URL, skip upload and go directly to update
+// If image is already a URL, skip upload and go directly to edit
 sample({
   clock: formValidated,
-  source: form.$formValues,
-  filter: (values) => !!values.image && values.image.startsWith('https'),
+  source: {
+    original: $user,
+    edited: form.$formValues,
+  },
+  filter: ({ original, edited }) => {
+    if (!!edited.image && edited.image.startsWith('https') && isEqual({
+      birthdate: original?.birthdate,
+      gender: original?.gender,
+      name: original?.name,
+      image: original?.image,
+    }, edited)) {
+      messageApi.info('No changes detected');
+
+      return false
+    }
+
+    return true
+  },
   target: editProfileFx,
 });
 
@@ -126,19 +145,19 @@ sample({
   target: setPathToFormFx,
 });
 
-// When form gets image path, proceed to profile update
+// When form gets image path, proceed to profile edit
 sample({
   clock: delay(setPathToFormFx.done, 0), // FIXME: delay workaround, remove if no race conditions
   target: editProfileFx,
 });
 
-// After successful profile update, refresh session user
+// After successful profile edit, refresh session user
 sample({
   clock: editProfileFx.done,
   target: userModel.sessionFx,
 });
 
-// Close modal on reset or successful update
+// Close modal on reset or successful edit
 sample({
   clock: [reset, mutated],
   target: [disclosure.closed],

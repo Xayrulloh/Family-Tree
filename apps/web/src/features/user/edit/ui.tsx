@@ -122,7 +122,7 @@ export const EditProfileModal: React.FC = () => {
                 style={{
                   maxHeight: 160,
                   maxWidth: '100%',
-                  objectFit: 'contain',
+                  objectFit: 'cover',
                   borderRadius: 6,
                   display: 'block',
                   margin: '0 auto',
