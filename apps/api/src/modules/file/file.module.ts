@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { FileService } from './file.service';
-import { FileController } from './file.controller';
+import { CloudflareModule } from '~/config/cloudflare/cloudflare.module';
 import { DrizzleModule } from '~/database/drizzle.module';
-import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
+import { FileController } from './file.controller';
+import { FileService } from './file.service';
 
 @Module({
-  imports: [DrizzleModule],
+  imports: [DrizzleModule, CloudflareModule],
   controllers: [FileController],
-  providers: [FileService, CloudflareConfig],
+  providers: [FileService],
 })
 export class FileModule {}

@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
+import { CloudflareModule } from '~/config/cloudflare/cloudflare.module';
 import { DrizzleModule } from '~/database/drizzle.module';
-import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
+import { UserController } from './user.controller';
+import { UserService } from './user.service';
 
 @Module({
-  imports: [DrizzleModule],
+  imports: [DrizzleModule, CloudflareModule],
   controllers: [UserController],
-  providers: [UserService, CloudflareConfig],
+  providers: [UserService],
 })
 export class UserModule {}
