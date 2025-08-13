@@ -4,13 +4,19 @@
   "include": [],
   "references": [
     {
-      "path": "../../libs/shared"
-    },
-    {
       "path": "./tsconfig.app.json"
     },
     {
       "path": "./tsconfig.spec.json"
     }
-  ]
+  ],
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "typeRoots": ["./node_modules/@types", "./src/common/types"],
+    "baseUrl": "src",
+    "paths": {
+      "~/*": ["*"],
+      "@family-tree/shared": ["../../shared/src/index.ts"]
+    }
+  }
 }

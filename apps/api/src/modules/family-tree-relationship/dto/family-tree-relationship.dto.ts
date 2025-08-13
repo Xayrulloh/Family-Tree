@@ -1,3 +1,4 @@
+import { createZodDto } from 'nestjs-zod';
 import {
   FamilyTreeRelationshipCreateRequestSchema,
   FamilyTreeRelationshipCreateSonOrDaughterRequestSchema,
@@ -8,40 +9,39 @@ import {
   FamilyTreeRelationshipUserArrayResponseSchema,
   FamilyTreeRelationshipUserResponseSchema,
 } from '@family-tree/shared';
-import { createZodDto } from 'nestjs-zod';
 
 // request
 class FamilyTreeRelationshipCreateRequestDto extends createZodDto(
-  FamilyTreeRelationshipCreateRequestSchema,
+  FamilyTreeRelationshipCreateRequestSchema
 ) {}
 
 class FamilyTreeRelationshipCreateSonOrDaughterRequestDto extends createZodDto(
-  FamilyTreeRelationshipCreateSonOrDaughterRequestSchema,
+  FamilyTreeRelationshipCreateSonOrDaughterRequestSchema
 ) {}
 
 class FamilyTreeRelationshipUpdateRequestDto extends createZodDto(
-  FamilyTreeRelationshipUpdateRequestSchema,
+  FamilyTreeRelationshipUpdateRequestSchema
 ) {}
 
 class FamilyTreeRelationshipFamilyTreeIdParamDto extends createZodDto(
-  FamilyTreeRelationshipFamilyTreeIdParamSchema,
+  FamilyTreeRelationshipFamilyTreeIdParamSchema
 ) {}
 
 class FamilyTreeRelationshipFamilyTreeIdAndUserIdParamDto extends createZodDto(
-  FamilyTreeRelationshipFamilyTreeIdAndUserIdParamSchema,
+  FamilyTreeRelationshipFamilyTreeIdAndUserIdParamSchema
 ) {}
 
 // response
 class FamilyTreeRelationshipResponseDto extends createZodDto(
-  FamilyTreeRelationshipResponseSchema,
+  FamilyTreeRelationshipResponseSchema
 ) {}
 
 class FamilyTreeRelationshipUserResponseDto extends createZodDto(
-  FamilyTreeRelationshipUserResponseSchema,
+  FamilyTreeRelationshipUserResponseSchema
 ) {}
 
 class FamilyTreeRelationshipUserArrayResponseDto extends createZodDto(
-  FamilyTreeRelationshipUserArrayResponseSchema,
+  FamilyTreeRelationshipUserArrayResponseSchema
 ) {}
 
 export {

@@ -9,11 +9,11 @@ import {
 import { createZodDto } from 'nestjs-zod';
 
 class FamilyTreeCreateRequestDto extends createZodDto(
-  FamilyTreeCreateRequestSchema,
+  FamilyTreeCreateRequestSchema
 ) {}
 
 class FamilyTreeUpdateRequestDto extends createZodDto(
-  FamilyTreeUpdateRequestSchema,
+  FamilyTreeUpdateRequestSchema
 ) {}
 
 class FamilyTreeNameParamDto extends createZodDto(FamilyTreeNameParamSchema) {}
@@ -24,7 +24,7 @@ class FamilyTreeIdParamDto extends createZodDto(IdQuerySchema) {}
 class FamilyTreeResponseDto extends createZodDto(FamilyTreeResponseSchema) {}
 
 class FamilyTreeArrayResponseDto extends createZodDto(
-  FamilyTreeArrayResponseSchema,
+  FamilyTreeArrayResponseSchema
 ) {}
 
 export {

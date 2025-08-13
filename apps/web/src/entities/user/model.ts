@@ -115,7 +115,7 @@ export const chainAuthorized = <Params extends RouteParams>({
     {
       alreadyAuthorized: (session) => session.$isAuthorized,
       alreadyAnonymous: (status) => status.$isUnAuthorized,
-    },
+    }
   );
 
   const authCheckDone = merge([alreadyAuthorized, authorized]);
@@ -170,7 +170,7 @@ export const chainAnonymous = <Params extends RouteParams>({
     {
       alreadyAuthorized: (session) => session.$isAuthorized,
       alreadyAnonymous: (status) => status.$isUnAuthorized,
-    },
+    }
   );
 
   sample({

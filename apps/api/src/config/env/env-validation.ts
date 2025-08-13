@@ -24,4 +24,4 @@ function validateEnv() {
   return envSchema.parse(process.env);
 }
 
-export { type EnvType, validateEnv, envSchema };
+export { EnvType, validateEnv, envSchema };

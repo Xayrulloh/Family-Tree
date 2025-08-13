@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { CloudflareModule } from '~/config/cloudflare/cloudflare.module';
-import { DrizzleModule } from '~/database/drizzle.module';
-import { FamilyTreeRelationshipController } from './family-tree-relationship.controller';
 import { FamilyTreeRelationshipService } from './family-tree-relationship.service';
+import { FamilyTreeRelationshipController } from './family-tree-relationship.controller';
+import { DrizzleModule } from '~/database/drizzle.module';
+import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 
 @Module({
-  imports: [DrizzleModule, CloudflareModule],
+  imports: [DrizzleModule],
   controllers: [FamilyTreeRelationshipController],
-  providers: [FamilyTreeRelationshipService],
+  providers: [FamilyTreeRelationshipService, CloudflareConfig],
 })
 export class FamilyTreeRelationshipModule {}

@@ -1,8 +1,8 @@
 import {
-  UserEmailParamSchema,
-  UserIdParamSchema,
   UserResponseSchema,
   UserUpdateRequestSchema,
+  UserEmailParamSchema,
+  UserIdParamSchema,
 } from '@family-tree/shared';
 import { createZodDto } from 'nestjs-zod';
 

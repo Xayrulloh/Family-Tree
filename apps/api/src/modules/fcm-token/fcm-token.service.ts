@@ -1,39 +1,39 @@
-import type { FCMTokenResponseType } from '@family-tree/shared';
 import {
   BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, eq, isNull } from 'drizzle-orm';
+import * as schema from '~/database/schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
-import * as schema from '~/database/schema';
+import { FCMTokenResponseType } from '@family-tree/shared';
+import { and, eq, isNull } from 'drizzle-orm';
 import { FCMTokenCreateDeleteRequestDto } from './dto/fcm-token.dto';
 
 @Injectable()
 export class FCMTokenService {
   constructor(
     @Inject(DrizzleAsyncProvider)
-    private db: NodePgDatabase<typeof schema>,
+    private db: NodePgDatabase<typeof schema>
   ) {}
 
   async createFcmToken(
     userId: string,
-    body: FCMTokenCreateDeleteRequestDto,
+    body: FCMTokenCreateDeleteRequestDto
   ): Promise<FCMTokenResponseType> {
     const isFCMTokenExist = await this.db.query.FCMTokensSchema.findFirst({
       where: and(
         eq(schema.FCMTokensSchema.userId, userId),
         eq(schema.FCMTokensSchema.token, body.token),
         eq(schema.FCMTokensSchema.deviceType, body.deviceType),
-        isNull(schema.FCMTokensSchema.deletedAt),
+        isNull(schema.FCMTokensSchema.deletedAt)
       ),
     });
 
     if (isFCMTokenExist) {
       throw new BadRequestException(
-        `FCM Token with device type ${body.deviceType} and token ${body.token} already exist`,
+        `FCM Token with device type ${body.deviceType} and token ${body.token} already exist`
       );
     }
 
@@ -51,20 +51,20 @@ export class FCMTokenService {
 
   async deleteFcmToken(
     userId: string,
-    body: FCMTokenCreateDeleteRequestDto,
+    body: FCMTokenCreateDeleteRequestDto
   ): Promise<void> {
     const FCMToken = await this.db.query.FCMTokensSchema.findFirst({
       where: and(
         eq(schema.FCMTokensSchema.userId, userId),
         eq(schema.FCMTokensSchema.token, body.token),
         eq(schema.FCMTokensSchema.deviceType, body.deviceType),
-        isNull(schema.FCMTokensSchema.deletedAt),
+        isNull(schema.FCMTokensSchema.deletedAt)
       ),
     });
 
     if (!FCMToken) {
       throw new NotFoundException(
-        `FCM Token with device type ${body.deviceType} and token ${body.token} not found`,
+        `FCM Token with device type ${body.deviceType} and token ${body.token} not found`
       );
     }
 

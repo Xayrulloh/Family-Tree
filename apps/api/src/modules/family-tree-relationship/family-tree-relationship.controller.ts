@@ -1,9 +1,4 @@
 import {
-  FamilyTreeRelationshipResponseSchema,
-  FamilyTreeRelationshipUserArrayResponseSchema,
-  FamilyTreeRelationshipUserResponseSchema,
-} from '@family-tree/shared';
-import {
   Body,
   Controller,
   Delete,
@@ -23,26 +18,31 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
-import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import {
-  type FamilyTreeRelationshipCreateRequestDto,
-  type FamilyTreeRelationshipCreateSonOrDaughterRequestDto,
-  type FamilyTreeRelationshipFamilyTreeIdAndUserIdParamDto,
-  type FamilyTreeRelationshipFamilyTreeIdParamDto,
+  FamilyTreeRelationshipCreateRequestDto,
+  FamilyTreeRelationshipCreateSonOrDaughterRequestDto,
+  FamilyTreeRelationshipFamilyTreeIdAndUserIdParamDto,
+  FamilyTreeRelationshipFamilyTreeIdParamDto,
   FamilyTreeRelationshipResponseDto,
-  type FamilyTreeRelationshipUpdateRequestDto,
+  FamilyTreeRelationshipUpdateRequestDto,
   FamilyTreeRelationshipUserArrayResponseDto,
   FamilyTreeRelationshipUserResponseDto,
 } from './dto/family-tree-relationship.dto';
+import {
+  FamilyTreeRelationshipResponseSchema,
+  FamilyTreeRelationshipUserArrayResponseSchema,
+  FamilyTreeRelationshipUserResponseSchema,
+} from '@family-tree/shared';
 import { FamilyTreeRelationshipService } from './family-tree-relationship.service';
+import { ZodSerializerDto } from 'nestjs-zod';
 
 @ApiTags('Family Tree')
 @Controller('family-trees')
 export class FamilyTreeRelationshipController {
   constructor(
-    private readonly familyTreeRelationshipService: FamilyTreeRelationshipService,
+    private readonly familyTreeRelationshipService: FamilyTreeRelationshipService
   ) {}
 
   // Find family tree relationship by family tree uuid
@@ -54,10 +54,10 @@ export class FamilyTreeRelationshipController {
   @ApiOkResponse({ type: FamilyTreeRelationshipResponseDto })
   @ZodSerializerDto(FamilyTreeRelationshipResponseSchema)
   async getFamilyTreeRelationshipOfFamilyTree(
-    @Param() param: FamilyTreeRelationshipFamilyTreeIdParamDto,
+    @Param() param: FamilyTreeRelationshipFamilyTreeIdParamDto
   ): Promise<FamilyTreeRelationshipResponseDto> {
     return this.familyTreeRelationshipService.getFamilyTreeRelationshipOfFamilyTree(
-      param.familyTreeId,
+      param.familyTreeId
     );
   }
 
@@ -71,11 +71,11 @@ export class FamilyTreeRelationshipController {
   @ApiOkResponse({ type: FamilyTreeRelationshipUserResponseDto })
   @ZodSerializerDto(FamilyTreeRelationshipUserResponseSchema)
   async getFamilyTreeRelationshipUserOfFamilyTree(
-    @Param() param: FamilyTreeRelationshipFamilyTreeIdAndUserIdParamDto,
+    @Param() param: FamilyTreeRelationshipFamilyTreeIdAndUserIdParamDto
   ): Promise<FamilyTreeRelationshipUserResponseDto> {
     return this.familyTreeRelationshipService.getFamilyTreeRelationshipUserOfFamilyTree(
       param.familyTreeId,
-      param.userId,
+      param.userId
     );
   }
 
@@ -89,11 +89,11 @@ export class FamilyTreeRelationshipController {
   @ZodSerializerDto(FamilyTreeRelationshipUserArrayResponseSchema)
   async createFamilyTreeRelationshipUserParentOfFamilyTree(
     @Param() param: FamilyTreeRelationshipFamilyTreeIdParamDto,
-    @Body() body: FamilyTreeRelationshipCreateRequestDto,
+    @Body() body: FamilyTreeRelationshipCreateRequestDto
   ): Promise<FamilyTreeRelationshipUserArrayResponseDto> {
     return this.familyTreeRelationshipService.createFamilyTreeRelationshipUserParentOfFamilyTree(
       param.familyTreeId,
-      body,
+      body
     );
   }
 
@@ -107,11 +107,11 @@ export class FamilyTreeRelationshipController {
   @ZodSerializerDto(FamilyTreeRelationshipUserResponseSchema)
   async createFamilyTreeRelationshipUserSpouseOfFamilyTree(
     @Param() param: FamilyTreeRelationshipFamilyTreeIdParamDto,
-    @Body() body: FamilyTreeRelationshipCreateRequestDto,
+    @Body() body: FamilyTreeRelationshipCreateRequestDto
   ): Promise<FamilyTreeRelationshipUserResponseDto> {
     return this.familyTreeRelationshipService.createFamilyTreeRelationshipUserSpouseOfFamilyTree(
       param.familyTreeId,
-      body,
+      body
     );
   }
 
@@ -125,11 +125,11 @@ export class FamilyTreeRelationshipController {
   @ZodSerializerDto(FamilyTreeRelationshipUserResponseSchema)
   async createFamilyTreeRelationshipUserDaughterOfFamilyTree(
     @Param() param: FamilyTreeRelationshipFamilyTreeIdParamDto,
-    @Body() body: FamilyTreeRelationshipCreateSonOrDaughterRequestDto,
+    @Body() body: FamilyTreeRelationshipCreateSonOrDaughterRequestDto
   ): Promise<FamilyTreeRelationshipUserResponseDto> {
     return this.familyTreeRelationshipService.createFamilyTreeRelationshipUserDaughterOfFamilyTree(
       param.familyTreeId,
-      body,
+      body
     );
   }
 
@@ -143,11 +143,11 @@ export class FamilyTreeRelationshipController {
   @ZodSerializerDto(FamilyTreeRelationshipUserResponseSchema)
   async createFamilyTreeRelationshipUserSonOfFamilyTree(
     @Param() param: FamilyTreeRelationshipFamilyTreeIdParamDto,
-    @Body() body: FamilyTreeRelationshipCreateSonOrDaughterRequestDto,
+    @Body() body: FamilyTreeRelationshipCreateSonOrDaughterRequestDto
   ): Promise<FamilyTreeRelationshipUserResponseDto> {
     return this.familyTreeRelationshipService.createFamilyTreeRelationshipUserSonOfFamilyTree(
       param.familyTreeId,
-      body,
+      body
     );
   }
 
@@ -161,12 +161,12 @@ export class FamilyTreeRelationshipController {
   @ApiNoContentResponse()
   async updateFamilyTreeRelationshipUserOfFamilyTree(
     @Param() param: FamilyTreeRelationshipFamilyTreeIdAndUserIdParamDto,
-    @Body() body: FamilyTreeRelationshipUpdateRequestDto,
+    @Body() body: FamilyTreeRelationshipUpdateRequestDto
   ): Promise<void> {
     return this.familyTreeRelationshipService.updateFamilyTreeRelationshipUserOfFamilyTree(
       param.familyTreeId,
       param.userId,
-      body,
+      body
     );
   }
 
@@ -179,11 +179,11 @@ export class FamilyTreeRelationshipController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   async deleteFamilyTreeRelationshipUserOfFamilyTree(
-    @Param() param: FamilyTreeRelationshipFamilyTreeIdAndUserIdParamDto,
+    @Param() param: FamilyTreeRelationshipFamilyTreeIdAndUserIdParamDto
   ): Promise<void> {
     return this.familyTreeRelationshipService.deleteFamilyTreeRelationshipUserOfFamilyTree(
       param.familyTreeId,
-      param.userId,
+      param.userId
     );
   }
 }

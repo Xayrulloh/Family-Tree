@@ -1,16 +1,16 @@
-import { FCMTokenDeviceEnum, UserGenderEnum } from '@family-tree/shared';
 import { relations } from 'drizzle-orm';
 import {
-  boolean,
-  date,
-  integer,
-  pgEnum,
   pgTable,
-  text,
   timestamp,
-  unique,
+  text,
+  boolean,
   uuid,
+  pgEnum,
+  date,
+  unique,
+  integer,
 } from 'drizzle-orm/pg-core';
+import { FCMTokenDeviceEnum, UserGenderEnum } from '@family-tree/shared';
 
 // enums
 export const DrizzleUserGenderEnum = pgEnum('user_gender', [
@@ -60,7 +60,7 @@ export const familyTreesSchema = pgTable(
   },
   (table) => ({
     nameAndUserIdx: unique('name_and_user_idx').on(table.name, table.createdBy),
-  }),
+  })
 );
 
 // Closure Table for Family Tree Relationships
@@ -89,9 +89,9 @@ export const familyTreeRelationshipsSchema = pgTable(
     pk: unique('relationship_pk').on(
       table.ancestorId,
       table.descendantId,
-      table.familyTreeId,
+      table.familyTreeId
     ),
-  }),
+  })
 );
 
 export const FCMTokensSchema = pgTable('fcm_tokens', {
@@ -146,7 +146,7 @@ export const familyTreesRelations = relations(
       references: [usersSchema.id],
       relationName: 'family-tree-creator',
     }),
-  }),
+  })
 );
 
 export const familyTreeRelationshipsRelations = relations(
@@ -167,7 +167,7 @@ export const familyTreeRelationshipsRelations = relations(
       references: [usersSchema.id],
       relationName: 'family-tree-relationship-descendant',
     }),
-  }),
+  })
 );
 
 export const FCMTokensRelations = relations(FCMTokensSchema, ({ one }) => ({
@@ -189,7 +189,7 @@ export const notificationsRelations = relations(
       fields: [notificationsSchema.receiverUserId],
       references: [usersSchema.id],
     }),
-  }),
+  })
 );
 
 export const notificationReadsRelations = relations(
@@ -199,5 +199,5 @@ export const notificationReadsRelations = relations(
       fields: [notificationReadsSchema.userId],
       references: [usersSchema.id],
     }),
-  }),
+  })
 );
