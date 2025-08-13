@@ -1,15 +1,20 @@
-import { randomUUID } from 'node:crypto';
-import type { UserResponseType } from '@family-tree/shared';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { and, eq, isNull } from 'drizzle-orm';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
-import type { EnvType } from '~/config/env/env-validation';
-import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import * as schema from '~/database/schema';
-import { DICEBAR_URL } from '~/utils/constants';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
+import { UserResponseType } from '@family-tree/shared';
+import { and, eq, isNull } from 'drizzle-orm';
 import { UserUpdateRequestDto } from './dto/user.dto';
+import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
+import { EnvType } from '~/config/env/env-validation';
+import { ConfigService } from '@nestjs/config';
+import { DICEBAR_URL } from '~/utils/constants';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class UserService {
@@ -19,7 +24,7 @@ export class UserService {
     @Inject(DrizzleAsyncProvider)
     private db: NodePgDatabase<typeof schema>,
     private cloudflareConfig: CloudflareConfig,
-    configService: ConfigService<EnvType>,
+    private configService: ConfigService<EnvType>,
   ) {
     this.cloudflareR2Path =
       configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
@@ -86,11 +91,7 @@ export class UserService {
       // FIXME: Need to think about related family trees
     }
 
-    if (
-      user.image &&
-      user.image !== body.image &&
-      user.image?.includes(this.cloudflareR2Path)
-    ) {
+    if (user.image && user.image !== body.image && user.image?.includes(this.cloudflareR2Path)) {
       this.cloudflareConfig.deleteFile(user.image);
     }
 
@@ -121,7 +122,7 @@ export class UserService {
     const [updatedUser] = await this.db
       .update(schema.usersSchema)
       .set({
-        image: `${DICEBAR_URL}/7.x/notionists/svg?seed=${randomUUID()}`,
+        image: DICEBAR_URL + `/7.x/notionists/svg?seed=${randomUUID()}`,
       })
       .where(eq(schema.usersSchema.id, id))
       .returning();

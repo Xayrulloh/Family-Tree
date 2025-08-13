@@ -1,4 +1,3 @@
-import { FCMTokenResponseSchema } from '@family-tree/shared';
 import {
   Body,
   Controller,
@@ -9,21 +8,22 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { FCMTokenService } from './fcm-token.service';
+import {
+  FCMTokenCreateDeleteRequestDto,
+  FCMTokenResponseDto,
+} from './dto/fcm-token.dto';
 import {
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
-import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
-import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
-import {
-  type FCMTokenCreateDeleteRequestDto,
-  FCMTokenResponseDto,
-} from './dto/fcm-token.dto';
-import { FCMTokenService } from './fcm-token.service';
+import { FCMTokenResponseSchema } from '@family-tree/shared';
+import { ZodSerializerDto } from 'nestjs-zod';
+import { AuthenticatedRequest } from '~/shared/types/request-with-user';
 
 @ApiTags('FCM Token')
 @Controller('fcm-tokens')
@@ -39,7 +39,7 @@ export class FCMTokenController {
   @ZodSerializerDto(FCMTokenResponseSchema)
   createFcmToken(
     @Req() req: AuthenticatedRequest,
-    @Body() body: FCMTokenCreateDeleteRequestDto,
+    @Body() body: FCMTokenCreateDeleteRequestDto
   ): Promise<FCMTokenResponseDto> {
     return this.fcmTokenService.createFcmToken(req.user.id, body);
   }
@@ -52,7 +52,7 @@ export class FCMTokenController {
   @ApiNoContentResponse()
   deleteFcmToken(
     @Req() req: AuthenticatedRequest,
-    @Body() body: FCMTokenCreateDeleteRequestDto,
+    @Body() body: FCMTokenCreateDeleteRequestDto
   ): Promise<void> {
     return this.fcmTokenService.deleteFcmToken(req.user.id, body);
   }

@@ -6,44 +6,24 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nx/rspack:rspack",
-      "outputs": ["{options.outputPath}"],
-      "defaultConfiguration": "development",
-      "cache": true,
+      "executor": "nx:run-commands",
       "options": {
-        "target": "node",
-        "outputPath": "dist/apps/api",
-        "main": "apps/api/src/main.ts",
-        "tsConfig": "apps/api/tsconfig.app.json",
-        "rspackConfig": "apps/api/rspack.config.js",
-        "assets": ["apps/api/src/assets"]
+        "command": "webpack-cli build",
+        "args": ["node-env=production"]
       },
       "configurations": {
         "development": {
-          "mode": "production"
-        },
-        "production": {
-          "mode": "production",
-          "optimization": true,
-          "sourceMap": false
+          "args": ["node-env=development"]
         }
-      }
-    },
-    "lint": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "biome check",
-        "cwd": "apps/api"
       }
     },
     "serve": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
+      "dependsOn": ["build"],
       "options": {
         "buildTarget": "api:build",
-        "runBuildTargetDependencies": false,
-        "inspect": false,
-        "watch": true
+        "runBuildTargetDependencies": false
       },
       "configurations": {
         "development": {

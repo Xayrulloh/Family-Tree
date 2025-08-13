@@ -1,4 +1,4 @@
-import { Catch, type ExceptionFilter } from '@nestjs/common';
+import { Catch, ExceptionFilter } from '@nestjs/common';
 import { ZodValidationException } from 'nestjs-zod';
 
 @Catch(ZodValidationException)

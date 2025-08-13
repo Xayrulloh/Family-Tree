@@ -9,7 +9,7 @@ export class FileService {
     folder: string,
     key: string,
     fileBuffer: Buffer,
-    mimetype: string,
+    mimetype: string
   ): Promise<void> {
     await this.cloudflareConfig.uploadFile(folder, key, fileBuffer, mimetype);
   }

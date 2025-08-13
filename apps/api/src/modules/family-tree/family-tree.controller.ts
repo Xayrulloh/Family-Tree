@@ -1,8 +1,4 @@
 import {
-  FamilyTreeArrayResponseSchema,
-  FamilyTreeResponseSchema,
-} from '@family-tree/shared';
-import {
   Body,
   Controller,
   Delete,
@@ -23,27 +19,31 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
-import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
-import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
-import { FamilyTreeRelationshipService } from '../family-tree-relationship/family-tree-relationship.service';
 import {
   FamilyTreeArrayResponseDto,
-  type FamilyTreeCreateRequestDto,
-  type FamilyTreeIdParamDto,
-  type FamilyTreeNameParamDto,
+  FamilyTreeCreateRequestDto,
+  FamilyTreeIdParamDto,
+  FamilyTreeNameParamDto,
   FamilyTreeResponseDto,
-  type FamilyTreeUpdateRequestDto,
+  FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
 import { FamilyTreeService } from './family-tree.service';
+import {
+  FamilyTreeArrayResponseSchema,
+  FamilyTreeResponseSchema,
+} from '@family-tree/shared';
+import { FamilyTreeRelationshipService } from '../family-tree-relationship/family-tree-relationship.service';
+import { ZodSerializerDto } from 'nestjs-zod';
+import { AuthenticatedRequest } from '~/shared/types/request-with-user';
 
 @ApiTags('Family Tree')
 @Controller('family-trees')
 export class FamilyTreeController {
   constructor(
     private readonly familyTreeService: FamilyTreeService,
-    private readonly familyTreeRelationshipService: FamilyTreeRelationshipService,
+    private readonly familyTreeRelationshipService: FamilyTreeRelationshipService
   ) {}
 
   // Find family trees of user
@@ -54,7 +54,7 @@ export class FamilyTreeController {
   @ApiOkResponse({ type: FamilyTreeArrayResponseDto })
   @ZodSerializerDto(FamilyTreeArrayResponseSchema)
   async getFamilyTreesOfUser(
-    @Req() req: AuthenticatedRequest,
+    @Req() req: AuthenticatedRequest
   ): Promise<FamilyTreeArrayResponseDto> {
     return this.familyTreeService.getFamilyTreesOfUser(req.user.id);
   }
@@ -68,7 +68,7 @@ export class FamilyTreeController {
   @ApiOkResponse({ type: FamilyTreeArrayResponseDto })
   @ZodSerializerDto(FamilyTreeArrayResponseSchema)
   async getFamilyTreesByName(
-    @Param() param: FamilyTreeNameParamDto,
+    @Param() param: FamilyTreeNameParamDto
   ): Promise<FamilyTreeArrayResponseDto> {
     return this.familyTreeService.getFamilyTreesByName(param.name);
   }
@@ -82,7 +82,7 @@ export class FamilyTreeController {
   @ApiOkResponse({ type: FamilyTreeResponseDto })
   @ZodSerializerDto(FamilyTreeResponseSchema)
   async getFamilyTreeById(
-    @Param() param: FamilyTreeIdParamDto,
+    @Param() param: FamilyTreeIdParamDto
   ): Promise<FamilyTreeResponseDto> {
     return this.familyTreeService.getFamilyTreeById(param.id);
   }
@@ -96,17 +96,17 @@ export class FamilyTreeController {
   @ZodSerializerDto(FamilyTreeResponseSchema)
   async createFamilyTree(
     @Req() req: AuthenticatedRequest,
-    @Body() body: FamilyTreeCreateRequestDto,
+    @Body() body: FamilyTreeCreateRequestDto
   ): Promise<FamilyTreeResponseDto> {
     const familyTree = await this.familyTreeService.createFamilyTree(
       req.user.id,
-      body,
+      body
     );
 
     // creating default parent
     await this.familyTreeRelationshipService.createFamilyTreeRelationshipUserParentOfFamilyTree(
       familyTree.id,
-      { targetUserId: '' },
+      { targetUserId: '' }
     );
 
     return familyTree;
@@ -122,7 +122,7 @@ export class FamilyTreeController {
   async updateFamilyTree(
     @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeIdParamDto,
-    @Body() body: FamilyTreeUpdateRequestDto,
+    @Body() body: FamilyTreeUpdateRequestDto
   ): Promise<void> {
     return this.familyTreeService.updateFamilyTree(req.user.id, param.id, body);
   }
@@ -136,7 +136,7 @@ export class FamilyTreeController {
   @ApiNoContentResponse()
   async deleteFamilyTree(
     @Req() req: AuthenticatedRequest,
-    @Param() param: FamilyTreeIdParamDto,
+    @Param() param: FamilyTreeIdParamDto
   ): Promise<void> {
     return this.familyTreeService.deleteFamilyTree(req.user.id, param.id);
   }

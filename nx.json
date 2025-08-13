@@ -16,26 +16,17 @@
   },
   "plugins": [
     {
-      "plugin": "@nx/js/typescript",
-      "options": {
-        "typecheck": {
-          "targetName": "typecheck"
-        },
-        "build": {
-          "targetName": "build",
-          "configName": "tsconfig.lib.json",
-          "buildDepsName": "build-deps",
-          "watchDepsName": "watch-deps"
-        }
-      },
-      "exclude": ["libs/shared/*"]
-    },
-    {
-      "plugin": "@nx/rspack/plugin",
+      "plugin": "@nx/webpack/plugin",
       "options": {
         "buildTargetName": "build",
         "serveTargetName": "serve",
         "previewTargetName": "preview"
+      }
+    },
+    {
+      "plugin": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
       }
     },
     {
@@ -55,15 +46,6 @@
         "serveStaticTargetName": "serve-static",
         "typecheckTargetName": "typecheck"
       }
-    },
-    {
-      "plugin": "@nx/js/typescript",
-      "include": ["apps/shared/*"],
-      "options": {
-        "typecheck": {
-          "targetName": "typecheck"
-        }
-      }
     }
   ],
   "generators": {
@@ -71,17 +53,16 @@
       "application": {
         "babel": true,
         "style": "tailwind",
+        "linter": "eslint",
         "bundler": "vite"
       },
       "component": {
         "style": "tailwind"
       },
       "library": {
-        "style": "tailwind"
+        "style": "tailwind",
+        "linter": "eslint"
       }
     }
-  },
-  "tui": {
-    "enabled": false
   }
 }

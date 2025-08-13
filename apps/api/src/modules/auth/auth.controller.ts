@@ -1,9 +1,9 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
-import type { Response } from 'express';
-import { GoogleOauthGuard } from '~/common/guards/google-oauth.guard';
-import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
-import { CLIENT_URL, COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import { AuthService } from './auth.service';
+import { GoogleOauthGuard } from '~/common/guards/google-oauth.guard';
+import { Response } from 'express';
+import { CLIENT_URL, COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
+import { AuthenticatedRequest } from '~/shared/types/request-with-user';
 
 @Controller('auth')
 export class AuthController {
@@ -19,7 +19,7 @@ export class AuthController {
   @UseGuards(GoogleOauthGuard)
   async googleAuthCallback(
     @Req() req: AuthenticatedRequest,
-    @Res() res: Response,
+    @Res() res: Response
   ): Promise<void> {
     const user = req.user;
 
@@ -41,7 +41,7 @@ export class AuthController {
   }
 
   @Get('logout')
-  async logout(@Req() _req: Request, @Res() res: Response): Promise<void> {
+  async logout(@Req() req: Request, @Res() res: Response): Promise<void> {
     res.clearCookie(COOKIES_ACCESS_TOKEN_KEY, {
       httpOnly: true,
       // sameSite: 'strict',
