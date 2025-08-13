@@ -4,5 +4,23 @@
   "private": true,
   "devDependencies": {
     "@family-tree/shared": "workspace:*"
+  },
+  "nx": {
+    "targets": {
+      "lint": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "biome check",
+          "cwd": "libs/shared"
+        }
+      }
+    },
+    "scan": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "sonar",
+        "cwd": "apps/web"
+      }
+    }
   }
 }

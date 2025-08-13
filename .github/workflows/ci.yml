@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
       - uses: nrwl/nx-set-shas@v4
@@ -32,3 +32,6 @@ jobs:
       # Check for formatting issues
       - name: Checking code format
         run: pnpm run check:lint
+
+      - name: Syntax analysis
+        run: pnpm run scan
