@@ -1,6 +1,6 @@
 import { attach, createEvent, createStore, sample } from 'effector';
-import { createDisclosure } from '~/shared/lib/disclosure';
 import { api } from '~/shared/api';
+import { createDisclosure } from '~/shared/lib/disclosure';
 
 // Initialization of Events
 export const deleteTriggered = createEvent<{ id: string }>();

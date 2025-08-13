@@ -1,18 +1,18 @@
-import { Dropdown, MenuProps, Avatar, Typography, Spin, Space } from 'antd';
 import {
-  UserOutlined,
-  LogoutOutlined,
   BulbOutlined,
-  ManOutlined,
-  WomanOutlined,
   CalendarOutlined,
   EditOutlined,
+  LogoutOutlined,
+  ManOutlined,
+  UserOutlined,
+  WomanOutlined,
 } from '@ant-design/icons';
-import { useUnit } from 'effector-react';
 import { UserGenderEnum } from '@family-tree/shared';
+import { Avatar, Dropdown, MenuProps, Space, Spin, Typography } from 'antd';
+import { useUnit } from 'effector-react';
+import { $theme, themeToggled } from '~/app/model';
 import { userModel } from '~/entities/user';
 import { editProfileModel } from '~/features/user/edit';
-import { $theme, themeToggled } from '~/app/model';
 
 export const UserDropdown = () => {
   const [user, logout, theme] = useUnit([
