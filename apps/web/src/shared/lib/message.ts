@@ -17,7 +17,12 @@ export const errorFx = attach({
 
 export const successFx = attach({
   source: $messageApi,
-  effect: (messageApi, payload: Parameters<MessageInstance['error']>[0]) => messageApi?.success(payload)
+  effect: (messageApi, payload: Parameters<MessageInstance['success']>[0]) => messageApi?.success(payload)
+})
+
+export const infoFx = attach({
+  source: $messageApi,
+  effect: (messageApi, payload: Parameters<MessageInstance['info']>[0]) => messageApi?.info(payload)
 })
 
 sample({
