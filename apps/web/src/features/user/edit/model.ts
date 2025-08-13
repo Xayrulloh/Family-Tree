@@ -15,6 +15,7 @@ import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
 import { $user, sessionFx } from '~/entities/user/model';
 import { isEqual } from 'lodash';
 import { messageApi } from '~/shared/lib/antd/message';
+import { userModel } from '~/entities/user';
 
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
@@ -153,7 +154,7 @@ sample({
 // After successful profile edit, refresh session user
 sample({
   clock: editProfileFx.done,
-  target: sessionFx,
+  target: userModel.sessionFx,
 });
 
 // Close modal on reset or successful edit
@@ -177,5 +178,5 @@ sample({
 // After random avatar request completes, call sessionFx
 sample({
   clock: randomAvatarFx.doneData,
-  target: sessionFx,
-});
+  target: userModel.sessionFx,
+})

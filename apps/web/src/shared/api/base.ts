@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { ZodIssue } from 'zod';
-import { messageApi } from '~/shared/lib/antd/message';
+import { errorFx, successFx } from '~/shared/lib/message';
 
 const successMessages: Record<string, string> = {
   post: 'Created successfully',
@@ -25,8 +25,8 @@ base.interceptors.response.use(
   (response: AxiosResponse) => {
     const method = response.config.method?.toLowerCase();
 
-    if (method && successMessages[method] && response.config.url !== '/files/tree') {
-      messageApi.success(successMessages[method]);
+    if (method && successMessages[method]) {
+      successFx(successMessages[method]);
     }
 
     return response;
@@ -36,15 +36,15 @@ base.interceptors.response.use(
     let errorMsg = 'Something went wrong';
 
     if (res?.errors?.length) {
-      errorMsg = res.errors.map(err => err.message).join('\n');
+      errorMsg = res.errors.map((err) => err.message).join('\n');
     } else if (res?.message) {
       errorMsg = res.message;
     } else if (error.message) {
       errorMsg = error.message;
     }
 
-    messageApi.error(errorMsg);
+    errorFx(errorMsg);
 
     return Promise.reject(error);
-  }
+  },
 );
