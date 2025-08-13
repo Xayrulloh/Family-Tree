@@ -34,7 +34,10 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
-      - name: Run Checks/Lint/Build/Scan
+      - name: Run Checks/Lint/Build
+        run: npx nx affected -t lint build
+
+      - name: Code Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: npx nx affected -t lint build scan
+        run: npx nx affected -t scan --parallel 1
