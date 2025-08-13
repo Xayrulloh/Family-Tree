@@ -34,4 +34,6 @@ jobs:
         run: pnpm run check:lint
 
       - name: Syntax analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: pnpm run scan
