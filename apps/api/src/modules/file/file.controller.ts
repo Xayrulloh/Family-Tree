@@ -77,9 +77,9 @@ export class FileController {
       file.mimetype,
     );
 
-    const path = this.configService.get<EnvType['CLOUDFLARE_URL']>(
+    const path = this.configService.getOrThrow<EnvType['CLOUDFLARE_URL']>(
       'CLOUDFLARE_URL',
-    ) as string;
+    );
 
     return {
       message: 'File uploaded successfully',
