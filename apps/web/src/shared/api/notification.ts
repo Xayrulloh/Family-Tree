@@ -1,5 +1,5 @@
-import { AxiosRequestConfig } from 'axios';
 import { NotificationResponseType } from '@family-tree/shared';
+import { AxiosRequestConfig } from 'axios';
 import { base } from './base';
 
 export const notification = {

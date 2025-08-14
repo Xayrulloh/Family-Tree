@@ -1,4 +1,4 @@
-import { editTriggered, randomAvatarTriggered, mutated } from './model';
+import { editTriggered, mutated, randomAvatarTriggered } from './model';
 
 export { EditProfileModal } from './ui';
 export const editProfileModel = {

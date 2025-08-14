@@ -1,7 +1,7 @@
 import {
+  createHistoryRouter,
   createRoute,
   createRouterControls,
-  createHistoryRouter,
 } from 'atomic-router';
 
 export const routes = {

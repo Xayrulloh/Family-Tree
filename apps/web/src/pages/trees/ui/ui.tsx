@@ -1,33 +1,33 @@
 import {
-  Flex,
-  theme,
-  Row,
-  Col,
-  Typography,
-  Card,
-  Spin,
-  Dropdown,
-  MenuProps,
-  Button,
-  Space,
-  Image,
-} from 'antd';
-import { factory } from '../model';
-import { LazyPageProps } from '~/shared/lib/lazy-page';
-import { useUnit } from 'effector-react';
-import { FamilyTreeSchemaType } from '@family-tree/shared';
-import {
-  LockOutlined,
-  GlobalOutlined,
-  EllipsisOutlined,
   DeleteOutlined,
   EditOutlined,
+  EllipsisOutlined,
+  GlobalOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
+import { FamilyTreeSchemaType } from '@family-tree/shared';
+import {
+  Button,
+  Card,
+  Col,
+  Dropdown,
+  Flex,
+  Image,
+  MenuProps,
+  Row,
+  Space,
+  Spin,
+  Typography,
+  theme,
+} from 'antd';
+import { useUnit } from 'effector-react';
 import {
   CreateEditTreeModal,
   createEditTreeModel,
 } from '~/features/tree/create-edit';
 import { DeleteTreeModal, deleteTreeModel } from '~/features/tree/delete';
+import { LazyPageProps } from '~/shared/lib/lazy-page';
+import { factory } from '../model';
 
 // Types
 type Model = ReturnType<typeof factory>;
@@ -69,11 +69,11 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
   return (
     <Card
       hoverable
-      styles={{ 
-        body: { 
+      styles={{
+        body: {
           padding: '12px 16px 16px',
-          height: 'calc(100% - 140px)'
-        }
+          height: 'calc(100% - 140px)',
+        },
       }}
       style={{
         height: '100%',
@@ -120,10 +120,10 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
             <span
               role="img"
               aria-label="tree"
-              style={{ 
-                fontSize: 48, 
+              style={{
+                fontSize: 48,
                 lineHeight: 1,
-                color: token.colorTextDescription
+                color: token.colorTextDescription,
               }}
             >
               🌲

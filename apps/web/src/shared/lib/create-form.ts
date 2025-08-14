@@ -1,7 +1,7 @@
 import { attach, createEvent, createStore } from 'effector';
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
-import type { UseFormReturn, FieldValues, Path } from 'react-hook-form';
+import type { FieldValues, Path, UseFormReturn } from 'react-hook-form';
 
 export const createForm = <FormShape extends FieldValues>() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,7 +34,7 @@ export const createForm = <FormShape extends FieldValues>() => {
     source: $formInstance,
     effect: (
       form,
-      { message, name }: { name: Path<FormShape>; message: string }
+      { message, name }: { name: Path<FormShape>; message: string },
     ) => {
       if (!form) throw new Error('Form instance is not initialized');
       form.setError(name, { message });
@@ -45,7 +45,7 @@ export const createForm = <FormShape extends FieldValues>() => {
     source: $formInstance,
     effect: (
       form,
-      { name, value }: { name: Path<FormShape>; value: FormShape[typeof name] }
+      { name, value }: { name: Path<FormShape>; value: FormShape[typeof name] },
     ) => {
       if (!form) throw new Error('Form instance is not initialized');
       form.setValue(name, value);
