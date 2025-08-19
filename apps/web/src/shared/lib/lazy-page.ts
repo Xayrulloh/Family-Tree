@@ -8,7 +8,7 @@ import {
   createEffect,
   createEvent,
   createStore,
-  Event,
+  type Event,
   sample,
 } from 'effector';
 import { and, condition, not } from 'patronum';

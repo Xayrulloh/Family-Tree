@@ -1,5 +1,5 @@
-import axios, { AxiosError, AxiosResponse } from 'axios';
-import { ZodIssue } from 'zod';
+import axios, { type AxiosError, type AxiosResponse } from 'axios';
+import type { ZodIssue } from 'zod';
 import { errorFx, successFx } from '~/shared/lib/message';
 
 const successMessages: Record<string, string> = {

@@ -1,5 +1,5 @@
 import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
-import { RcFile } from 'antd/es/upload';
+import type { RcFile } from 'antd/es/upload';
 import {
   attach,
   createEffect,

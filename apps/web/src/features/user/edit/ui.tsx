@@ -10,7 +10,7 @@ import {
   Select,
   Upload,
 } from 'antd';
-import { RcFile } from 'antd/es/upload';
+import type { RcFile } from 'antd/es/upload';
 import dayjs from 'dayjs';
 import { useUnit } from 'effector-react';
 import { useId } from 'react';
@@ -102,7 +102,7 @@ export const EditProfileModal: React.FC = () => {
                   allowClear
                   placeholder="Select birthdate"
                   value={field.value ? dayjs(field.value) : null}
-                  onChange={(date, dateString) => {
+                  onChange={(_date, dateString) => {
                     field.onChange(dateString || null);
                   }}
                 />

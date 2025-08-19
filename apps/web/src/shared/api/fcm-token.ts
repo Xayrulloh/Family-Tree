@@ -1,8 +1,8 @@
-import {
+import type {
   FCMTokenCreateDeleteRequestType,
   FCMTokenResponseType,
 } from '@family-tree/shared';
-import { AxiosRequestConfig } from 'axios';
+import type { AxiosRequestConfig } from 'axios';
 import { base } from './base';
 
 export const fcmToken = {

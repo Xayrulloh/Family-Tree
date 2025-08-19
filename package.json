@@ -11,7 +11,8 @@
     "drizzle:studio": "nx run api:db:studio",
     "format": "nx format:write",
     "check:lint": "nx affected --target=lint",
-    "scan": "nx affected -t scan"
+    "scan": "nx affected -t scan",
+    "type-check": "nx run-many --target=type-check --all"
   },
   "private": true,
   "dependencies": {

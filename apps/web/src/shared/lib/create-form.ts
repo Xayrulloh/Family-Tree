@@ -4,8 +4,7 @@ import { useEffect } from 'react';
 import type { FieldValues, Path, UseFormReturn } from 'react-hook-form';
 
 export const createForm = <FormShape extends FieldValues>() => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type FormInstance = UseFormReturn<FormShape, any, undefined>;
+  type FormInstance = UseFormReturn<FormShape, unknown, undefined>;
 
   const formInstanceChanged = createEvent<FormInstance>();
   const formValuesChanged = createEvent<FormShape>();

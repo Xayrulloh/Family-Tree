@@ -1,5 +1,5 @@
-import { FileUploadFolderEnum } from '@family-tree/shared';
-import { AxiosRequestConfig } from 'axios';
+import type { FileUploadFolderEnum } from '@family-tree/shared';
+import type { AxiosRequestConfig } from 'axios';
 import { base } from './base';
 
 export const file = {

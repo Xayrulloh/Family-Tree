@@ -5,7 +5,7 @@ import {
   GlobalOutlined,
   LockOutlined,
 } from '@ant-design/icons';
-import { FamilyTreeSchemaType } from '@family-tree/shared';
+import type { FamilyTreeSchemaType } from '@family-tree/shared';
 import {
   Button,
   Card,
@@ -13,7 +13,7 @@ import {
   Dropdown,
   Flex,
   Image,
-  MenuProps,
+  type MenuProps,
   Row,
   Space,
   Spin,
@@ -26,7 +26,7 @@ import {
   createEditTreeModel,
 } from '~/features/tree/create-edit';
 import { DeleteTreeModal, deleteTreeModel } from '~/features/tree/delete';
-import { LazyPageProps } from '~/shared/lib/lazy-page';
+import type { LazyPageProps } from '~/shared/lib/lazy-page';
 import { factory } from '../model';
 
 // Types

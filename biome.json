@@ -17,15 +17,15 @@
     "rules": {
       "recommended": true,
       "style": {
-        "useImportType": "off"
+        "useImportType": "on"
       },
       "a11y": {
-        "useKeyWithClickEvents": "off",
+        "useKeyWithClickEvents": "on",
         "noStaticElementInteractions": "off",
         "noLabelWithoutControl": "off"
       },
       "suspicious": {
-        "noAssignInExpressions": "off",
+        "noAssignInExpressions": "on",
         "noThenProperty": "off"
       }
     }

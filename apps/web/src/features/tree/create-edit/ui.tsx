@@ -1,7 +1,7 @@
 import { UploadOutlined } from '@ant-design/icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Divider, Flex, Input, Modal, Switch, Upload } from 'antd';
-import { RcFile } from 'antd/es/upload';
+import type { RcFile } from 'antd/es/upload';
 import { useUnit } from 'effector-react';
 import { useId } from 'react';
 import { Controller, useForm } from 'react-hook-form';
