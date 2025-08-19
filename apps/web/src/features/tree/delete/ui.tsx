@@ -1,6 +1,6 @@
+import { Modal, Typography } from 'antd';
 import { useUnit } from 'effector-react';
 import * as model from './model';
-import { Modal, Typography } from 'antd';
 
 export const DeleteTreeModal: React.FC = () => {
   const [isOpen, mutating] = useUnit([

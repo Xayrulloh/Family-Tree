@@ -1,15 +1,15 @@
-import { UserResponseType } from '@family-tree/shared';
+import type { UserResponseType } from '@family-tree/shared';
 import {
   chainRoute,
-  RouteInstance,
-  RouteParams,
-  RouteParamsAndQuery,
+  type RouteInstance,
+  type RouteParams,
+  type RouteParamsAndQuery,
 } from 'atomic-router';
 import {
   createEffect,
   createEvent,
   createStore,
-  EventCallable,
+  type EventCallable,
   merge,
   sample,
   split,

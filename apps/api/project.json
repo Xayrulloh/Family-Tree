@@ -34,6 +34,13 @@
         }
       }
     },
+    "scan": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "sonar",
+        "cwd": "apps/api"
+      }
+    },
     "docker-build": {
       "dependsOn": ["build"],
       "command": "docker build -f apps/api/Dockerfile . -t api"
