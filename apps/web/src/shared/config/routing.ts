@@ -1,7 +1,7 @@
 import {
+  createHistoryRouter,
   createRoute,
   createRouterControls,
-  createHistoryRouter,
 } from 'atomic-router';
 
 export const routes = {
@@ -13,12 +13,8 @@ export const routes = {
 
 export const routesMap = [
   {
-    route: routes.browse,
     path: '/',
-  },
-  {
-    route: routes.notFound,
-    path: '/404',
+    route: routes.browse,
   },
   {
     path: '/register',

@@ -1,12 +1,20 @@
-import { attach, createEvent, createStore, sample } from 'effector';
-import { createDisclosure } from '~/shared/lib/disclosure';
-import { createForm } from '~/shared/lib/create-form';
-import { z } from 'zod';
-import { api } from '~/shared/api';
-import { RcFile } from 'antd/es/upload';
-import { delay, or } from 'patronum';
 import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
-import { sessionFx } from '~/entities/user/model';
+import type { RcFile } from 'antd/es/upload';
+import {
+  attach,
+  createEffect,
+  createEvent,
+  createStore,
+  sample,
+} from 'effector';
+import { isEqual } from 'lodash';
+import { delay, or } from 'patronum';
+import { z } from 'zod';
+import { userModel } from '~/entities/user';
+import { api } from '~/shared/api';
+import { createForm } from '~/shared/lib/create-form';
+import { createDisclosure } from '~/shared/lib/disclosure';
+import { infoFx } from '~/shared/lib/message';
 
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
@@ -15,15 +23,16 @@ export const formSchema = z.object({
   name: z.string().min(3, { message: 'Required field' }),
   image: z.string().min(10, { message: 'Required field' }),
   gender: z.enum([
-    'MALE' as UserGenderEnum.MALE,
-    'FEMALE' as UserGenderEnum.FEMALE,
-    'UNKNOWN' as UserGenderEnum.UNKNOWN,
+    UserGenderEnum.MALE,
+    UserGenderEnum.FEMALE,
+    UserGenderEnum.UNKNOWN,
   ]),
   birthdate: z.string().date().nullable(),
 });
 
 // Events
 export const editTriggered = createEvent<FormValues>();
+export const randomAvatarTriggered = createEvent();
 export const formValidated = createEvent();
 export const reset = createEvent();
 export const uploaded = createEvent<RcFile>();
@@ -48,11 +57,11 @@ const uploadImageFx = attach({
 
     formData.append('file', file);
 
-    return api.file.upload('avatar' as FileUploadFolderEnum.AVATAR, formData);
+    return api.file.upload(FileUploadFolderEnum.AVATAR, formData);
   },
 });
 
-// Sends form values to update user profile
+// Sends form values to edit user profile
 const editProfileFx = attach({
   source: form.$formValues,
   effect: (values) => api.user.update(values),
@@ -75,6 +84,9 @@ const setPathToFormFx = attach({
     return instance?.setValue('image', path);
   },
 });
+
+// Sends request to random avatar endpoint
+const randomAvatarFx = createEffect(() => api.user.randomAvatar());
 
 // Derived State
 export const $mutating = or(uploadImageFx.pending, editProfileFx.pending);
@@ -101,11 +113,34 @@ sample({
   target: uploadImageFx,
 });
 
-// If image is already a URL, skip upload and go directly to update
+// If image is already a URL, skip upload and go directly to edit
 sample({
   clock: formValidated,
-  source: form.$formValues,
-  filter: (values) => !!values.image && values.image.startsWith('https'),
+  source: {
+    original: userModel.$user,
+    edited: form.$formValues,
+  },
+  filter: ({ original, edited }) => {
+    if (
+      !!edited.image &&
+      edited.image.startsWith('https') &&
+      isEqual(
+        {
+          birthdate: original?.birthdate,
+          gender: original?.gender,
+          name: original?.name,
+          image: original?.image,
+        },
+        edited,
+      )
+    ) {
+      infoFx('No changes detected');
+
+      return false;
+    }
+
+    return true;
+  },
   target: editProfileFx,
 });
 
@@ -116,19 +151,19 @@ sample({
   target: setPathToFormFx,
 });
 
-// When form gets image path, proceed to profile update
+// When form gets image path, proceed to profile edit
 sample({
   clock: delay(setPathToFormFx.done, 0), // FIXME: delay workaround, remove if no race conditions
   target: editProfileFx,
 });
 
-// After successful profile update, refresh session user
+// After successful profile edit, refresh session user
 sample({
   clock: editProfileFx.done,
-  target: sessionFx,
+  target: userModel.sessionFx,
 });
 
-// Close modal on reset or successful update
+// Close modal on reset or successful edit
 sample({
   clock: [reset, mutated],
   target: [disclosure.closed],
@@ -138,4 +173,16 @@ sample({
 sample({
   clock: disclosure.closed,
   target: [$file.reinit],
+});
+
+// If user clicks random avatar, trigger random avatar request
+sample({
+  clock: randomAvatarTriggered,
+  target: randomAvatarFx,
+});
+
+// After random avatar request completes, call sessionFx
+sample({
+  clock: randomAvatarFx.doneData,
+  target: userModel.sessionFx,
 });

@@ -1,12 +1,10 @@
-import { sample } from 'effector';
-import { LazyPageFactoryParams } from '~/shared/lib/lazy-page';
+import type { FamilyTreeSchemaType } from '@family-tree/shared';
+import { createEffect, createStore, sample } from 'effector';
 import { userModel } from '~/entities/user';
 import { createEditTreeModel } from '~/features/tree/create-edit';
-
-import { createEffect, createStore } from 'effector';
-import { FamilyTreeSchemaType } from '@family-tree/shared';
-import { api } from '~/shared/api';
 import { deleteTreeModel } from '~/features/tree/delete';
+import { api } from '~/shared/api';
+import type { LazyPageFactoryParams } from '~/shared/lib/lazy-page';
 
 export const factory = ({ route }: LazyPageFactoryParams) => {
   const authorizedRoute = userModel.chainAuthorized({ route });

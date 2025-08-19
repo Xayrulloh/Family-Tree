@@ -1,3 +1,5 @@
+import { FileUploadFolderEnum } from '@family-tree/shared';
+import type { RcFile } from 'antd/es/upload';
 import {
   attach,
   createEvent,
@@ -6,13 +8,13 @@ import {
   sample,
   split,
 } from 'effector';
-import { createDisclosure } from '~/shared/lib/disclosure';
-import { createForm } from '~/shared/lib/create-form';
+import { isEqual } from 'lodash';
+import { delay, or, spread } from 'patronum';
 import { z } from 'zod';
 import { api } from '~/shared/api';
-import { RcFile } from 'antd/es/upload';
-import { delay, or, spread } from 'patronum';
-import { FileUploadFolderEnum } from '@family-tree/shared';
+import { createForm } from '~/shared/lib/create-form';
+import { createDisclosure } from '~/shared/lib/disclosure';
+import { infoFx } from '~/shared/lib/message';
 
 // Base
 export type FormValues = z.infer<typeof formSchema>;
@@ -51,6 +53,9 @@ export const $file = createStore<RcFile | null>(null);
 // Stores created tree id
 export const $id = createStore<string | null>(null);
 
+// Stores original tree
+export const $originalTree = createStore<FormValues | null>(null);
+
 // Initialization of Closures
 // Notifies about opening and closing of the form
 export const disclosure = createDisclosure();
@@ -76,7 +81,7 @@ const uploadImageFx = attach({
 
     formData.append('file', file);
 
-    return api.file.upload('tree' as FileUploadFolderEnum.TREE, formData);
+    return api.file.upload(FileUploadFolderEnum.TREE, formData);
   },
 });
 
@@ -124,7 +129,7 @@ const setPathToFormFx = attach({
 export const $mutating = or(
   uploadImageFx.pending,
   createTreeFx.pending,
-  editTreeFx.pending
+  editTreeFx.pending,
 );
 
 // Resolved effects holder
@@ -135,6 +140,13 @@ export const mutated = merge([createTreeFx.done, editTreeFx.done]);
 sample({
   clock: [editTriggered, createTriggered],
   target: disclosure.opened,
+});
+
+// If user starts editing copy original tree
+sample({
+  clock: editTriggered,
+  fn: ({ values }) => values,
+  target: $originalTree,
 });
 
 // If user starts editing, put values to form
@@ -169,11 +181,10 @@ sample({
   clock: created,
   source: form.$formValues,
   filter: (values) => !values.image,
-  fn: () => undefined,
   target: createTreeFx,
 });
 
-// If image is uploaded, send it to uploadImageFx
+// If blob image is exist then go with upload
 sample({
   clock: edited,
   source: form.$formValues,
@@ -181,15 +192,26 @@ sample({
   target: uploadImageFx,
 });
 
-// Events of Image Samples
-// If image was uploaded before and not changed, send it to editTreeFx
 sample({
   clock: edited,
-  source: form.$formValues,
-  filter: (values) => !!values.image && values.image.startsWith('https'),
+  source: {
+    original: $originalTree,
+    edited: form.$formValues,
+  },
+  filter: ({ original, edited }) => {
+    const noChanges = isEqual(original, edited);
+    const isBlob = edited.image?.startsWith('blob');
+
+    if (noChanges && !isBlob) {
+      infoFx('No changes detected');
+    }
+
+    return !noChanges && !isBlob;
+  },
   target: editTreeFx,
 });
 
+// Events of Image Samples
 // If image is uploaded, send it to setPreviewToFormFx
 sample({
   clock: uploadImageFx.doneData,

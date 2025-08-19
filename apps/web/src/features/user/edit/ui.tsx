@@ -1,5 +1,5 @@
-import { useUnit } from 'effector-react';
-import * as model from './model';
+import { UploadOutlined } from '@ant-design/icons';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Button,
   DatePicker,
@@ -10,13 +10,13 @@ import {
   Select,
   Upload,
 } from 'antd';
-import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useId } from 'react';
-import { FieldWrapper } from '~/shared/ui/field-wrapper';
-import { RcFile } from 'antd/es/upload';
-import { UploadOutlined } from '@ant-design/icons';
+import type { RcFile } from 'antd/es/upload';
 import dayjs from 'dayjs';
+import { useUnit } from 'effector-react';
+import { useId } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { FieldWrapper } from '~/shared/ui/field-wrapper';
+import * as model from './model';
 
 export const EditProfileModal: React.FC = () => {
   const [isOpen, mutating] = useUnit([
@@ -40,7 +40,7 @@ export const EditProfileModal: React.FC = () => {
       onCancel={() => model.disclosure.closed()}
       okButtonProps={{ htmlType: 'submit', form: formId, loading: mutating }}
       width={480}
-      destroyOnClose
+      destroyOnHidden
     >
       <form
         onSubmit={form.handleSubmit(() => model.formValidated())}
@@ -102,7 +102,7 @@ export const EditProfileModal: React.FC = () => {
                   allowClear
                   placeholder="Select birthdate"
                   value={field.value ? dayjs(field.value) : null}
-                  onChange={(date, dateString) => {
+                  onChange={(_date, dateString) => {
                     field.onChange(dateString || null);
                   }}
                 />
@@ -122,7 +122,7 @@ export const EditProfileModal: React.FC = () => {
                 style={{
                   maxHeight: 160,
                   maxWidth: '100%',
-                  objectFit: 'contain',
+                  objectFit: 'cover',
                   borderRadius: 6,
                   display: 'block',
                   margin: '0 auto',

@@ -8,7 +8,7 @@ import {
   createEffect,
   createEvent,
   createStore,
-  Event,
+  type Event,
   sample,
 } from 'effector';
 import { and, condition, not } from 'patronum';
@@ -25,7 +25,7 @@ export type LazyPageProps<Model, Props extends object = object> = Props & {
 };
 
 export type LazyPageFactoryParams<
-  Params extends RouteParams = Record<string, unknown>
+  Params extends RouteParams = Record<string, unknown>,
 > = {
   route: RouteInstance<Params>;
 };
@@ -34,7 +34,7 @@ export const createLazyPage = <
   Params extends RouteParams,
   Model,
   Page extends ComponentType<{ model: Model }>,
-  StaticDeps extends Record<string, unknown>
+  StaticDeps extends Record<string, unknown>,
 >({
   route,
   load,
@@ -44,7 +44,7 @@ export const createLazyPage = <
   staticDeps?: StaticDeps;
   load: () => Promise<{
     createModel: (
-      params: { route: RouteInstance<Params> } & StaticDeps
+      params: { route: RouteInstance<Params> } & StaticDeps,
     ) => Model | Promise<Model>;
     component: Page;
   }>;
@@ -65,7 +65,7 @@ export const createLazyPage = <
 
     if (!model) {
       model = Promise.resolve(
-        createModel({ route: chainedRoute, ...staticDeps })
+        createModel({ route: chainedRoute, ...staticDeps }),
       );
     }
 
@@ -99,7 +99,7 @@ export const createLazyPage = <
       Component.displayName = `Lazy${Component.displayName ?? 'Page'}`;
 
       return { default: Component };
-    })
+    }),
   );
 };
 

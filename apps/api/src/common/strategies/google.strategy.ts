@@ -1,34 +1,35 @@
+import {
+  type GoogleProfileType,
+  UserGenderEnum,
+  type UserSchemaType,
+} from '@family-tree/shared';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-google-oauth2';
-import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as schema from '~/database/schema';
-import {
-  GoogleProfileType,
-  UserGenderEnum,
-  UserSchemaType,
-} from '@family-tree/shared';
 import { and, eq, isNull } from 'drizzle-orm';
-import { EnvType } from '~/config/env/env-validation';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Strategy, type VerifyCallback } from 'passport-google-oauth2';
+import type { EnvType } from '~/config/env/env-validation';
+import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
+import * as schema from '~/database/schema';
+import { DICEBAR_URL } from '~/utils/constants';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
-    private configService: ConfigService,
+    configService: ConfigService,
     @Inject(DrizzleAsyncProvider)
-    private db: NodePgDatabase<typeof schema>
+    private db: NodePgDatabase<typeof schema>,
   ) {
     super({
       clientID: configService.get<EnvType['GOOGLE_CLIENT_ID']>(
-        'GOOGLE_CLIENT_ID'
+        'GOOGLE_CLIENT_ID',
       ) as string,
       clientSecret: configService.get<EnvType['GOOGLE_CLIENT_SECRET']>(
-        'GOOGLE_CLIENT_SECRET'
+        'GOOGLE_CLIENT_SECRET',
       ) as string,
       callbackURL: configService.get<EnvType['GOOGLE_CALLBACK_URL']>(
-        'GOOGLE_CALLBACK_URL'
+        'GOOGLE_CALLBACK_URL',
       ) as string,
       scope: ['profile', 'email'],
     });
@@ -38,14 +39,14 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     _accessToken: string,
     _refreshToken: string,
     profile: GoogleProfileType,
-    done: VerifyCallback
+    done: VerifyCallback,
   ): Promise<UserSchemaType> {
     const { id, name, emails, photos } = profile;
 
     let user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.email, emails[0].value),
-        isNull(schema.usersSchema.deletedAt)
+        isNull(schema.usersSchema.deletedAt),
       ),
     });
 
@@ -56,10 +57,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         .values({
           email: emails[0].value,
           name: `${name.givenName} ${name.familyName}`,
-          username: emails[0].value.split('@')[0] + `-${id}`,
+          username: `${emails[0].value.split('@')[0]}-${id}`,
           image:
-            photos[0].value ||
-            `https://api.dicebear.com/7.x/notionists/svg?seed=${id}`,
+            photos[0].value || `${DICEBAR_URL}/7.x/notionists/svg?seed=${id}`,
           gender: UserGenderEnum.UNKNOWN,
         })
         .returning();
