@@ -1,15 +1,15 @@
-import { UserResponseType } from '@family-tree/shared';
+import type { UserResponseType } from '@family-tree/shared';
 import {
   chainRoute,
-  RouteInstance,
-  RouteParams,
-  RouteParamsAndQuery,
+  type RouteInstance,
+  type RouteParams,
+  type RouteParamsAndQuery,
 } from 'atomic-router';
 import {
   createEffect,
   createEvent,
   createStore,
-  EventCallable,
+  type EventCallable,
   merge,
   sample,
   split,
@@ -115,7 +115,7 @@ export const chainAuthorized = <Params extends RouteParams>({
     {
       alreadyAuthorized: (session) => session.$isAuthorized,
       alreadyAnonymous: (status) => status.$isUnAuthorized,
-    }
+    },
   );
 
   const authCheckDone = merge([alreadyAuthorized, authorized]);
@@ -170,7 +170,7 @@ export const chainAnonymous = <Params extends RouteParams>({
     {
       alreadyAuthorized: (session) => session.$isAuthorized,
       alreadyAnonymous: (status) => status.$isUnAuthorized,
-    }
+    },
   );
 
   sample({

@@ -3,7 +3,7 @@ import { createZodDto } from 'nestjs-zod';
 
 // response
 class NotificationResponseDto extends createZodDto(
-  NotificationResponseSchema
+  NotificationResponseSchema,
 ) {}
 
 export { NotificationResponseDto };

@@ -1,4 +1,4 @@
-import { createApi, createStore, Store } from 'effector';
+import { createApi, createStore, type Store } from 'effector';
 
 type Props = {
   defaultIsOpen?: boolean;

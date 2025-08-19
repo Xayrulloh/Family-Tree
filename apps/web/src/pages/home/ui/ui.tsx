@@ -298,15 +298,12 @@ const HomePage: React.FC = () => {
           with professionally researched genealogies
         </Paragraph>
 
-        <Row
-          gutter={[24, 48]}
-        >
+        <Row gutter={[24, 48]}>
           {[
             'Ottoman Empire',
             'Timurid Dynasty',
             'European Monarchies',
             'Imperial China',
-            
           ].map((dynasty, index) => (
             <Col
               xs={24}

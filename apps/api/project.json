@@ -6,24 +6,44 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "nx:run-commands",
+      "executor": "@nx/rspack:rspack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "development",
+      "cache": true,
       "options": {
-        "command": "webpack-cli build",
-        "args": ["node-env=production"]
+        "target": "node",
+        "outputPath": "dist/apps/api",
+        "main": "apps/api/src/main.ts",
+        "tsConfig": "apps/api/tsconfig.app.json",
+        "rspackConfig": "apps/api/rspack.config.js",
+        "assets": ["apps/api/src/assets"]
       },
       "configurations": {
         "development": {
-          "args": ["node-env=development"]
+          "mode": "production"
+        },
+        "production": {
+          "mode": "production",
+          "optimization": true,
+          "sourceMap": false
         }
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "biome check",
+        "cwd": "apps/api"
       }
     },
     "serve": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "dependsOn": ["build"],
       "options": {
         "buildTarget": "api:build",
-        "runBuildTargetDependencies": false
+        "runBuildTargetDependencies": false,
+        "inspect": false,
+        "watch": true
       },
       "configurations": {
         "development": {
@@ -32,6 +52,13 @@
         "production": {
           "buildTarget": "api:build:production"
         }
+      }
+    },
+    "scan": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "sonar",
+        "cwd": "apps/api"
       }
     },
     "docker-build": {

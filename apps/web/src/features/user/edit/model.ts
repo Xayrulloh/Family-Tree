@@ -1,3 +1,5 @@
+import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
+import type { RcFile } from 'antd/es/upload';
 import {
   attach,
   createEffect,
@@ -5,14 +7,14 @@ import {
   createStore,
   sample,
 } from 'effector';
-import { createDisclosure } from '~/shared/lib/disclosure';
-import { createForm } from '~/shared/lib/create-form';
-import { z } from 'zod';
-import { api } from '~/shared/api';
-import { RcFile } from 'antd/es/upload';
+import { isEqual } from 'lodash';
 import { delay, or } from 'patronum';
-import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
+import { z } from 'zod';
 import { userModel } from '~/entities/user';
+import { api } from '~/shared/api';
+import { createForm } from '~/shared/lib/create-form';
+import { createDisclosure } from '~/shared/lib/disclosure';
+import { infoFx } from '~/shared/lib/message';
 
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
@@ -59,7 +61,7 @@ const uploadImageFx = attach({
   },
 });
 
-// Sends form values to update user profile
+// Sends form values to edit user profile
 const editProfileFx = attach({
   source: form.$formValues,
   effect: (values) => api.user.update(values),
@@ -111,11 +113,34 @@ sample({
   target: uploadImageFx,
 });
 
-// If image is already a URL, skip upload and go directly to update
+// If image is already a URL, skip upload and go directly to edit
 sample({
   clock: formValidated,
-  source: form.$formValues,
-  filter: (values) => !!values.image && values.image.startsWith('https'),
+  source: {
+    original: userModel.$user,
+    edited: form.$formValues,
+  },
+  filter: ({ original, edited }) => {
+    if (
+      !!edited.image &&
+      edited.image.startsWith('https') &&
+      isEqual(
+        {
+          birthdate: original?.birthdate,
+          gender: original?.gender,
+          name: original?.name,
+          image: original?.image,
+        },
+        edited,
+      )
+    ) {
+      infoFx('No changes detected');
+
+      return false;
+    }
+
+    return true;
+  },
   target: editProfileFx,
 });
 
@@ -126,19 +151,19 @@ sample({
   target: setPathToFormFx,
 });
 
-// When form gets image path, proceed to profile update
+// When form gets image path, proceed to profile edit
 sample({
   clock: delay(setPathToFormFx.done, 0), // FIXME: delay workaround, remove if no race conditions
   target: editProfileFx,
 });
 
-// After successful profile update, refresh session user
+// After successful profile edit, refresh session user
 sample({
   clock: editProfileFx.done,
   target: userModel.sessionFx,
 });
 
-// Close modal on reset or successful update
+// Close modal on reset or successful edit
 sample({
   clock: [reset, mutated],
   target: [disclosure.closed],
@@ -160,4 +185,4 @@ sample({
 sample({
   clock: randomAvatarFx.doneData,
   target: userModel.sessionFx,
-})
+});

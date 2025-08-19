@@ -1,20 +1,10 @@
 {
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "allowJs": false,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "types": ["vite/client", "vitest"],
-    "baseUrl": "src",
-    "paths": {
-      "~/*": ["*"],
-      "@family-tree/shared": ["../../shared/src/index.ts"]
-    }
-  },
   "files": [],
   "include": [],
   "references": [
+    {
+      "path": "../../libs/shared"
+    },
     {
       "path": "./tsconfig.app.json"
     },

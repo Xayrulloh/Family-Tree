@@ -1,13 +1,15 @@
+import { UserGenderEnum, type UserResponseType } from '@family-tree/shared';
 import {
   BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import * as schema from '~/database/schema';
+import { and, eq, isNull, not, or } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
-import { and, asc, desc, eq, isNull, not, or } from 'drizzle-orm';
+import * as schema from '~/database/schema';
 import {
   FamilyTreeRelationshipCreateRequestDto,
   FamilyTreeRelationshipCreateSonOrDaughterRequestDto,
@@ -16,20 +18,18 @@ import {
   FamilyTreeRelationshipUserArrayResponseDto,
   FamilyTreeRelationshipUserResponseDto,
 } from './dto/family-tree-relationship.dto';
-import { UserGenderEnum, UserResponseType } from '@family-tree/shared';
-import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 
 @Injectable()
 export class FamilyTreeRelationshipService {
   constructor(
     @Inject(DrizzleAsyncProvider)
     private db: NodePgDatabase<typeof schema>,
-    private cloudflareConfig: CloudflareConfig
+    private cloudflareConfig: CloudflareConfig,
   ) {}
 
   // return nested json object
   async getFamilyTreeRelationshipOfFamilyTree(
-    familyTreeId: string
+    familyTreeId: string,
   ): Promise<FamilyTreeRelationshipResponseDto> {
     const response: FamilyTreeRelationshipResponseDto = {
       parents: [],
@@ -41,7 +41,7 @@ export class FamilyTreeRelationshipService {
       await this.db.query.familyTreeRelationshipsSchema.findMany({
         where: eq(
           schema.familyTreeRelationshipsSchema.familyTreeId,
-          familyTreeId
+          familyTreeId,
         ),
       });
 
@@ -69,13 +69,13 @@ export class FamilyTreeRelationshipService {
             usersInfoMap.set(userInfo.id, userInfo);
           }
         }
-      })
+      }),
     );
 
     // FIXME: need to optimize below code
     // parents part
     const allParentsMixed = familyTreeRelationships.filter(
-      (data) => data.depth === 0 && data.ancestorId !== data.descendantId
+      (data) => data.depth === 0 && data.ancestorId !== data.descendantId,
     );
 
     const parentMap: Map<
@@ -93,8 +93,8 @@ export class FamilyTreeRelationshipService {
           const spouse2 = usersInfoMap.get(allParentsMixed[j].descendantId);
 
           if (
-            spouse1?.gender == UserGenderEnum.MALE &&
-            spouse2?.gender == UserGenderEnum.FEMALE
+            spouse1?.gender === UserGenderEnum.MALE &&
+            spouse2?.gender === UserGenderEnum.FEMALE
           ) {
             response.parents.push({
               mergedParentId: `${spouse1.id}$${spouse2.id}`,
@@ -112,8 +112,8 @@ export class FamilyTreeRelationshipService {
               mother: spouse2,
             });
           } else if (
-            spouse1?.gender == UserGenderEnum.FEMALE &&
-            spouse2?.gender == UserGenderEnum.MALE
+            spouse1?.gender === UserGenderEnum.FEMALE &&
+            spouse2?.gender === UserGenderEnum.MALE
           ) {
             response.parents.push({
               mergedParentId: `${spouse2.id}$${spouse1.id}`,
@@ -139,7 +139,7 @@ export class FamilyTreeRelationshipService {
 
     // children part
     const allChildrenMixed = familyTreeRelationships.filter(
-      (data) => data.depth === 1
+      (data) => data.depth === 1,
     );
     const registeredChild = new Map<string, boolean>();
     const childrenOfParent = new Map<string, UserResponseType[]>();
@@ -155,7 +155,7 @@ export class FamilyTreeRelationshipService {
           registeredChild.set(child.descendantId, true);
 
           const registeredChildrenOfParent = childrenOfParent.get(
-            `${parent.father.id}&${parent.mother.id}`
+            `${parent.father.id}&${parent.mother.id}`,
           );
 
           const childInfo = usersInfoMap.get(child.descendantId);
@@ -166,7 +166,7 @@ export class FamilyTreeRelationshipService {
             `${parent.father.id}&${parent.mother.id}`,
             registeredChildrenOfParent?.length
               ? [...registeredChildrenOfParent, childInfo]
-              : [childInfo]
+              : [childInfo],
           );
         }
       }
@@ -185,7 +185,7 @@ export class FamilyTreeRelationshipService {
   // return only one user info
   async getFamilyTreeRelationshipUserOfFamilyTree(
     familyTreeId: string,
-    userId: string
+    userId: string,
   ): Promise<FamilyTreeRelationshipUserResponseDto> {
     // Find the user from family tree relationship
     const familyTreeRelationshipData =
@@ -194,7 +194,7 @@ export class FamilyTreeRelationshipService {
           eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
           eq(schema.familyTreeRelationshipsSchema.descendantId, userId),
           eq(schema.familyTreeRelationshipsSchema.ancestorId, userId),
-          eq(schema.familyTreeRelationshipsSchema.depth, 0)
+          eq(schema.familyTreeRelationshipsSchema.depth, 0),
         ),
         with: {
           descendant: true,
@@ -204,7 +204,7 @@ export class FamilyTreeRelationshipService {
     // check its existence
     if (!familyTreeRelationshipData) {
       throw new NotFoundException(
-        `User with id ${userId} not found in family tree with id ${familyTreeId}`
+        `User with id ${userId} not found in family tree with id ${familyTreeId}`,
       );
     }
 
@@ -214,7 +214,7 @@ export class FamilyTreeRelationshipService {
   // create son relationship
   async createFamilyTreeRelationshipUserSonOfFamilyTree(
     familyTreeId: string,
-    body: FamilyTreeRelationshipCreateSonOrDaughterRequestDto
+    body: FamilyTreeRelationshipCreateSonOrDaughterRequestDto,
   ): Promise<FamilyTreeRelationshipUserResponseDto> {
     await this.checkExistenceOfFamilyTree(familyTreeId);
 
@@ -223,13 +223,13 @@ export class FamilyTreeRelationshipService {
       this.db.query.usersSchema.findFirst({
         where: and(
           eq(schema.usersSchema.id, body.fatherId),
-          eq(schema.usersSchema.gender, UserGenderEnum.MALE)
+          eq(schema.usersSchema.gender, UserGenderEnum.MALE),
         ),
       }),
       this.db.query.usersSchema.findFirst({
         where: and(
           eq(schema.usersSchema.id, body.motherId),
-          eq(schema.usersSchema.gender, UserGenderEnum.FEMALE)
+          eq(schema.usersSchema.gender, UserGenderEnum.FEMALE),
         ),
       }),
     ]);
@@ -251,25 +251,25 @@ export class FamilyTreeRelationshipService {
             eq(schema.familyTreeRelationshipsSchema.ancestorId, body.fatherId),
             eq(
               schema.familyTreeRelationshipsSchema.descendantId,
-              body.motherId
+              body.motherId,
             ),
-            eq(schema.familyTreeRelationshipsSchema.depth, 0)
+            eq(schema.familyTreeRelationshipsSchema.depth, 0),
           ),
           and(
             eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
             eq(schema.familyTreeRelationshipsSchema.ancestorId, body.motherId),
             eq(
               schema.familyTreeRelationshipsSchema.descendantId,
-              body.fatherId
+              body.fatherId,
             ),
-            eq(schema.familyTreeRelationshipsSchema.depth, 0)
-          )
+            eq(schema.familyTreeRelationshipsSchema.depth, 0),
+          ),
         ),
       });
 
-    if (parentFamilyTreeRelationship.length != 2) {
+    if (parentFamilyTreeRelationship.length !== 2) {
       throw new BadRequestException(
-        `Relationship between ${body.fatherId} and ${body.motherId} not found`
+        `Relationship between ${body.fatherId} and ${body.motherId} not found`,
       );
     }
 
@@ -310,7 +310,7 @@ export class FamilyTreeRelationshipService {
   // create daughter relationship
   async createFamilyTreeRelationshipUserDaughterOfFamilyTree(
     familyTreeId: string,
-    body: FamilyTreeRelationshipCreateSonOrDaughterRequestDto
+    body: FamilyTreeRelationshipCreateSonOrDaughterRequestDto,
   ): Promise<FamilyTreeRelationshipUserResponseDto> {
     await this.checkExistenceOfFamilyTree(familyTreeId);
 
@@ -319,13 +319,13 @@ export class FamilyTreeRelationshipService {
       this.db.query.usersSchema.findFirst({
         where: and(
           eq(schema.usersSchema.id, body.fatherId),
-          eq(schema.usersSchema.gender, UserGenderEnum.MALE)
+          eq(schema.usersSchema.gender, UserGenderEnum.MALE),
         ),
       }),
       this.db.query.usersSchema.findFirst({
         where: and(
           eq(schema.usersSchema.id, body.motherId),
-          eq(schema.usersSchema.gender, UserGenderEnum.FEMALE)
+          eq(schema.usersSchema.gender, UserGenderEnum.FEMALE),
         ),
       }),
     ]);
@@ -347,25 +347,25 @@ export class FamilyTreeRelationshipService {
             eq(schema.familyTreeRelationshipsSchema.ancestorId, body.fatherId),
             eq(
               schema.familyTreeRelationshipsSchema.descendantId,
-              body.motherId
+              body.motherId,
             ),
-            eq(schema.familyTreeRelationshipsSchema.depth, 0)
+            eq(schema.familyTreeRelationshipsSchema.depth, 0),
           ),
           and(
             eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
             eq(schema.familyTreeRelationshipsSchema.ancestorId, body.motherId),
             eq(
               schema.familyTreeRelationshipsSchema.descendantId,
-              body.fatherId
+              body.fatherId,
             ),
-            eq(schema.familyTreeRelationshipsSchema.depth, 0)
-          )
+            eq(schema.familyTreeRelationshipsSchema.depth, 0),
+          ),
         ),
       });
 
-    if (parentFamilyTreeRelationship.length != 2) {
+    if (parentFamilyTreeRelationship.length !== 2) {
       throw new BadRequestException(
-        `Relationship between ${body.fatherId} and ${body.motherId} not found`
+        `Relationship between ${body.fatherId} and ${body.motherId} not found`,
       );
     }
 
@@ -406,14 +406,14 @@ export class FamilyTreeRelationshipService {
   // create parent relationship
   async createFamilyTreeRelationshipUserParentOfFamilyTree(
     familyTreeId: string,
-    body: FamilyTreeRelationshipCreateRequestDto
+    body: FamilyTreeRelationshipCreateRequestDto,
   ): Promise<FamilyTreeRelationshipUserArrayResponseDto> {
     // check is family tree exist
     await this.checkExistenceOfFamilyTree(familyTreeId);
 
     const parentOfTargetUser = await this.findParentOfTargetUser(
       familyTreeId,
-      body.targetUserId
+      body.targetUserId,
     );
 
     if (parentOfTargetUser.length) {
@@ -485,7 +485,7 @@ export class FamilyTreeRelationshipService {
   // create spouse relationship
   async createFamilyTreeRelationshipUserSpouseOfFamilyTree(
     familyTreeId: string,
-    body: FamilyTreeRelationshipCreateRequestDto
+    body: FamilyTreeRelationshipCreateRequestDto,
   ): Promise<FamilyTreeRelationshipUserResponseDto> {
     // check is family tree exist
     await this.checkExistenceOfFamilyTree(familyTreeId);
@@ -498,25 +498,25 @@ export class FamilyTreeRelationshipService {
     // check its existence
     if (!targetUser) {
       throw new NotFoundException(
-        `Target user with id ${body.targetUserId} not found`
+        `Target user with id ${body.targetUserId} not found`,
       );
     }
 
     const existSpouses = await this.findSpouseOfTargetUser(
       familyTreeId,
-      body.targetUserId
+      body.targetUserId,
     );
 
     if (targetUser.gender === UserGenderEnum.MALE && existSpouses.length >= 4) {
       throw new BadRequestException(
-        `Target user with id ${body.targetUserId} already has 4 wives`
+        `Target user with id ${body.targetUserId} already has 4 wives`,
       );
     } else if (
       targetUser.gender === UserGenderEnum.FEMALE &&
       existSpouses.length >= 1
     ) {
       throw new BadRequestException(
-        `Target user with id ${body.targetUserId} already has 1 husband`
+        `Target user with id ${body.targetUserId} already has 1 husband`,
       );
     }
 
@@ -563,7 +563,7 @@ export class FamilyTreeRelationshipService {
   async updateFamilyTreeRelationshipUserOfFamilyTree(
     familyTreeId: string,
     userId: string,
-    body: FamilyTreeRelationshipUpdateRequestDto
+    body: FamilyTreeRelationshipUpdateRequestDto,
   ): Promise<void> {
     // check is family tree exist
     await this.checkExistenceOfFamilyTree(familyTreeId);
@@ -598,7 +598,7 @@ export class FamilyTreeRelationshipService {
       // check is gender match
       if (newUser.gender !== user.gender) {
         throw new BadRequestException(
-          `Gender mismatch between user with id ${userId} and user with email ${body.email}`
+          `Gender mismatch between user with id ${userId} and user with email ${body.email}`,
         );
       }
 
@@ -607,13 +607,13 @@ export class FamilyTreeRelationshipService {
         await this.db.query.familyTreeRelationshipsSchema.findFirst({
           where: and(
             eq(schema.familyTreeRelationshipsSchema.ancestorId, newUser.id),
-            eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId)
+            eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
           ),
         });
 
       if (relationship) {
         throw new BadRequestException(
-          `User with email ${body.email} already exist in family tree with id ${familyTreeId}`
+          `User with email ${body.email} already exist in family tree with id ${familyTreeId}`,
         );
       }
 
@@ -626,8 +626,8 @@ export class FamilyTreeRelationshipService {
         .where(
           and(
             eq(schema.familyTreeRelationshipsSchema.descendantId, userId),
-            eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId)
-          )
+            eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
+          ),
         );
 
       // update all ancestors of old user to new user
@@ -639,8 +639,8 @@ export class FamilyTreeRelationshipService {
         .where(
           and(
             eq(schema.familyTreeRelationshipsSchema.ancestorId, userId),
-            eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId)
-          )
+            eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
+          ),
         );
 
       // delete old user image from cloudflare
@@ -671,11 +671,11 @@ export class FamilyTreeRelationshipService {
   // delete relationship if there's no relationship and if user is mock than delete it from user table
   async deleteFamilyTreeRelationshipUserOfFamilyTree(
     familyTreeId: string,
-    userId: string
+    userId: string,
   ): Promise<void> {
     const userChildren = await this.findChildrenOfTargetUser(
       familyTreeId,
-      userId
+      userId,
     );
     const userSpouse = await this.findSpouseOfTargetUser(familyTreeId, userId);
 
@@ -697,7 +697,10 @@ export class FamilyTreeRelationshipService {
     await this.db
       .delete(schema.usersSchema)
       .where(
-        and(eq(schema.usersSchema.id, userId), isNull(schema.usersSchema.email))
+        and(
+          eq(schema.usersSchema.id, userId),
+          isNull(schema.usersSchema.email),
+        ),
       );
 
     // delete relationship
@@ -707,39 +710,16 @@ export class FamilyTreeRelationshipService {
         and(
           or(
             eq(schema.familyTreeRelationshipsSchema.ancestorId, userId),
-            eq(schema.familyTreeRelationshipsSchema.descendantId, userId)
+            eq(schema.familyTreeRelationshipsSchema.descendantId, userId),
           ),
-          eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId)
-        )
-      );
-  }
-
-  // helpful methods
-  private async findRootParent(
-    familyTreeId: string
-  ): Promise<FamilyTreeRelationshipUserArrayResponseDto> {
-    const familyTreeRelationships =
-      await this.db.query.familyTreeRelationshipsSchema.findMany({
-        with: {
-          ancestor: true,
-        },
-        orderBy: [
-          desc(schema.familyTreeRelationshipsSchema.depth),
-          asc(schema.familyTreeRelationshipsSchema.createdAt),
-        ],
-        limit: 2,
-        where: eq(
-          schema.familyTreeRelationshipsSchema.familyTreeId,
-          familyTreeId
+          eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
         ),
-      });
-
-    return familyTreeRelationships.map((data) => data.ancestor);
+      );
   }
 
   private async findParentOfTargetUser(
     familyTreeId: string,
-    targetUserId?: string
+    targetUserId?: string,
   ): Promise<FamilyTreeRelationshipUserArrayResponseDto> {
     const parents = await this.db.query.familyTreeRelationshipsSchema.findMany({
       with: {
@@ -751,7 +731,7 @@ export class FamilyTreeRelationshipService {
         eq(schema.familyTreeRelationshipsSchema.depth, 1),
         targetUserId
           ? eq(schema.familyTreeRelationshipsSchema.descendantId, targetUserId)
-          : undefined
+          : undefined,
       ),
     });
 
@@ -760,7 +740,7 @@ export class FamilyTreeRelationshipService {
 
   async findSpouseOfTargetUser(
     familyTreeId: string,
-    targetUserId: string
+    targetUserId: string,
   ): Promise<FamilyTreeRelationshipUserArrayResponseDto> {
     const spouses = await this.db.query.familyTreeRelationshipsSchema.findMany({
       with: {
@@ -770,7 +750,7 @@ export class FamilyTreeRelationshipService {
         eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
         eq(schema.familyTreeRelationshipsSchema.depth, 0),
         eq(schema.familyTreeRelationshipsSchema.descendantId, targetUserId),
-        not(eq(schema.familyTreeRelationshipsSchema.ancestorId, targetUserId))
+        not(eq(schema.familyTreeRelationshipsSchema.ancestorId, targetUserId)),
       ),
     });
 
@@ -779,7 +759,7 @@ export class FamilyTreeRelationshipService {
 
   async findChildrenOfTargetUser(
     familyTreeId: string,
-    targetUserId: string
+    targetUserId: string,
   ): Promise<FamilyTreeRelationshipUserArrayResponseDto> {
     const children = await this.db.query.familyTreeRelationshipsSchema.findMany(
       {
@@ -789,27 +769,27 @@ export class FamilyTreeRelationshipService {
         where: and(
           eq(schema.familyTreeRelationshipsSchema.depth, 1),
           eq(schema.familyTreeRelationshipsSchema.ancestorId, targetUserId),
-          eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId)
+          eq(schema.familyTreeRelationshipsSchema.familyTreeId, familyTreeId),
         ),
-      }
+      },
     );
 
     return children.map((child) => child.ancestor);
   }
 
   private async checkExistenceOfFamilyTree(
-    familyTreeId: string
+    familyTreeId: string,
   ): Promise<void> {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
       where: and(
         eq(schema.familyTreesSchema.id, familyTreeId),
-        isNull(schema.familyTreesSchema.deletedAt)
+        isNull(schema.familyTreesSchema.deletedAt),
       ),
     });
 
     if (!familyTree) {
       throw new NotFoundException(
-        `Family tree with id ${familyTreeId} not found`
+        `Family tree with id ${familyTreeId} not found`,
       );
     }
   }

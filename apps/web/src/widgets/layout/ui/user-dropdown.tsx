@@ -1,18 +1,25 @@
-import { Dropdown, MenuProps, Avatar, Typography, Spin, Space } from 'antd';
 import {
-  UserOutlined,
-  LogoutOutlined,
   BulbOutlined,
-  ManOutlined,
-  WomanOutlined,
   CalendarOutlined,
   EditOutlined,
+  LogoutOutlined,
+  ManOutlined,
+  UserOutlined,
+  WomanOutlined,
 } from '@ant-design/icons';
-import { useUnit } from 'effector-react';
 import { UserGenderEnum } from '@family-tree/shared';
+import {
+  Avatar,
+  Dropdown,
+  type MenuProps,
+  Space,
+  Spin,
+  Typography,
+} from 'antd';
+import { useUnit } from 'effector-react';
+import { $theme, themeToggled } from '~/app/model';
 import { userModel } from '~/entities/user';
 import { editProfileModel } from '~/features/user/edit';
-import { $theme, themeToggled } from '~/app/model';
 
 export const UserDropdown = () => {
   const [user, logout, theme] = useUnit([
@@ -44,19 +51,12 @@ export const UserDropdown = () => {
     {
       key: 'user-info',
       label: (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: '5px 0',
-          }}
-        >
+        <div className="flex flex-col items-center py-2 pointer-events-none">
           <Avatar
             size={64}
             src={avatarSource}
             icon={<UserOutlined />}
-            style={{ marginBottom: 8 }}
+            className="mb-2"
           />
           <Typography.Text strong>{user.name}</Typography.Text>
           {user.email && (
@@ -66,7 +66,7 @@ export const UserDropdown = () => {
           )}
           {/* Gender and Birthdate */}
           {(userGenderIcon || user.birthdate) && (
-            <Space direction="vertical" size={4} style={{ marginTop: 8 }}>
+            <Space direction="vertical" size={4} className="mt-2">
               {user.gender && userGenderIcon && (
                 <Space>
                   {userGenderIcon}
@@ -97,6 +97,7 @@ export const UserDropdown = () => {
       label: (
         <div
           onClick={() => editProfileModel.randomAvatarTriggered()}
+          onKeyDown={(_e) => {}}
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
           <span role="img" aria-label="dice">
@@ -121,6 +122,7 @@ export const UserDropdown = () => {
               birthdate: user.birthdate,
             })
           }
+          onKeyDown={(_e) => {}}
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
           <EditOutlined />
@@ -133,6 +135,7 @@ export const UserDropdown = () => {
       label: (
         <div
           onClick={() => themeToggled()}
+          onKeyDown={(_e) => {}}
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
           <BulbOutlined />
@@ -145,6 +148,7 @@ export const UserDropdown = () => {
       label: (
         <div
           onClick={() => logout()}
+          onKeyDown={(_e) => {}}
           style={{
             display: 'flex',
             alignItems: 'center',

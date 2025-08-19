@@ -1,3 +1,5 @@
+import { FileUploadFolderEnum } from '@family-tree/shared';
+import type { RcFile } from 'antd/es/upload';
 import {
   attach,
   createEvent,
@@ -6,13 +8,13 @@ import {
   sample,
   split,
 } from 'effector';
-import { createDisclosure } from '~/shared/lib/disclosure';
-import { createForm } from '~/shared/lib/create-form';
+import { isEqual } from 'lodash';
+import { delay, or, spread } from 'patronum';
 import { z } from 'zod';
 import { api } from '~/shared/api';
-import { RcFile } from 'antd/es/upload';
-import { delay, or, spread } from 'patronum';
-import { FileUploadFolderEnum } from '@family-tree/shared';
+import { createForm } from '~/shared/lib/create-form';
+import { createDisclosure } from '~/shared/lib/disclosure';
+import { infoFx } from '~/shared/lib/message';
 
 // Base
 export type FormValues = z.infer<typeof formSchema>;
@@ -50,6 +52,9 @@ export const $file = createStore<RcFile | null>(null);
 
 // Stores created tree id
 export const $id = createStore<string | null>(null);
+
+// Stores original tree
+export const $originalTree = createStore<FormValues | null>(null);
 
 // Initialization of Closures
 // Notifies about opening and closing of the form
@@ -93,7 +98,6 @@ const editTreeFx = attach({
     id: $id,
   },
   effect: ({ values, id }) => {
-    console.log('wtf')
     if (!id) {
       throw new Error('Local: no id');
     }
@@ -125,7 +129,7 @@ const setPathToFormFx = attach({
 export const $mutating = or(
   uploadImageFx.pending,
   createTreeFx.pending,
-  editTreeFx.pending
+  editTreeFx.pending,
 );
 
 // Resolved effects holder
@@ -136,6 +140,13 @@ export const mutated = merge([createTreeFx.done, editTreeFx.done]);
 sample({
   clock: [editTriggered, createTriggered],
   target: disclosure.opened,
+});
+
+// If user starts editing copy original tree
+sample({
+  clock: editTriggered,
+  fn: ({ values }) => values,
+  target: $originalTree,
 });
 
 // If user starts editing, put values to form
@@ -181,19 +192,22 @@ sample({
   target: uploadImageFx,
 });
 
-// If image was uploaded before and not changed, send it to editTreeFx
 sample({
   clock: edited,
-  source: form.$formValues,
-  filter: (values) => !!values.image && values.image.startsWith('https'),
-  target: editTreeFx,
-});
+  source: {
+    original: $originalTree,
+    edited: form.$formValues,
+  },
+  filter: ({ original, edited }) => {
+    const noChanges = isEqual(original, edited);
+    const isBlob = edited.image?.startsWith('blob');
 
-// If there's no image at all, send it to editTreeFx
-sample({
-  clock: edited,
-  source: form.$formValues,
-  filter: (values) => !values.image,
+    if (noChanges && !isBlob) {
+      infoFx('No changes detected');
+    }
+
+    return !noChanges && !isBlob;
+  },
   target: editTreeFx,
 });
 

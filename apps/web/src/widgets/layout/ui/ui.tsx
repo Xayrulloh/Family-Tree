@@ -1,6 +1,5 @@
-import { Layout as AntLayout, theme, Typography } from 'antd';
-import { Header, Content, Footer } from 'antd/es/layout/layout';
-import { NotificationDropdown } from '~/features/notification/dropdown';
+import { Layout as AntLayout, Typography, theme } from 'antd';
+import { Content, Footer, Header } from 'antd/es/layout/layout';
 import { EditProfileModal } from '~/features/user/edit';
 import { UserDropdown } from './user-dropdown';
 
@@ -24,41 +23,39 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
           {/* Header Title */}
           <Typography.Title
             level={3}
-            style={{
-              margin: 0,
-              cursor: 'pointer',
-              transition: 'color 0.2s',
-              color: token.colorText,
-            }}
+            className="!m-0 cursor-pointer transition-colors duration-200"
+            style={{ color: token.colorText }}
             onClick={() => {
               if (window.location.pathname !== '/family-trees') {
                 window.open('/family-trees', '_self');
               }
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.color = token.colorPrimary)
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color = token.colorText)
-            }
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = token.colorPrimary;
+
+              return e.currentTarget.style.color;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = token.colorText;
+
+              return e.currentTarget.style.color;
+            }}
           >
             Family Tree
           </Typography.Title>
 
           {/* Header Notification and Profile Div */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <NotificationDropdown />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {/* TODO: here should be notification */}
             <UserDropdown />
           </div>
         </Header>
 
-        {/* Content part (Trees Grid) */}
-        <Content style={{ margin: '24px 16px 0' }}>
+        {/* Main content */}
+        <Content className="px-4 sm:px-6 md:px-8 py-4">
           <div
+            className="min-h-[360px] rounded-lg"
             style={{
-              padding: 12,
-              minHeight: 360,
-              borderRadius: token.borderRadiusLG,
               background: token.colorBgContainer,
             }}
           >
@@ -68,10 +65,9 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
 
         {/* Footer part */}
         <Footer
+          className="text-center py-4"
           style={{
-            textAlign: 'center',
             background: token.colorBgBase,
-            padding: '10px',
           }}
         >
           © {new Date().getFullYear()} FamilyTree. All rights reserved.

@@ -1,31 +1,33 @@
 import {
-  Flex,
-  theme,
-  Row,
-  Col,
-  Typography,
-  Card,
-  Spin,
-  Dropdown,
-  MenuProps,
-  Button,
-  Space,
-  Image,
-} from 'antd';
-import { factory } from '../model';
-import { LazyPageProps } from '~/shared/lib/lazy-page';
-import { useUnit } from 'effector-react';
-import { FamilyTreeSchemaType } from '@family-tree/shared';
-import {
-  LockOutlined,
-  GlobalOutlined,
+  DeleteOutlined,
+  EditOutlined,
   EllipsisOutlined,
+  GlobalOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
+import type { FamilyTreeSchemaType } from '@family-tree/shared';
+import {
+  Button,
+  Card,
+  Col,
+  Dropdown,
+  Flex,
+  Image,
+  type MenuProps,
+  Row,
+  Space,
+  Spin,
+  Typography,
+  theme,
+} from 'antd';
+import { useUnit } from 'effector-react';
 import {
   CreateEditTreeModal,
   createEditTreeModel,
 } from '~/features/tree/create-edit';
 import { DeleteTreeModal, deleteTreeModel } from '~/features/tree/delete';
+import type { LazyPageProps } from '~/shared/lib/lazy-page';
+import { factory } from '../model';
 
 // Types
 type Model = ReturnType<typeof factory>;
@@ -42,6 +44,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
     {
       key: 'edit',
       label: 'Edit',
+      icon: <EditOutlined />,
       onClick: () =>
         createEditTreeModel.editTriggered({
           id: tree.id,
@@ -55,6 +58,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
     {
       key: 'delete',
       label: 'Delete',
+      icon: <DeleteOutlined />,
       danger: true,
       onClick: () => {
         deleteTreeModel.deleteTriggered({ id: tree.id });
@@ -65,14 +69,22 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
   return (
     <Card
       hoverable
-      styles={{ body: { padding: 10 } }}
+      styles={{
+        body: {
+          padding: '12px 16px 16px',
+          height: 'calc(100% - 140px)',
+        },
+      }}
       style={{
         height: '100%',
         minHeight: 220,
         position: 'relative',
         borderRadius: 12,
         overflow: 'hidden',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        transition: 'all 0.2s ease',
+        display: 'flex',
+        flexDirection: 'column',
       }}
       cover={
         <div
@@ -81,13 +93,13 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
             background: token.colorFillContent,
             display: 'flex',
             overflow: 'hidden',
+            position: 'relative',
             ...(tree.image
-              ? {
-                  // Image: don't center, just fill
-                }
+              ? {}
               : {
                   justifyContent: 'center',
                   alignItems: 'center',
+                  backgroundColor: token.colorFillSecondary,
                 }),
           }}
         >
@@ -101,11 +113,19 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
                 objectFit: 'cover',
                 objectPosition: 'center',
                 transition: 'transform 0.3s',
-                display: 'block',
               }}
+              preview={false}
             />
           ) : (
-            <span role="img" aria-label="tree" style={{ fontSize: 40, lineHeight: 1 }}>
+            <span
+              role="img"
+              aria-label="tree"
+              style={{
+                fontSize: 48,
+                lineHeight: 1,
+                color: token.colorTextDescription,
+              }}
+            >
               🌲
             </span>
           )}
@@ -139,6 +159,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
         level={5}
         style={{
           marginBottom: 4,
+          marginTop: 0,
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -169,14 +190,14 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
       <Row gutter={[16, 16]}>
         {/* Exist Trees */}
         {trees.map((tree) => (
-          <Col key={tree.id} xs={24} sm={12} md={8} lg={6} xl={4}>
+          <Col xs={12} sm={8} md={6} lg={6} xl={4} key={tree.id}>
             <TreeCard tree={tree} />
           </Col>
         ))}
 
         {/* Create A New Tree */}
         {
-          <Col xs={24} sm={12} md={8} lg={6} xl={4}>
+          <Col xs={12} sm={8} md={6} lg={6} xl={4}>
             <Card
               hoverable
               onClick={() => createEditTreeModel.createTriggered()}
