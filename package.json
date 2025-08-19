@@ -9,10 +9,8 @@
     "drizzle:generate": "nx run api:db:generate",
     "drizzle:push": "nx run api:db:push",
     "drizzle:studio": "nx run api:db:studio",
-    "format": "nx format:write",
     "check:lint": "nx affected --target=lint",
-    "scan": "nx affected -t scan",
-    "type-check": "nx run-many --target=type-check --all"
+    "scan": "nx affected -t scan"
   },
   "private": true,
   "dependencies": {
