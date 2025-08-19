@@ -1,3 +1,5 @@
+import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
+import type { RcFile } from 'antd/es/upload';
 import {
   attach,
   createEffect,
@@ -5,17 +7,14 @@ import {
   createStore,
   sample,
 } from 'effector';
-import { createDisclosure } from '~/shared/lib/disclosure';
-import { createForm } from '~/shared/lib/create-form';
-import { z } from 'zod';
-import { api } from '~/shared/api';
-import { RcFile } from 'antd/es/upload';
-import { delay, or } from 'patronum';
-import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
-import { $user, sessionFx } from '~/entities/user/model';
 import { isEqual } from 'lodash';
-import { messageApi } from '~/shared/lib/antd/message';
+import { delay, or } from 'patronum';
+import { z } from 'zod';
 import { userModel } from '~/entities/user';
+import { api } from '~/shared/api';
+import { createForm } from '~/shared/lib/create-form';
+import { createDisclosure } from '~/shared/lib/disclosure';
+import { infoFx } from '~/shared/lib/message';
 
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
@@ -118,22 +117,29 @@ sample({
 sample({
   clock: formValidated,
   source: {
-    original: $user,
+    original: userModel.$user,
     edited: form.$formValues,
   },
   filter: ({ original, edited }) => {
-    if (!!edited.image && edited.image.startsWith('https') && isEqual({
-      birthdate: original?.birthdate,
-      gender: original?.gender,
-      name: original?.name,
-      image: original?.image,
-    }, edited)) {
-      messageApi.info('No changes detected');
+    if (
+      !!edited.image &&
+      edited.image.startsWith('https') &&
+      isEqual(
+        {
+          birthdate: original?.birthdate,
+          gender: original?.gender,
+          name: original?.name,
+          image: original?.image,
+        },
+        edited,
+      )
+    ) {
+      infoFx('No changes detected');
 
-      return false
+      return false;
     }
 
-    return true
+    return true;
   },
   target: editProfileFx,
 });
@@ -179,4 +185,4 @@ sample({
 sample({
   clock: randomAvatarFx.doneData,
   target: userModel.sessionFx,
-})
+});

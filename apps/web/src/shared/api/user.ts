@@ -1,6 +1,9 @@
-import { UserResponseType, UserUpdateRequestType } from '@family-tree/shared';
+import type {
+  UserResponseType,
+  UserUpdateRequestType,
+} from '@family-tree/shared';
+import type { AxiosRequestConfig } from 'axios';
 import { base } from './base';
-import { AxiosRequestConfig } from 'axios';
 
 export const user = {
   me: (config?: AxiosRequestConfig) => {

@@ -1,18 +1,25 @@
-import { Dropdown, MenuProps, Avatar, Typography, Spin, Space } from 'antd';
 import {
-  UserOutlined,
-  LogoutOutlined,
   BulbOutlined,
-  ManOutlined,
-  WomanOutlined,
   CalendarOutlined,
   EditOutlined,
+  LogoutOutlined,
+  ManOutlined,
+  UserOutlined,
+  WomanOutlined,
 } from '@ant-design/icons';
-import { useUnit } from 'effector-react';
 import { UserGenderEnum } from '@family-tree/shared';
+import {
+  Avatar,
+  Dropdown,
+  type MenuProps,
+  Space,
+  Spin,
+  Typography,
+} from 'antd';
+import { useUnit } from 'effector-react';
+import { $theme, themeToggled } from '~/app/model';
 import { userModel } from '~/entities/user';
 import { editProfileModel } from '~/features/user/edit';
-import { $theme, themeToggled } from '~/app/model';
 
 export const UserDropdown = () => {
   const [user, logout, theme] = useUnit([
@@ -90,6 +97,7 @@ export const UserDropdown = () => {
       label: (
         <div
           onClick={() => editProfileModel.randomAvatarTriggered()}
+          onKeyDown={(_e) => {}}
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
           <span role="img" aria-label="dice">
@@ -114,6 +122,7 @@ export const UserDropdown = () => {
               birthdate: user.birthdate,
             })
           }
+          onKeyDown={(_e) => {}}
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
           <EditOutlined />
@@ -126,6 +135,7 @@ export const UserDropdown = () => {
       label: (
         <div
           onClick={() => themeToggled()}
+          onKeyDown={(_e) => {}}
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
           <BulbOutlined />
@@ -138,6 +148,7 @@ export const UserDropdown = () => {
       label: (
         <div
           onClick={() => logout()}
+          onKeyDown={(_e) => {}}
           style={{
             display: 'flex',
             alignItems: 'center',

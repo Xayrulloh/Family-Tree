@@ -1,5 +1,5 @@
-import axios, { AxiosError, AxiosResponse } from 'axios';
-import { ZodIssue } from 'zod';
+import axios, { type AxiosError, type AxiosResponse } from 'axios';
+import type { ZodIssue } from 'zod';
 import { errorFx, successFx } from '~/shared/lib/message';
 
 const successMessages: Record<string, string> = {
@@ -25,7 +25,11 @@ base.interceptors.response.use(
   (response: AxiosResponse) => {
     const method = response.config.method?.toLowerCase();
 
-    if (method && successMessages[method]) {
+    if (
+      method &&
+      successMessages[method] &&
+      response.config.url !== '/files/tree'
+    ) {
       successFx(successMessages[method]);
     }
 
