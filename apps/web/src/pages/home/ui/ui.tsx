@@ -1,3 +1,4 @@
+// biome-ignore assist/source/organizeImports: <false>
 import React from 'react';
 import { Link } from 'atomic-router-react';
 import { Button, Typography, Card, Row, Col } from 'antd';
@@ -199,6 +200,7 @@ const HomePage: React.FC = () => {
               xs={24}
               sm={12}
               lg={6}
+              // biome-ignore lint/suspicious/noArrayIndexKey: <false>
               key={index}
               style={{
                 animation: `fadeInUp 0.6s ease-out ${index * 0.1 + 0.2}s forwards`,
@@ -309,6 +311,7 @@ const HomePage: React.FC = () => {
               xs={24}
               sm={12}
               lg={6}
+              // biome-ignore lint/suspicious/noArrayIndexKey: <false>
               key={index}
               style={{
                 animation: `fadeInUp 0.6s ease-out ${index * 0.15 + 0.4}s forwards`,
