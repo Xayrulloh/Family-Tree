@@ -8,6 +8,7 @@ import {
 } from '@family-tree/shared';
 import { createZodDto } from 'nestjs-zod';
 
+// request
 class FamilyTreeCreateRequestDto extends createZodDto(
   FamilyTreeCreateRequestSchema,
 ) {}
@@ -15,6 +16,8 @@ class FamilyTreeCreateRequestDto extends createZodDto(
 class FamilyTreeUpdateRequestDto extends createZodDto(
   FamilyTreeUpdateRequestSchema,
 ) {}
+
+// param
 
 class FamilyTreeNameParamDto extends createZodDto(FamilyTreeNameParamSchema) {}
 

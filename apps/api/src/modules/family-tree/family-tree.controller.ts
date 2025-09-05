@@ -27,7 +27,6 @@ import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
-import { FamilyTreeRelationshipService } from '../family-tree-relationship/family-tree-relationship.service';
 import {
   FamilyTreeArrayResponseDto,
   type FamilyTreeCreateRequestDto,
@@ -43,7 +42,6 @@ import { FamilyTreeService } from './family-tree.service';
 export class FamilyTreeController {
   constructor(
     private readonly familyTreeService: FamilyTreeService,
-    private readonly familyTreeRelationshipService: FamilyTreeRelationshipService,
   ) {}
 
   // Find family trees of user
@@ -104,10 +102,10 @@ export class FamilyTreeController {
     );
 
     // creating default parent
-    await this.familyTreeRelationshipService.createFamilyTreeRelationshipUserParentOfFamilyTree(
-      familyTree.id,
-      { targetUserId: '' },
-    );
+    // await this.familyTreeRelationshipService.createFamilyTreeRelationshipUserParentOfFamilyTree(
+    //   familyTree.id,
+    //   { targetUserId: '' },
+    // );
 
     return familyTree;
   }

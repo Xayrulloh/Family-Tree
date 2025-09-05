@@ -1,13 +1,13 @@
 import * as z from 'zod';
 import { BaseSchema } from './base.schema';
 
-enum UserGenderEnum {
+const enum UserGenderEnum {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
   UNKNOWN = 'UNKNOWN',
 }
 
-const UserSchema = z
+const RealUserSchema = z
   .object({
     email: z
       .string()
@@ -36,11 +36,12 @@ const UserSchema = z
       .describe(
         "Only male or female and for the beginning as we don't know we put unknown",
       ),
-    deathdate: z.string().date().nullable().describe('Date of death'),
-    birthdate: z.string().date().nullable().describe('Date of birth'),
+    dod: z.string().date().nullable().describe('Date of death'),
+    dob: z.string().date().nullable().describe('Date of birth'),
+    description: z.string().nullable().describe('Description of user'),
   })
   .merge(BaseSchema);
 
-type UserSchemaType = z.infer<typeof UserSchema>;
+type RealUserSchemaType = z.infer<typeof RealUserSchema>;
 
-export { UserSchema, type UserSchemaType, UserGenderEnum };
+export { RealUserSchema, type RealUserSchemaType, UserGenderEnum };

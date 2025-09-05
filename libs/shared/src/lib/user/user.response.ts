@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UserSchema } from '../schema/user.schema';
+import { UserSchema } from '../schema/real-user.schema';
 
 const UserResponseSchema = UserSchema;
 

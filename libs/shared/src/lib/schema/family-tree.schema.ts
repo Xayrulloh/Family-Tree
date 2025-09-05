@@ -1,6 +1,11 @@
 import * as z from 'zod';
 import { BaseSchema } from './base.schema';
 
+const enum FamilyTreeConnectionEnum {
+  SPOUSE = 'SPOUSE',
+  CHILD = 'CHILD',
+}
+
 const FamilyTreeSchema = z
   .object({
     createdBy: z.string().min(1).describe('User who created this family tree'),
@@ -20,4 +25,4 @@ const FamilyTreeSchema = z
 
 type FamilyTreeSchemaType = z.infer<typeof FamilyTreeSchema>;
 
-export { FamilyTreeSchema, type FamilyTreeSchemaType };
+export { FamilyTreeSchema, type FamilyTreeSchemaType, FamilyTreeConnectionEnum };

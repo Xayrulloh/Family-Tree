@@ -9,6 +9,8 @@ import { createZodDto } from 'nestjs-zod';
 // request
 class UserUpdateRequestDto extends createZodDto(UserUpdateRequestSchema) {}
 
+// param
+
 class UserEmailParamDto extends createZodDto(UserEmailParamSchema) {}
 
 class UserIdParamDto extends createZodDto(UserIdParamSchema) {}
