@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const enum FileUploadFolderEnum {
+enum FileUploadFolderEnum {
   AVATAR = 'avatar',
   TREE = 'tree',
 }

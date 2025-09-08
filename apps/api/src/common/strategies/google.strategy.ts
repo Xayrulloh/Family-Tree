@@ -1,6 +1,6 @@
 import {
   type GoogleProfileType,
-  UserGenderEnum,
+  RoleUserGenderEnum,
   type UserSchemaType,
 } from '@family-tree/shared';
 import { Inject, Injectable } from '@nestjs/common';
@@ -60,7 +60,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
           username: `${emails[0].value.split('@')[0]}-${id}`,
           image:
             photos[0].value || `${DICEBAR_URL}/7.x/notionists/svg?seed=${id}`,
-          gender: UserGenderEnum.UNKNOWN,
+          gender: RoleUserGenderEnum.UNKNOWN,
         })
         .returning();
 

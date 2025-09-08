@@ -1,7 +1,7 @@
 import * as z from 'zod';
 import { BaseSchema } from './base.schema';
 
-const enum FCMTokenDeviceEnum {
+enum FCMTokenDeviceEnum {
   ANDROID = 'ANDROID',
   IOS = 'IOS',
   WEB = 'WEB',

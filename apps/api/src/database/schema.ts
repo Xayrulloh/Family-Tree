@@ -1,4 +1,8 @@
-import { FamilyTreeConnectionEnum, FCMTokenDeviceEnum, UserGenderEnum } from '@family-tree/shared';
+import {
+  FamilyTreeConnectionEnum,
+  FCMTokenDeviceEnum,
+  UserGenderEnum,
+} from '@family-tree/shared';
 import { relations } from 'drizzle-orm';
 import {
   boolean,
@@ -12,20 +16,24 @@ import {
 } from 'drizzle-orm/pg-core';
 
 // enums
-export const DrizzleUserGenderEnum = pgEnum('user_gender', [
+export const DrizzleRealUserGenderEnum = pgEnum('real_user_gender', [
   UserGenderEnum.MALE,
   UserGenderEnum.FEMALE,
   UserGenderEnum.UNKNOWN,
+]);
+export const DrizzleMockUserGenderEnum = pgEnum('mock_user_gender', [
+  UserGenderEnum.MALE,
+  UserGenderEnum.FEMALE,
 ]);
 export const DrizzleFCMTokenDeviceEnum = pgEnum('fcm_token_device_type', [
   FCMTokenDeviceEnum.ANDROID,
   FCMTokenDeviceEnum.IOS,
   FCMTokenDeviceEnum.WEB,
 ]);
-export const DrizzleFamilyTreeConnectionEnum = pgEnum('family_tree_connection',[
-  FamilyTreeConnectionEnum.SPOUSE,
-  FamilyTreeConnectionEnum.CHILD
-])
+export const DrizzleFamilyTreeConnectionEnum = pgEnum(
+  'family_tree_connection',
+  [FamilyTreeConnectionEnum.SPOUSE, FamilyTreeConnectionEnum.CHILD],
+);
 
 // schemas
 const baseSchema = {
@@ -44,7 +52,7 @@ export const usersSchema = pgTable('users', {
   username: text('username'),
   name: text('name').notNull(),
   image: text('image'),
-  gender: DrizzleUserGenderEnum('gender').notNull(),
+  gender: DrizzleRealUserGenderEnum('gender').notNull(),
   description: text('description'),
   dob: date('dob', { mode: 'string' }),
   dod: date('dod', { mode: 'string' }),
@@ -57,12 +65,12 @@ export const mockUsersSchema = pgTable('mock_users', {
   }),
   name: text('name').notNull(),
   image: text('image'),
-  gender: DrizzleUserGenderEnum('gender').notNull(),
+  gender: DrizzleMockUserGenderEnum('gender').notNull(),
   description: text('description'),
   dob: date('dob', { mode: 'string' }),
   dod: date('dod', { mode: 'string' }),
   ...baseSchema,
-})
+});
 
 export const familyTreesSchema = pgTable(
   'family_trees',
@@ -86,14 +94,12 @@ export const familyTreeNodesSchema = pgTable('family_tree_nodes', {
       onDelete: 'cascade',
     })
     .notNull(),
-  realUserId: uuid('real_user_id')
-    .references(() => usersSchema.id)
-    .notNull(),
+  realUserId: uuid('real_user_id').references(() => usersSchema.id),
   mockUserId: uuid('mock_user_id')
     .references(() => mockUsersSchema.id)
     .notNull(),
   ...baseSchema,
-})
+});
 
 export const familyTreeConnectionsSchema = pgTable('family_tree_connections', {
   familyTreeId: uuid('family_tree_id')
@@ -108,8 +114,8 @@ export const familyTreeConnectionsSchema = pgTable('family_tree_connections', {
     .references(() => usersSchema.id)
     .notNull(),
   connectionType: DrizzleFamilyTreeConnectionEnum('connection_type').notNull(),
-  ...baseSchema
-})
+  ...baseSchema,
+});
 
 export const FCMTokensSchema = pgTable('fcm_tokens', {
   token: text('token').notNull(),
@@ -143,7 +149,9 @@ export const notificationReadsSchema = pgTable('notification_reads', {
 // relations
 export const usersRelations = relations(usersSchema, ({ many }) => ({
   familyTrees: many(familyTreesSchema, { relationName: 'family-tree-creator' }),
-  familyTreeNodes: many(familyTreeNodesSchema, { relationName: 'user-family-tree-node' }),
+  familyTreeNodes: many(familyTreeNodesSchema, {
+    relationName: 'user-family-tree-node',
+  }),
   fcmTokens: many(FCMTokensSchema, { relationName: 'user-fcm-token' }),
 }));
 
@@ -155,8 +163,12 @@ export const familyTreesRelations = relations(
       references: [usersSchema.id],
       relationName: 'family-tree-creator',
     }),
-    familyTreeNodes: many(familyTreeNodesSchema, { relationName: 'family-tree-node' }),
-    familyTreeConnections: many(familyTreeConnectionsSchema, { relationName: 'family-tree-connection' }),
+    familyTreeNodes: many(familyTreeNodesSchema, {
+      relationName: 'family-tree-node',
+    }),
+    familyTreeConnections: many(familyTreeConnectionsSchema, {
+      relationName: 'family-tree-connection',
+    }),
   }),
 );
 

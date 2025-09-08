@@ -1,9 +1,9 @@
-import * as z from "zod";
-import { BaseSchema } from "./base.schema";
+import * as z from 'zod';
+import { BaseSchema } from './base.schema';
 
-const enum FamilyTreeConnectionEnum {
-  SPOUSE = "SPOUSE",
-  CHILD = "CHILD",
+enum FamilyTreeConnectionEnum {
+  SPOUSE = 'SPOUSE',
+  CHILD = 'CHILD',
 }
 
 const FamilyTreeConnectionSchema = z
@@ -24,6 +24,6 @@ type FamilyTreeConnectionSchemaType = z.infer<
 
 export {
   FamilyTreeConnectionSchema,
-  type FamilyTreeConnectionSchemaType,
   FamilyTreeConnectionEnum,
+  type FamilyTreeConnectionSchemaType,
 };

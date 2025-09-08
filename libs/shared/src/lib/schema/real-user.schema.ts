@@ -1,7 +1,7 @@
 import * as z from 'zod';
 import { BaseSchema } from './base.schema';
 
-const enum UserGenderEnum {
+enum UserGenderEnum {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
   UNKNOWN = 'UNKNOWN',
