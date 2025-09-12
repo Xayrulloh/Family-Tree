@@ -31,7 +31,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
-    "dotenv": "^17.2.0",
+    "dotenv": "^17.2.2",
     "drizzle-orm": "^0.44.3",
     "effector": "^23.4.1",
     "effector-react": "^23.3.0",
