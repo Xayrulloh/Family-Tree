@@ -30,7 +30,7 @@
     "axios": "^1.11.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "dayjs": "^1.11.13",
+    "dayjs": "^1.11.18",
     "dotenv": "^17.2.0",
     "drizzle-orm": "^0.44.3",
     "effector": "^23.4.1",
