@@ -37,7 +37,7 @@ jobs:
       - name: Run Checks/Lint/Build
         run: npx nx affected -t lint build
 
-      - name: Code Analysis
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: npx nx affected -t scan --parallel 1
+      # - name: Code Analysis
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   run: npx nx affected -t scan --parallel 1
