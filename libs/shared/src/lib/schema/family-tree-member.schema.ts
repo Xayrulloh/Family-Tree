@@ -1,7 +1,7 @@
 import * as z from 'zod';
 import { BaseSchema } from './base.schema';
 
-const FamilyTreeNodeSchema = z
+const FamilyTreeMemberSchema = z
   .object({
     familyTreeId: z.string().uuid(),
     realUserId: z
@@ -13,6 +13,6 @@ const FamilyTreeNodeSchema = z
   })
   .merge(BaseSchema);
 
-type FamilyTreeNodeSchemaType = z.infer<typeof FamilyTreeNodeSchema>;
+type FamilyTreeMemberSchemaType = z.infer<typeof FamilyTreeMemberSchema>;
 
-export { FamilyTreeNodeSchema, type FamilyTreeNodeSchemaType };
+export { FamilyTreeMemberSchema, type FamilyTreeMemberSchemaType };

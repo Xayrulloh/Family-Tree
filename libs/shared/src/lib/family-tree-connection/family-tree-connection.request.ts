@@ -1,5 +1,5 @@
 // import { z } from 'zod';
-// import { FamilyTreeNodeSchema } from '../schema/family-tree-node.schema';
+// import { FamilyTreeMemberSchema } from '../schema/family-tree-node.schema';
 // import { FamilyTreeSchema } from '../schema';
 
 // const FamilyTreeCreateRequestSchema = FamilyTreeSchema.pick({

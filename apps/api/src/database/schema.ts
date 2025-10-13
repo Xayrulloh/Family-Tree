@@ -1,5 +1,5 @@
 import {
-  FamilyTreeConnectionEnum,
+  FamilyTreeMemberConnectionEnum,
   FCMTokenDeviceEnum,
   UserGenderEnum,
 } from '@family-tree/shared';
@@ -30,9 +30,9 @@ export const DrizzleFCMTokenDeviceEnum = pgEnum('fcm_token_device_type', [
   FCMTokenDeviceEnum.IOS,
   FCMTokenDeviceEnum.WEB,
 ]);
-export const DrizzleFamilyTreeConnectionEnum = pgEnum(
-  'family_tree_connection',
-  [FamilyTreeConnectionEnum.SPOUSE, FamilyTreeConnectionEnum.CHILD],
+export const DrizzleFamilyTreeMemberConnectionEnum = pgEnum(
+  'family_tree_member_connection',
+  [FamilyTreeMemberConnectionEnum.SPOUSE, FamilyTreeMemberConnectionEnum.CHILD],
 );
 
 // schemas
@@ -88,7 +88,7 @@ export const familyTreesSchema = pgTable(
   }),
 );
 
-export const familyTreeNodesSchema = pgTable('family_tree_nodes', {
+export const familyTreeMembersSchema = pgTable('family_tree_members', {
   familyTreeId: uuid('family_tree_id')
     .references(() => familyTreesSchema.id, {
       onDelete: 'cascade',
@@ -101,21 +101,26 @@ export const familyTreeNodesSchema = pgTable('family_tree_nodes', {
   ...baseSchema,
 });
 
-export const familyTreeConnectionsSchema = pgTable('family_tree_connections', {
-  familyTreeId: uuid('family_tree_id')
-    .references(() => familyTreesSchema.id, {
-      onDelete: 'cascade',
-    })
-    .notNull(),
-  fromUserId: uuid('from_user_id')
-    .references(() => usersSchema.id)
-    .notNull(),
-  toUserId: uuid('to_user_id')
-    .references(() => usersSchema.id)
-    .notNull(),
-  connectionType: DrizzleFamilyTreeConnectionEnum('connection_type').notNull(),
-  ...baseSchema,
-});
+export const familyTreeMemberConnectionsSchema = pgTable(
+  'family_tree_member_connections',
+  {
+    familyTreeId: uuid('family_tree_id')
+      .references(() => familyTreesSchema.id, {
+        onDelete: 'cascade',
+      })
+      .notNull(),
+    fromUserId: uuid('from_user_id')
+      .references(() => usersSchema.id)
+      .notNull(),
+    toUserId: uuid('to_user_id')
+      .references(() => usersSchema.id)
+      .notNull(),
+    memberConnectionType: DrizzleFamilyTreeMemberConnectionEnum(
+      'member_connection_type',
+    ).notNull(),
+    ...baseSchema,
+  },
+);
 
 export const FCMTokensSchema = pgTable('fcm_tokens', {
   token: text('token').notNull(),
@@ -149,8 +154,8 @@ export const notificationReadsSchema = pgTable('notification_reads', {
 // relations
 export const usersRelations = relations(usersSchema, ({ many }) => ({
   familyTrees: many(familyTreesSchema, { relationName: 'family-tree-creator' }),
-  familyTreeNodes: many(familyTreeNodesSchema, {
-    relationName: 'user-family-tree-node',
+  familyTreeMembers: many(familyTreeMembersSchema, {
+    relationName: 'user-family-tree-member',
   }),
   fcmTokens: many(FCMTokensSchema, { relationName: 'user-fcm-token' }),
 }));
@@ -163,53 +168,53 @@ export const familyTreesRelations = relations(
       references: [usersSchema.id],
       relationName: 'family-tree-creator',
     }),
-    familyTreeNodes: many(familyTreeNodesSchema, {
-      relationName: 'family-tree-node',
+    familyTreeMembers: many(familyTreeMembersSchema, {
+      relationName: 'family-tree-member',
     }),
-    familyTreeConnections: many(familyTreeConnectionsSchema, {
-      relationName: 'family-tree-connection',
+    familyTreeMemberConnections: many(familyTreeMemberConnectionsSchema, {
+      relationName: 'family-tree-member-connection',
     }),
   }),
 );
 
-export const familyTreeNodesRelations = relations(
-  familyTreeNodesSchema,
+export const familyTreeMembersRelations = relations(
+  familyTreeMembersSchema,
   ({ one }) => ({
     realUser: one(usersSchema, {
-      fields: [familyTreeNodesSchema.realUserId],
+      fields: [familyTreeMembersSchema.realUserId],
       references: [usersSchema.id],
-      relationName: 'family-tree-node-real-user',
+      relationName: 'family-tree-member-real-user',
     }),
     mockUser: one(mockUsersSchema, {
-      fields: [familyTreeNodesSchema.mockUserId],
+      fields: [familyTreeMembersSchema.mockUserId],
       references: [mockUsersSchema.id],
-      relationName: 'family-tree-node-mock-user',
+      relationName: 'family-tree-member-mock-user',
     }),
     familyTree: one(familyTreesSchema, {
-      fields: [familyTreeNodesSchema.familyTreeId],
+      fields: [familyTreeMembersSchema.familyTreeId],
       references: [familyTreesSchema.id],
-      relationName: 'family-tree-node-family-tree',
+      relationName: 'family-tree-member-family-tree',
     }),
   }),
 );
 
-export const familyTreeConnectionsRelations = relations(
-  familyTreeConnectionsSchema,
+export const familyTreeMemberConnectionsRelations = relations(
+  familyTreeMemberConnectionsSchema,
   ({ one }) => ({
     fromUser: one(usersSchema, {
-      fields: [familyTreeConnectionsSchema.fromUserId],
+      fields: [familyTreeMemberConnectionsSchema.fromUserId],
       references: [usersSchema.id],
-      relationName: 'family-tree-connection-from-user',
+      relationName: 'family-tree-member-connection-from-user',
     }),
     toUser: one(usersSchema, {
-      fields: [familyTreeConnectionsSchema.toUserId],
+      fields: [familyTreeMemberConnectionsSchema.toUserId],
       references: [usersSchema.id],
-      relationName: 'family-tree-connection-to-user',
+      relationName: 'family-tree-member-connection-to-user',
     }),
     familyTree: one(familyTreesSchema, {
-      fields: [familyTreeConnectionsSchema.familyTreeId],
+      fields: [familyTreeMemberConnectionsSchema.familyTreeId],
       references: [familyTreesSchema.id],
-      relationName: 'family-tree-connection-family-tree',
+      relationName: 'family-tree-member-connection-family-tree',
     }),
   }),
 );

@@ -60,7 +60,7 @@ export class FamilyTreeNodeService {
       .returning();
 
     await this.db
-      .insert(schema.familyTreeNodesSchema)
+      .insert(schema.familyTreeMembersSchema)
       .values({
         familyTreeId,
         mockUserId: mockUser.id,

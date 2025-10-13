@@ -1,5 +1,5 @@
 import z from 'zod';
-import { BaseSchema, FamilyTreeNodeSchema, MockUserSchema } from '../schema';
+import { BaseSchema, FamilyTreeMemberSchema, MockUserSchema } from '../schema';
 
 // schemas
 const FamilyTreeNodeCreateRequestSchema = MockUserSchema.omit({
@@ -9,7 +9,7 @@ const FamilyTreeNodeCreateRequestSchema = MockUserSchema.omit({
   deletedAt: true,
 });
 
-const FamilyTreeNodeBindRequestSchema = FamilyTreeNodeSchema.omit({
+const FamilyTreeNodeBindRequestSchema = FamilyTreeMemberSchema.omit({
   mockUserId: true,
   familyTreeId: true,
 }).required({
