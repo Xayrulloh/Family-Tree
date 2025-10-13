@@ -2,7 +2,7 @@ import * as z from 'zod';
 import { BaseSchema } from './base.schema';
 import { UserGenderEnum } from './real-user.schema';
 
-const MockUserSchema = z
+const MockMemberSchema = z
   .object({
     name: z.string().min(3).describe('Mock user name'),
     image: z
@@ -22,6 +22,6 @@ const MockUserSchema = z
   })
   .merge(BaseSchema);
 
-type MockUserSchemaType = z.infer<typeof MockUserSchema>;
+type MockMemberSchemaType = z.infer<typeof MockMemberSchema>;
 
-export { MockUserSchema, type MockUserSchemaType };
+export { MockMemberSchema, type MockMemberSchemaType };

@@ -5,7 +5,7 @@ enum UserGenderEnum {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
   UNKNOWN = 'UNKNOWN',
-}
+} // FIXME: maybe as const
 
 const RealUserSchema = z
   .object({

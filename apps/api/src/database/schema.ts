@@ -21,7 +21,7 @@ export const DrizzleRealUserGenderEnum = pgEnum('real_user_gender', [
   UserGenderEnum.FEMALE,
   UserGenderEnum.UNKNOWN,
 ]);
-export const DrizzleMockUserGenderEnum = pgEnum('mock_user_gender', [
+export const DrizzleMockMemberGenderEnum = pgEnum('mock_user_gender', [
   UserGenderEnum.MALE,
   UserGenderEnum.FEMALE,
 ]);
@@ -59,13 +59,13 @@ export const usersSchema = pgTable('users', {
   ...baseSchema,
 });
 
-export const mockUsersSchema = pgTable('mock_users', {
+export const mockMembersSchema = pgTable('mock_users', {
   familyTreeId: uuid('family_tree_id').references(() => familyTreesSchema.id, {
     onDelete: 'cascade',
   }),
   name: text('name').notNull(),
   image: text('image'),
-  gender: DrizzleMockUserGenderEnum('gender').notNull(),
+  gender: DrizzleMockMemberGenderEnum('gender').notNull(),
   description: text('description'),
   dob: date('dob', { mode: 'string' }),
   dod: date('dod', { mode: 'string' }),
@@ -95,8 +95,8 @@ export const familyTreeMembersSchema = pgTable('family_tree_members', {
     })
     .notNull(),
   realUserId: uuid('real_user_id').references(() => usersSchema.id),
-  mockUserId: uuid('mock_user_id')
-    .references(() => mockUsersSchema.id)
+  mockMemberId: uuid('mock_user_id')
+    .references(() => mockMembersSchema.id)
     .notNull(),
   ...baseSchema,
 });
@@ -185,9 +185,9 @@ export const familyTreeMembersRelations = relations(
       references: [usersSchema.id],
       relationName: 'family-tree-member-real-user',
     }),
-    mockUser: one(mockUsersSchema, {
-      fields: [familyTreeMembersSchema.mockUserId],
-      references: [mockUsersSchema.id],
+    mockMember: one(mockMembersSchema, {
+      fields: [familyTreeMembersSchema.mockMemberId],
+      references: [mockMembersSchema.id],
       relationName: 'family-tree-member-mock-user',
     }),
     familyTree: one(familyTreesSchema, {

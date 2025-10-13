@@ -9,7 +9,7 @@ const FamilyTreeMemberSchema = z
       .uuid()
       .describe('The real connected user')
       .nullable(),
-    mockUserId: z.string().uuid().describe('The mock created user'),
+    mockMemberId: z.string().uuid().describe('The mock created user'),
   })
   .merge(BaseSchema);
 

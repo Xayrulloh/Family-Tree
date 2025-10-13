@@ -40,9 +40,7 @@ import { FamilyTreeService } from './family-tree.service';
 @ApiTags('Family Tree')
 @Controller('family-trees')
 export class FamilyTreeController {
-  constructor(
-    private readonly familyTreeService: FamilyTreeService,
-  ) {}
+  constructor(private readonly familyTreeService: FamilyTreeService) {}
 
   // Find family trees of user
   @Get()
@@ -101,11 +99,7 @@ export class FamilyTreeController {
       body,
     );
 
-    // creating default parent
-    // await this.familyTreeRelationshipService.createFamilyTreeRelationshipUserParentOfFamilyTree(
-    //   familyTree.id,
-    //   { targetUserId: '' },
-    // );
+    // creating single member (defining gender by user gender male | female)
 
     return familyTree;
   }
@@ -136,6 +130,8 @@ export class FamilyTreeController {
     @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeIdParamDto,
   ): Promise<void> {
+    // TODO: implement soft delete (back up and delete after 30 days)
+
     return this.familyTreeService.deleteFamilyTree(req.user.id, param.id);
   }
 }
