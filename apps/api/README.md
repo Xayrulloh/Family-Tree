@@ -20,7 +20,7 @@ erDiagram
         text username
         text name
         text image "url to bucket"
-        real_user_gender gender "male female unknown"
+        user_gender gender "male female unknown"
         text description "who he/she is"
         date dob "date of birth"
         date dod "date of death"
@@ -57,7 +57,7 @@ erDiagram
     family_tree_members {
         uuid id PK
         uuid family_tree_id FK
-        uuid real_user_id FK "not mvp"
+        uuid user_id FK "not mvp"
         uuid member_id FK
         timestamp created_at
         timestamp updated_at
@@ -116,7 +116,7 @@ erDiagram
     members ||--o{ family_tree_members : "represented_in"
     
     family_tree_members }o--|| members : "references_members"
-    family_tree_members }o--|| users : "references_real_user"
+    family_tree_members }o--|| users : "references_user"
     family_tree_members }o--|| family_trees : "belongs_to"
     
     family_tree_members_connections }o--|| family_trees : "belongs_to"

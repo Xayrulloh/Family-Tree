@@ -16,7 +16,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 // enums
-export const DrizzleUserGenderEnum = pgEnum('real_user_gender', [
+export const DrizzleUserGenderEnum = pgEnum('user_gender', [
   UserGenderEnum.MALE,
   UserGenderEnum.FEMALE,
   UserGenderEnum.UNKNOWN,
