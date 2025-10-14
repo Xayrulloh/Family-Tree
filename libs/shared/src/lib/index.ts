@@ -5,6 +5,6 @@ export * from './family-tree-member-connection/index';
 export * from './fcm-token/index';
 export * from './file';
 export * from './notification/index';
-export * from './user/index';
 export * from './schema/index';
 export * from './types/index';
+export * from './user/index';

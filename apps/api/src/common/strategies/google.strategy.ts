@@ -1,7 +1,7 @@
 import {
   type GoogleProfileType,
-  type UserSchemaType,
   UserGenderEnum,
+  type UserSchemaType,
 } from '@family-tree/shared';
 import { Inject, Injectable } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
