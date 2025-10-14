@@ -45,7 +45,7 @@ export class FamilyTreeMemberController {
     private readonly FamilyTreeMemberService: FamilyTreeMemberService,
   ) {}
 
-  // mock user create (node)
+  // member create (node)
   @Post()
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
@@ -64,26 +64,7 @@ export class FamilyTreeMemberController {
     );
   }
 
-  // TODO: after MVP
-  // @Post('/bind')
-  // @UseGuards(JWTAuthGuard)
-  // @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  // @HttpCode(HttpStatus.OK)
-  // @ApiCreatedResponse({ type: FamilyTreeMemberGetResponseDto })
-  // @ZodSerializerDto(FamilyTreeMemberGetResponseSchema)
-  // async bindFamilyTreeMember(
-  //   @Req() req: AuthenticatedRequest,
-  //   @Body() body: FamilyTreeRealMemberBindRequestDto,
-  //   @Param() param: FamilyTreeMemberGetAllParamDto,
-  // ): Promise<FamilyTreeMemberGetResponseDto> {
-  //   return this.FamilyTreeMemberService.bindFamilyTreeMember(
-  //     req.user.id,
-  //     param.familyTreeId,
-  //     body,
-  //   );
-  // }
-
-  // edit mock user
+  // edit member user
   @Put(':id')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
@@ -102,7 +83,7 @@ export class FamilyTreeMemberController {
     );
   }
 
-  // delete mock user
+  // delete member user
   @Delete(':id')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)

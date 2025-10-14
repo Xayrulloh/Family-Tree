@@ -29,12 +29,12 @@ erDiagram
         timestamp deleted_at
     }
 
-    mock_users {
+    members {
         uuid id PK
         uuid family_tree_id FK
         text name
         text image "url to bucket"
-        mock_user_gender gender "male female unknown"
+        member_gender gender "male female unknown"
         text description "who he/she is/was"
         date dob "date of birth"
         date dod "date of death"
@@ -58,7 +58,7 @@ erDiagram
         uuid id PK
         uuid family_tree_id FK
         uuid real_user_id FK "not mvp"
-        uuid mock_user_id FK
+        uuid member_id FK
         timestamp created_at
         timestamp updated_at
         timestamp deleted_at
@@ -109,13 +109,13 @@ erDiagram
     users ||--o{ notifications : "receives"
     users ||--o{ notification_reads : "marks_read"
     
-    family_trees ||--o{ mock_users : "contains"
+    family_trees ||--o{ members : "contains"
     family_trees ||--o{ family_tree_members : "has_members"
     family_trees ||--o{ family_tree_members_connections : "has_connections"
     
-    mock_users ||--o{ family_tree_members : "represented_in"
+    members ||--o{ family_tree_members : "represented_in"
     
-    family_tree_members }o--|| mock_users : "references_mock_user"
+    family_tree_members }o--|| members : "references_members"
     family_tree_members }o--|| users : "references_real_user"
     family_tree_members }o--|| family_trees : "belongs_to"
     

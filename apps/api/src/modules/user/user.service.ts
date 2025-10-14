@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { RealUserResponseType } from '@family-tree/shared';
+import type { UserResponseType } from '@family-tree/shared';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import { and, eq, isNull } from 'drizzle-orm';
@@ -25,7 +25,7 @@ export class UserService {
       configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
   }
 
-  async getUserByEmail(email: string): Promise<RealUserResponseType> {
+  async getUserByEmail(email: string): Promise<UserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.email, email),
@@ -40,7 +40,7 @@ export class UserService {
     return user;
   }
 
-  async getUserById(id: string): Promise<RealUserResponseType> {
+  async getUserById(id: string): Promise<UserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.id, id),
@@ -55,7 +55,7 @@ export class UserService {
     return user;
   }
 
-  async getUserThemselves(id: string): Promise<RealUserResponseType> {
+  async getUserThemselves(id: string): Promise<UserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.id, id),
@@ -102,7 +102,7 @@ export class UserService {
       .where(eq(schema.usersSchema.id, id));
   }
 
-  async updateUserAvatar(id: string): Promise<RealUserResponseType> {
+  async updateUserAvatar(id: string): Promise<UserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.id, id),

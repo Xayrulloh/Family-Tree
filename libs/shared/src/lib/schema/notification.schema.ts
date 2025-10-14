@@ -3,11 +3,12 @@ import { BaseSchema } from './base.schema';
 
 const NotificationSchema = z
   .object({
-    content: z.string().min(5),
-    receiverUserId: z.string().uuid(),
-    senderUserId: z.string().uuid(),
+    content: z.string().min(5).describe('The content of the notification'),
+    receiverUserId: z.string().uuid().describe('The user id of the receiver'),
+    senderUserId: z.string().uuid().describe('The user id of the sender'),
   })
-  .merge(BaseSchema);
+  .merge(BaseSchema)
+  .describe('Notification');
 
 type NotificationSchemaType = z.infer<typeof NotificationSchema>;
 

@@ -1,4 +1,4 @@
-import type { JwtPayloadType, RealUserSchemaType } from '@family-tree/shared';
+import type { JwtPayloadType, UserSchemaType } from '@family-tree/shared';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import type { JwtService } from '@nestjs/jwt';
 import { and, eq, isNull } from 'drizzle-orm';
@@ -18,7 +18,7 @@ export class AuthService {
     return this.jwtService.signAsync(payload);
   }
 
-  async signIn(user: RealUserSchemaType) {
+  async signIn(user: UserSchemaType) {
     if (!user || !user.email) {
       throw new BadRequestException('Unauthenticated');
     }
@@ -40,7 +40,7 @@ export class AuthService {
     });
   }
 
-  async registerUser(user: RealUserSchemaType) {
+  async registerUser(user: UserSchemaType) {
     if (!user || !user.email) {
       throw new BadRequestException('Unauthenticated');
     }

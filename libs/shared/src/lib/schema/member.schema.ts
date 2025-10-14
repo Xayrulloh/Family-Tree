@@ -1,10 +1,10 @@
 import * as z from 'zod';
 import { BaseSchema } from './base.schema';
-import { UserGenderEnum } from './real-user.schema';
+import { UserGenderEnum } from './user.schema';
 
-const MockMemberSchema = z
+const MemberSchema = z
   .object({
-    name: z.string().min(3).describe('Mock user name'),
+    name: z.string().min(3).describe('Member name'),
     image: z
       .string()
       .nullable()
@@ -20,8 +20,9 @@ const MockMemberSchema = z
     dob: z.string().date().nullable().describe('Date of birth'),
     description: z.string().nullable().describe('Description of user'),
   })
-  .merge(BaseSchema);
+  .merge(BaseSchema)
+  .describe('Member of family tree');
 
-type MockMemberSchemaType = z.infer<typeof MockMemberSchema>;
+type MemberSchemaType = z.infer<typeof MemberSchema>;
 
-export { MockMemberSchema, type MockMemberSchemaType };
+export { MemberSchema, type MemberSchemaType };

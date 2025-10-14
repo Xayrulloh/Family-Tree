@@ -1,4 +1,4 @@
-import type { JwtPayloadType, RealUserSchemaType } from '@family-tree/shared';
+import type { JwtPayloadType, UserSchemaType } from '@family-tree/shared';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
@@ -37,7 +37,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: JwtPayloadType): Promise<RealUserSchemaType> {
+  async validate(payload: JwtPayloadType): Promise<UserSchemaType> {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.email, payload.email),

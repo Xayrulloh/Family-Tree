@@ -1,6 +1,6 @@
 import {
   type GoogleProfileType,
-  type RealUserSchemaType,
+  type UserSchemaType,
   UserGenderEnum,
 } from '@family-tree/shared';
 import { Inject, Injectable } from '@nestjs/common';
@@ -40,7 +40,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     _refreshToken: string,
     profile: GoogleProfileType,
     done: VerifyCallback,
-  ): Promise<RealUserSchemaType> {
+  ): Promise<UserSchemaType> {
     const { id, name, emails, photos } = profile;
 
     let user = await this.db.query.usersSchema.findFirst({

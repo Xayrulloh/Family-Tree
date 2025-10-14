@@ -3,8 +3,8 @@ import { BaseSchema, FamilyTreeMemberConnectionSchema } from '../schema';
 
 const FamilyTreeMemberConnectionCreateRequestSchema =
   FamilyTreeMemberConnectionSchema.pick({
-    fromUserId: true,
-    toUserId: true,
+    fromMemberId: true,
+    toMemberId: true,
     type: true,
   });
 

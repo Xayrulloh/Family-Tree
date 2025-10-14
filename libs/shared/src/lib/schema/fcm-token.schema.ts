@@ -19,7 +19,8 @@ const FCMTokenSchema = z
       ])
       .describe('To send all devices of user'),
   })
-  .merge(BaseSchema);
+  .merge(BaseSchema)
+  .describe('FCM token');
 
 type FCMTokenSchemaType = z.infer<typeof FCMTokenSchema>;
 

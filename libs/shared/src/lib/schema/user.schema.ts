@@ -7,7 +7,7 @@ enum UserGenderEnum {
   UNKNOWN = 'UNKNOWN',
 } // FIXME: maybe as const
 
-const RealUserSchema = z
+const UserSchema = z
   .object({
     email: z.string().email().describe('Registered google email account'),
     name: z.string().min(3).describe('Default google account name'),
@@ -31,8 +31,9 @@ const RealUserSchema = z
     dob: z.string().date().nullable().describe('Date of birth'),
     description: z.string().nullable().describe('Description of user'),
   })
-  .merge(BaseSchema);
+  .merge(BaseSchema)
+  .describe('Authorized user');
 
-type RealUserSchemaType = z.infer<typeof RealUserSchema>;
+type UserSchemaType = z.infer<typeof UserSchema>;
 
-export { RealUserSchema, type RealUserSchemaType, UserGenderEnum };
+export { UserSchema, type UserSchemaType, UserGenderEnum };

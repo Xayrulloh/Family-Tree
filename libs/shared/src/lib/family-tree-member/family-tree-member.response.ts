@@ -1,10 +1,9 @@
 import z from 'zod';
-import { MockMemberSchema } from '../schema';
+import { MemberSchema } from '../schema';
 
 // schemas
 const FamilyTreeMemberGetResponseSchema = z.object({
-  // realMember: RealUserSchema.nullable(), // TODO: after MVP
-  mockMember: MockMemberSchema.nullable(),
+  member: MemberSchema.nullable(),
 });
 
 const FamilyTreeMemberGetAllResponseSchema =

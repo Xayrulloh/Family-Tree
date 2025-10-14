@@ -13,11 +13,6 @@ class FamilyTreeMemberCreateRequestDto extends createZodDto(
   FamilyTreeMemberCreateRequestSchema,
 ) {}
 
-// TODO: after MVP
-// class FamilyTreeRealMemberBindRequestDto extends createZodDto(
-//   FamilyTreeRealMemberBindRequestSchema,
-// ) {}
-
 class FamilyTreeMemberUpdateRequestDto extends createZodDto(
   FamilyTreeMemberUpdateRequestSchema,
 ) {}

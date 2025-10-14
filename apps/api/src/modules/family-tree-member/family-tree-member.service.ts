@@ -35,7 +35,7 @@ export class FamilyTreeMemberService {
       configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
   }
 
-  // mock member create
+  // member member create
   async createFamilyTreeMember(
     userId: string,
     familyTreeId: string,
@@ -53,8 +53,8 @@ export class FamilyTreeMemberService {
       throw new BadRequestException('Image is not uploaded');
     }
 
-    const [mockMember] = await this.db
-      .insert(schema.mockMembersSchema)
+    const [member] = await this.db
+      .insert(schema.membersSchema)
       .values(body)
       .returning();
 
@@ -62,19 +62,16 @@ export class FamilyTreeMemberService {
       .insert(schema.familyTreeMembersSchema)
       .values({
         familyTreeId,
-        mockMemberId: mockMember.id,
+        memberId: member.id,
       })
       .returning();
 
     return {
-      mockMember,
+      member,
     };
   }
 
-  // TODO: not part of MVP
-  // async bindFamilyTreeMember() {}
-
-  // update mock member
+  // update member member
   async updateFamilyTreeMember(
     userId: string,
     param: FamilyTreeMemberGetParamDto,
@@ -88,30 +85,25 @@ export class FamilyTreeMemberService {
       );
     }
 
-    const { mockMember } = await this.getFamilyTreeMember(param);
+    const { member } = await this.getFamilyTreeMember(param);
 
     if (body.image && !body.image?.includes(this.cloudflareR2Path)) {
       throw new BadRequestException('Image is not uploaded');
     }
 
-    if (body.image && mockMember?.image && mockMember.image !== body.image) {
-      this.cloudflareConfig.deleteFile(mockMember.image);
+    if (body.image && member?.image && member.image !== body.image) {
+      this.cloudflareConfig.deleteFile(member.image);
     }
 
     await this.db
-      .update(schema.mockMembersSchema)
+      .update(schema.membersSchema)
       .set({
         ...body,
       })
-      .where(
-        and(
-          eq(schema.mockMembersSchema.id, param.id),
-          eq(schema.mockMembersSchema.familyTreeId, param.familyTreeId),
-        ),
-      );
+      .where(and(eq(schema.membersSchema.id, param.id)));
   }
 
-  // delete mock member
+  // delete member member
   async deleteFamilyTreeMember(
     userId: string,
     param: FamilyTreeMemberGetParamDto,
@@ -126,54 +118,68 @@ export class FamilyTreeMemberService {
 
     // FIXME: also need to delete all connections
 
-    // TODO: har delete after 30 days, but after MVP
     await this.db
-      .update(schema.mockMembersSchema)
+      .update(schema.familyTreeMembersSchema)
       .set({
         deletedAt: new Date(),
       })
-      .where(eq(schema.mockMembersSchema.id, param.id));
+      .where(eq(schema.familyTreeMembersSchema.id, param.id));
+
+    await this.db
+      .update(schema.membersSchema)
+      .set({
+        deletedAt: new Date(),
+      })
+      .where(eq(schema.membersSchema.id, param.id));
   }
 
-  // get all mock members
+  // get all member members
   async getAllFamilyTreeMembers(
     param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetAllResponseDto> {
-    const mockMembers = await this.db.query.mockMembersSchema.findMany({
-      where: and(
-        eq(schema.mockMembersSchema.familyTreeId, param.familyTreeId),
-        isNull(schema.mockMembersSchema.deletedAt),
-      ),
-    });
+    const familyTreeMembers =
+      await this.db.query.familyTreeMembersSchema.findMany({
+        where: and(
+          eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
+        ),
+        with: {
+          member: true,
+        },
+      });
 
-    // TODO: realMembers after MVP
-
-    return mockMembers.map((mockMember) => ({
-      mockMember,
+    return familyTreeMembers.map((familyTreeMember) => ({
+      member: familyTreeMember.member,
     }));
   }
 
-  // get single mock member
+  // get single member member
   async getFamilyTreeMember(
     param: FamilyTreeMemberGetParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
-    const mockMember = await this.db.query.mockMembersSchema.findFirst({
-      where: and(
-        eq(schema.mockMembersSchema.id, param.id),
-        eq(schema.mockMembersSchema.familyTreeId, param.familyTreeId),
-        isNull(schema.mockMembersSchema.deletedAt),
-      ),
-    });
+    const familyTreeMember =
+      await this.db.query.familyTreeMembersSchema.findFirst({
+        where: and(
+          eq(schema.familyTreeMembersSchema.memberId, param.id),
+          eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
+          isNull(schema.familyTreeMembersSchema.deletedAt),
+        ),
+        with: {
+          member: true,
+        },
+      });
 
-    if (!mockMember) {
-      throw new NotFoundException(`Mock member with id ${param.id} not found`);
+    if (!familyTreeMember?.member) {
+      throw new NotFoundException(
+        `member member with id ${param.id} not found`,
+      );
     }
 
     return {
-      mockMember,
+      member: familyTreeMember.member,
     };
   }
 
+  // get family tree
   async getFamilyTreeById(
     familyTreeId: string,
   ): Promise<FamilyTreeResponseDto> {

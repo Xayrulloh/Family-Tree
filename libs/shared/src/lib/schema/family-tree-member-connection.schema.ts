@@ -8,15 +8,18 @@ enum FamilyTreeMemberConnectionEnum {
 
 const FamilyTreeMemberConnectionSchema = z
   .object({
-    familyTreeId: z.string().uuid(),
-    fromUserId: z.string().uuid(),
-    toUserId: z.string().uuid(),
-    type: z.enum([
-      FamilyTreeMemberConnectionEnum.SPOUSE,
-      FamilyTreeMemberConnectionEnum.PARENT,
-    ]),
+    familyTreeId: z.string().uuid().describe('The id of the family tree'),
+    fromMemberId: z.string().uuid().describe('The id of the from member'),
+    toMemberId: z.string().uuid().describe('The id of the to member'),
+    type: z
+      .enum([
+        FamilyTreeMemberConnectionEnum.SPOUSE,
+        FamilyTreeMemberConnectionEnum.PARENT,
+      ])
+      .describe('The type of the family tree connection'),
   })
-  .merge(BaseSchema);
+  .merge(BaseSchema)
+  .describe('Family tree member connection');
 
 type FamilyTreeMemberConnectionSchemaType = z.infer<
   typeof FamilyTreeMemberConnectionSchema

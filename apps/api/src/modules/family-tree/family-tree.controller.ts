@@ -130,8 +130,6 @@ export class FamilyTreeController {
     @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeIdParamDto,
   ): Promise<void> {
-    // TODO: implement soft delete (back up and delete after 30 days)
-
     return this.familyTreeService.deleteFamilyTree(req.user.id, param.id);
   }
 }

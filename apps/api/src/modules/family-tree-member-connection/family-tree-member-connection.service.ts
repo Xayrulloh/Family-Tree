@@ -31,8 +31,8 @@ export class FamilyTreeMemberConnectionService {
     body: FamilyTreeMemberConnectionCreateRequestDto,
   ): Promise<FamilyTreeMemberConnectionGetAllResponseDto> {
     const { familyTree } = await this.getFamilyTreeMembers(
-      body.fromUserId,
-      body.toUserId,
+      body.fromMemberId,
+      body.toMemberId,
       familyTreeId,
     );
 
@@ -42,7 +42,7 @@ export class FamilyTreeMemberConnectionService {
       );
     }
 
-    // FIXME: check fromUserId connections
+    // FIXME: check fromMemberId connections
 
     const connection = await this.db
       .insert(schema.familyTreeMemberConnectionsSchema)
@@ -62,8 +62,8 @@ export class FamilyTreeMemberConnectionService {
     body: FamilyTreeMemberConnectionUpdateRequestDto,
   ) {
     const { familyTree } = await this.getFamilyTreeMembers(
-      body.fromUserId,
-      body.toUserId,
+      body.fromMemberId,
+      body.toMemberId,
       param.familyTreeId,
     );
 
@@ -73,7 +73,7 @@ export class FamilyTreeMemberConnectionService {
       );
     }
 
-    // FIXME: check fromUserId connections
+    // FIXME: check fromMemberId connections
 
     await this.db
       .update(schema.familyTreeMemberConnectionsSchema)
@@ -129,7 +129,7 @@ export class FamilyTreeMemberConnectionService {
     return this.db.query.familyTreeMemberConnectionsSchema.findMany({
       where: and(
         eq(
-          schema.familyTreeMemberConnectionsSchema.fromUserId,
+          schema.familyTreeMemberConnectionsSchema.fromMemberId,
           param.memberUserId,
         ),
         eq(
@@ -146,28 +146,35 @@ export class FamilyTreeMemberConnectionService {
     toMemberId: string,
     familyTreeId: string,
   ) {
-    const [fromMember, toMember, familyTree] = await Promise.all([
-      this.db.query.mockMembersSchema.findFirst({
-        where: and(
-          eq(schema.mockMembersSchema.id, fromMemberId),
-          eq(schema.mockMembersSchema.familyTreeId, familyTreeId),
-          isNull(schema.mockMembersSchema.deletedAt),
-        ),
-      }),
-      this.db.query.mockMembersSchema.findFirst({
-        where: and(
-          eq(schema.mockMembersSchema.id, toMemberId),
-          eq(schema.mockMembersSchema.familyTreeId, familyTreeId),
-          isNull(schema.mockMembersSchema.deletedAt),
-        ),
-      }),
-      this.db.query.familyTreesSchema.findFirst({
-        where: and(
-          eq(schema.familyTreesSchema.id, familyTreeId),
-          isNull(schema.familyTreesSchema.deletedAt),
-        ),
-      }),
-    ]);
+    const [fromFamilyTreeMember, toFamilyTreeMember, familyTree] =
+      await Promise.all([
+        this.db.query.familyTreeMembersSchema.findFirst({
+          where: and(
+            eq(schema.familyTreeMembersSchema.memberId, fromMemberId),
+            eq(schema.familyTreeMembersSchema.familyTreeId, familyTreeId),
+            isNull(schema.familyTreeMembersSchema.deletedAt),
+          ),
+          with: {
+            member: true,
+          },
+        }),
+        this.db.query.familyTreeMembersSchema.findFirst({
+          where: and(
+            eq(schema.familyTreeMembersSchema.memberId, toMemberId),
+            eq(schema.familyTreeMembersSchema.familyTreeId, familyTreeId),
+            isNull(schema.familyTreeMembersSchema.deletedAt),
+          ),
+          with: {
+            member: true,
+          },
+        }),
+        this.db.query.familyTreesSchema.findFirst({
+          where: and(
+            eq(schema.familyTreesSchema.id, familyTreeId),
+            isNull(schema.familyTreesSchema.deletedAt),
+          ),
+        }),
+      ]);
 
     if (!familyTree) {
       throw new NotFoundException(
@@ -175,21 +182,21 @@ export class FamilyTreeMemberConnectionService {
       );
     }
 
-    if (!fromMember) {
+    if (!fromFamilyTreeMember?.member) {
       throw new NotFoundException(
-        `Mock "from member" with id ${fromMemberId} not found`,
+        `Member "from member" with id ${fromMemberId} not found`,
       );
     }
 
-    if (!toMember) {
+    if (!toFamilyTreeMember?.member) {
       throw new NotFoundException(
-        `Mock "to member" with id ${toMemberId} not found`,
+        `Member "to member" with id ${toMemberId} not found`,
       );
     }
 
     return {
-      fromMember,
-      toMember,
+      fromMember: fromFamilyTreeMember.member,
+      toMember: toFamilyTreeMember.member,
       familyTree,
     };
   }
