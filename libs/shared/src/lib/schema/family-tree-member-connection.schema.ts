@@ -3,7 +3,7 @@ import { BaseSchema } from './base.schema';
 
 enum FamilyTreeMemberConnectionEnum {
   SPOUSE = 'SPOUSE',
-  CHILD = 'CHILD',
+  PARENT = 'PARENT',
 }
 
 const FamilyTreeMemberConnectionSchema = z
@@ -13,7 +13,7 @@ const FamilyTreeMemberConnectionSchema = z
     toUserId: z.string().uuid(),
     type: z.enum([
       FamilyTreeMemberConnectionEnum.SPOUSE,
-      FamilyTreeMemberConnectionEnum.CHILD,
+      FamilyTreeMemberConnectionEnum.PARENT,
     ]),
   })
   .merge(BaseSchema);

@@ -18,7 +18,7 @@ import type {
   FamilyTreeMemberGetParamDto,
   FamilyTreeMemberGetResponseDto,
 } from './dto/family-tree-member.dto';
-import {
+import type {
   FamilyTreeResponseDto,
   FamilyTreeUpdateRequestDto,
 } from '../family-tree/dto/family-tree.dto';
@@ -125,6 +125,8 @@ export class FamilyTreeMemberService {
         `Family tree with id ${param.familyTreeId} does not belong to user with id ${userId}`,
       );
     }
+
+    // FIXME: also need to delete all connections
 
     // TODO: har delete after 30 days, but after MVP
     await this.db

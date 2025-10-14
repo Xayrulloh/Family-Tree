@@ -32,7 +32,10 @@ export const DrizzleFCMTokenDeviceEnum = pgEnum('fcm_token_device_type', [
 ]);
 export const DrizzleFamilyTreeMemberConnectionEnum = pgEnum(
   'family_tree_member_connection',
-  [FamilyTreeMemberConnectionEnum.SPOUSE, FamilyTreeMemberConnectionEnum.CHILD],
+  [
+    FamilyTreeMemberConnectionEnum.SPOUSE,
+    FamilyTreeMemberConnectionEnum.PARENT,
+  ],
 );
 
 // schemas
@@ -115,9 +118,7 @@ export const familyTreeMemberConnectionsSchema = pgTable(
     toUserId: uuid('to_user_id')
       .references(() => usersSchema.id)
       .notNull(),
-    memberConnectionType: DrizzleFamilyTreeMemberConnectionEnum(
-      'member_connection_type',
-    ).notNull(),
+    type: DrizzleFamilyTreeMemberConnectionEnum('type').notNull(),
     ...baseSchema,
   },
 );

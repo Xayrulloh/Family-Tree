@@ -157,19 +157,19 @@ erDiagram
 
 - ### **Family Tree Members**
 
-  - **GET** `/family-trees/{id}/members` => Get members of family tree
-  - **GET** `/family-trees/{id}/members/{user_id}` => Get member info by id
-  - **POST** `/family-trees/{id}/members` => Add member to family tree
-  - **PUT** `/family-trees/{id}/members/{user_id}` => Update member by id
-  - **DELETE** `/family-trees/{id}/members/{user_id}` => Delete member from family tree
+  - **GET** `/family-trees/{familyTreeId}/members` => Get members of family tree
+  - **GET** `/family-trees/{familyTreeId}/members/{id}` => Get member info by id
+  - **POST** `/family-trees/{familyTreeId}/members` => Add member to family tree
+  - **PUT** `/family-trees/{familyTreeId}/members/{id}` => Update member by id
+  - **DELETE** `/family-trees/{familyTreeId}/members/{id}` => Delete member from family tree
 
 - ### **Family Tree Members Connections**
 
-  - **GET** `/family-trees/{id}/members/connections` => Get connections of family tree
-  - **GET** `/family-trees/{id}/members/{user_id}/connections` => Get connections of member
-  - **POST** `/family-trees/{id}/members/{user_id}/connections` => Add connection to member
-  - **PUT** `/family-trees/{id}/members/{user_id}/connections/{connection_id}` => Update connection by id
-  - **DELETE** `/family-trees/{id}/members/{user_id}/connections/{connection_id}` => Delete connection from member
+  - **GET** `/family-trees/{familyTreeId}/members/connections` => Get connections of family tree
+  - **GET** `/family-trees/{familyTreeId}/members/{memberUserId}/connections` => Get connections of member
+  - **POST** `/family-trees/{familyTreeId}/members/connections` => Add connection to member
+  - **PUT** `/family-trees/{familyTreeId}/members/connections/{id}` => Update connection by id
+  - **DELETE** `/family-trees/{familyTreeId}/members/connections/{id}` => Delete connection from member
 
 - ### **FCM Tokens**
 

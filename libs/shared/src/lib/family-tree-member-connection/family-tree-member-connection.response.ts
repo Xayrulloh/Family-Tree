@@ -1,19 +1,24 @@
-// import { z } from 'zod';
-// import { FamilyTreeSchema } from '../schema/family-tree.schema';
+import type z from 'zod';
+import { FamilyTreeMemberConnectionSchema } from '../schema';
 
-// const FamilyTreeResponseSchema = FamilyTreeSchema;
+// schemas
+const FamilyTreeMemberConnectionGetResponseSchema =
+  FamilyTreeMemberConnectionSchema;
 
-// const FamilyTreeArrayResponseSchema = FamilyTreeResponseSchema.array();
+const FamilyTreeMemberConnectionGetAllResponseSchema =
+  FamilyTreeMemberConnectionGetResponseSchema.array();
 
-// type FamilyTreeResponseType = z.infer<typeof FamilyTreeResponseSchema>;
+// types
+type FamilyTreeMemberConnectionGetResponseType = z.infer<
+  typeof FamilyTreeMemberConnectionGetResponseSchema
+>;
+type FamilyTreeMemberConnectionGetAllResponseType = z.infer<
+  typeof FamilyTreeMemberConnectionGetAllResponseSchema
+>;
 
-// type FamilyTreeArrayResponseType = z.infer<
-//   typeof FamilyTreeArrayResponseSchema
-// >;
-
-// export {
-//   FamilyTreeResponseSchema,
-//   type FamilyTreeResponseType,
-//   FamilyTreeArrayResponseSchema,
-//   type FamilyTreeArrayResponseType,
-// };
+export {
+  FamilyTreeMemberConnectionGetResponseSchema,
+  FamilyTreeMemberConnectionGetAllResponseSchema,
+  type FamilyTreeMemberConnectionGetResponseType,
+  type FamilyTreeMemberConnectionGetAllResponseType,
+};

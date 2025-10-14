@@ -1,34 +1,63 @@
-// import { z } from 'zod';
-// import { FamilyTreeMemberSchema } from '../schema/family-tree-node.schema';
-// import { FamilyTreeSchema } from '../schema';
+import z from 'zod';
+import { BaseSchema, FamilyTreeMemberConnectionSchema } from '../schema';
 
-// const FamilyTreeCreateRequestSchema = FamilyTreeSchema.pick({
-//   image: true,
-//   name: true,
-//   public: true,
-// });
+const FamilyTreeMemberConnectionCreateRequestSchema =
+  FamilyTreeMemberConnectionSchema.pick({
+    fromUserId: true,
+    toUserId: true,
+    type: true,
+  });
 
-// const FamilyTreeUpdateRequestSchema = FamilyTreeCreateRequestSchema.partial();
+const FamilyTreeMemberConnectionUpdateRequestSchema =
+  FamilyTreeMemberConnectionCreateRequestSchema;
 
-// const FamilyTreeNameParamSchema = z.object({
-//   name: z.string().min(3),
-// });
+const FamilyTreeMemberConnectionGetParamSchema = z
+  .object({
+    familyTreeId: z.string().uuid().describe('Family tree id'),
+  })
+  .merge(BaseSchema.pick({ id: true }).describe('Family tree node id'));
 
-// type FamilyTreeCreateRequestType = z.infer<
-//   typeof FamilyTreeCreateRequestSchema
-// >;
+const FamilyTreeMemberConnectionGetAllParamSchema =
+  FamilyTreeMemberConnectionGetParamSchema.pick({
+    familyTreeId: true,
+  });
 
-// type FamilyTreeUpdateRequestType = z.infer<
-//   typeof FamilyTreeUpdateRequestSchema
-// >;
+const FamilyTreeMemberConnectionGetByMemberParamSchema =
+  FamilyTreeMemberConnectionGetAllParamSchema.merge(
+    z.object({
+      memberUserId: z.string().uuid().describe('Member user id'),
+    }),
+  );
 
-// type FamilyTreeUsernameParamType = z.infer<typeof FamilyTreeNameParamSchema>;
+type FamilyTreeMemberConnectionCreateRequestType = z.infer<
+  typeof FamilyTreeMemberConnectionCreateRequestSchema
+>;
 
-// export {
-//   FamilyTreeCreateRequestSchema,
-//   type FamilyTreeCreateRequestType,
-//   FamilyTreeUpdateRequestSchema,
-//   type FamilyTreeUpdateRequestType,
-//   FamilyTreeNameParamSchema,
-//   type FamilyTreeUsernameParamType,
-// };
+type FamilyTreeMemberConnectionUpdateRequestType = z.infer<
+  typeof FamilyTreeMemberConnectionUpdateRequestSchema
+>;
+
+type FamilyTreeMemberConnectionGetParamType = z.infer<
+  typeof FamilyTreeMemberConnectionGetParamSchema
+>;
+
+type FamilyTreeMemberConnectionGetAllParamType = z.infer<
+  typeof FamilyTreeMemberConnectionGetAllParamSchema
+>;
+
+type FamilyTreeMemberConnectionGetByMemberParamType = z.infer<
+  typeof FamilyTreeMemberConnectionGetByMemberParamSchema
+>;
+
+export {
+  FamilyTreeMemberConnectionCreateRequestSchema,
+  type FamilyTreeMemberConnectionCreateRequestType,
+  FamilyTreeMemberConnectionUpdateRequestSchema,
+  type FamilyTreeMemberConnectionUpdateRequestType,
+  FamilyTreeMemberConnectionGetParamSchema,
+  type FamilyTreeMemberConnectionGetParamType,
+  FamilyTreeMemberConnectionGetAllParamSchema,
+  type FamilyTreeMemberConnectionGetAllParamType,
+  FamilyTreeMemberConnectionGetByMemberParamSchema,
+  type FamilyTreeMemberConnectionGetByMemberParamType,
+};
