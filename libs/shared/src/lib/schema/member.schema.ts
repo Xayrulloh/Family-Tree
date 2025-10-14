@@ -1,17 +1,10 @@
 import * as z from 'zod';
 import { BaseSchema } from './base.schema';
+import { UserGenderEnum } from './user.schema';
 
-enum UserGenderEnum {
-  MALE = 'MALE',
-  FEMALE = 'FEMALE',
-  UNKNOWN = 'UNKNOWN',
-} // FIXME: maybe as const
-
-const UserSchema = z
+const MemberSchema = z
   .object({
-    email: z.string().email().describe('Registered google email account'),
-    name: z.string().min(3).describe('Default google account name'),
-    username: z.string().describe('Unique username from google'),
+    name: z.string().min(3).describe('Member name'),
     image: z
       .string()
       .nullable()
@@ -19,11 +12,7 @@ const UserSchema = z
         'Image url which comes only from client side but may delete from back on updates',
       ),
     gender: z
-      .enum([
-        UserGenderEnum.MALE,
-        UserGenderEnum.FEMALE,
-        UserGenderEnum.UNKNOWN,
-      ])
+      .enum([UserGenderEnum.MALE, UserGenderEnum.FEMALE])
       .describe(
         "Only male or female and for the beginning as we don't know we put unknown",
       ),
@@ -32,8 +21,8 @@ const UserSchema = z
     description: z.string().nullable().describe('Description of user'),
   })
   .merge(BaseSchema)
-  .describe('Authorized user');
+  .describe('Member of family tree');
 
-type UserSchemaType = z.infer<typeof UserSchema>;
+type MemberSchemaType = z.infer<typeof MemberSchema>;
 
-export { UserSchema, type UserSchemaType, UserGenderEnum };
+export { MemberSchema, type MemberSchemaType };

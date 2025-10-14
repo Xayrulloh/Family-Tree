@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { and, eq, isNull } from 'drizzle-orm';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Strategy, type VerifyCallback } from 'passport-google-oauth2';
 import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';

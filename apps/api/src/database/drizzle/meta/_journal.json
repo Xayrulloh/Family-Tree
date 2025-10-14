@@ -71,6 +71,13 @@
       "when": 1744020931431,
       "tag": "0009_wonderful_night_thrasher",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1760445925904,
+      "tag": "0010_lonely_tomorrow_man",
+      "breakpoints": true
     }
   ]
 }

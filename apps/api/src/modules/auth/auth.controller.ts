@@ -9,12 +9,12 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  // This method intentionally left empty since the guard handles redirection
   @Get('google')
   @UseGuards(GoogleOauthGuard)
-  async auth() {
-    // This method intentionally left empty since the guard handles redirection
-  }
+  async auth() {}
 
+  // This method works when google hits this endpoint
   @Get('google/callback')
   @UseGuards(GoogleOauthGuard)
   async googleAuthCallback(
@@ -40,6 +40,7 @@ export class AuthController {
     res.redirect(`${CLIENT_URL}/family-trees`);
   }
 
+  // Logout
   @Get('logout')
   async logout(@Req() _req: Request, @Res() res: Response): Promise<void> {
     res.clearCookie(COOKIES_ACCESS_TOKEN_KEY, {
