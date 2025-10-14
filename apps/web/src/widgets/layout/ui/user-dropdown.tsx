@@ -7,7 +7,7 @@ import {
   UserOutlined,
   WomanOutlined,
 } from '@ant-design/icons';
-import { RoleUserGenderEnum } from '@family-tree/shared';
+import { UserGenderEnum } from '@family-tree/shared';
 import {
   Avatar,
   Dropdown,
@@ -36,9 +36,9 @@ export const UserDropdown = () => {
 
   const getGenderIcon = (gender: string) => {
     switch (gender) {
-      case RoleUserGenderEnum.MALE:
+      case UserGenderEnum.MALE:
         return <ManOutlined style={{ color: '#1890ff' }} />;
-      case RoleUserGenderEnum.FEMALE:
+      case UserGenderEnum.FEMALE:
         return <WomanOutlined style={{ color: '#eb2f96' }} />;
       default:
         return false;
@@ -116,8 +116,8 @@ export const UserDropdown = () => {
               name: user.name,
               image: user.image as string,
               gender: user.gender as [
-                RoleUserGenderEnum.MALE,
-                RoleUserGenderEnum.FEMALE,
+                UserGenderEnum.MALE,
+                UserGenderEnum.FEMALE,
               ][number],
               birthdate: user.birthdate,
             })

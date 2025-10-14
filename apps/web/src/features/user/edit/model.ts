@@ -1,4 +1,4 @@
-import { FileUploadFolderEnum, RoleUserGenderEnum } from '@family-tree/shared';
+import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
 import type { RcFile } from 'antd/es/upload';
 import {
   attach,
@@ -23,9 +23,9 @@ export const formSchema = z.object({
   name: z.string().min(3, { message: 'Required field' }),
   image: z.string().min(10, { message: 'Required field' }),
   gender: z.enum([
-    RoleUserGenderEnum.MALE,
-    RoleUserGenderEnum.FEMALE,
-    RoleUserGenderEnum.UNKNOWN,
+    UserGenderEnum.MALE,
+    UserGenderEnum.FEMALE,
+    UserGenderEnum.UNKNOWN,
   ]),
   birthdate: z.string().date().nullable(),
 });

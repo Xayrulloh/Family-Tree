@@ -9,18 +9,9 @@ enum UserGenderEnum {
 
 const RealUserSchema = z
   .object({
-    email: z
-      .string()
-      .email()
-      .nullable()
-      .describe('Registered google email account'),
+    email: z.string().email().describe('Registered google email account'),
     name: z.string().min(3).describe('Default google account name'),
-    username: z
-      .string()
-      .nullable()
-      .describe(
-        'Unique username from google and it only exist on registered users',
-      ),
+    username: z.string().describe('Unique username from google'),
     image: z
       .string()
       .nullable()

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 import { FCMTokenSchema } from '../schema/fcm-token.schema';
 
 const FCMTokenResponseSchema = FCMTokenSchema;

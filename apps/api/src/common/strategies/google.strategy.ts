@@ -1,13 +1,13 @@
 import {
   type GoogleProfileType,
-  RoleUserGenderEnum,
-  type UserSchemaType,
+  type RealUserSchemaType,
+  UserGenderEnum,
 } from '@family-tree/shared';
 import { Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import type { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { and, eq, isNull } from 'drizzle-orm';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Strategy, type VerifyCallback } from 'passport-google-oauth2';
 import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
@@ -40,7 +40,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     _refreshToken: string,
     profile: GoogleProfileType,
     done: VerifyCallback,
-  ): Promise<UserSchemaType> {
+  ): Promise<RealUserSchemaType> {
     const { id, name, emails, photos } = profile;
 
     let user = await this.db.query.usersSchema.findFirst({
@@ -60,7 +60,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
           username: `${emails[0].value.split('@')[0]}-${id}`,
           image:
             photos[0].value || `${DICEBAR_URL}/7.x/notionists/svg?seed=${id}`,
-          gender: RoleUserGenderEnum.UNKNOWN,
+          gender: UserGenderEnum.UNKNOWN,
         })
         .returning();
 

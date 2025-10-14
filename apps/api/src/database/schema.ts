@@ -16,7 +16,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 // enums
-export const DrizzleRealUserGenderEnum = pgEnum('real_user_gender', [
+export const DrizzleUserGenderEnum = pgEnum('real_user_gender', [
   UserGenderEnum.MALE,
   UserGenderEnum.FEMALE,
   UserGenderEnum.UNKNOWN,
@@ -55,7 +55,7 @@ export const usersSchema = pgTable('users', {
   username: text('username'),
   name: text('name').notNull(),
   image: text('image'),
-  gender: DrizzleRealUserGenderEnum('gender').notNull(),
+  gender: DrizzleUserGenderEnum('gender').notNull(),
   description: text('description'),
   dob: date('dob', { mode: 'string' }),
   dod: date('dod', { mode: 'string' }),
