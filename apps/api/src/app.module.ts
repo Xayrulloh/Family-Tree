@@ -7,12 +7,12 @@ import { CookiesModule } from './config/cookies/cookies.module';
 import { EnvModule } from './config/env/env.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { FamilyTreeModule } from './modules/family-tree/family-tree.module';
+import { FamilyTreeMemberModule } from './modules/family-tree-member/family-tree-member.module';
+import { FamilyTreeMemberConnectionModule } from './modules/family-tree-member-connection/family-tree-member-connection.module';
 import { FCMTokenModule } from './modules/fcm-token/fcm-token.module';
 import { FileModule } from './modules/file/file.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { UserModule } from './modules/user/user.module';
-import { FamilyTreeMemberModule } from './modules/family-tree-member/family-tree-member.module';
-import { FamilyTreeMemberConnectionModule } from './modules/family-tree-member-connection/family-tree-member-connection.module';
 
 @Module({
   imports: [

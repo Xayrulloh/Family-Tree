@@ -12,8 +12,7 @@ export class AuthController {
   // This method intentionally left empty since the guard handles redirection
   @Get('google')
   @UseGuards(GoogleOauthGuard)
-  async auth() {
-  }
+  async auth() {}
 
   // This method works when google hits this endpoint
   @Get('google/callback')

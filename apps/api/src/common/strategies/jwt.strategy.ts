@@ -1,9 +1,9 @@
-import type { JwtPayloadType, UserSchemaType } from '@family-tree/shared';
+import type { JwtPayloadType, RealUserSchemaType } from '@family-tree/shared';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import type { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { and, eq, isNull } from 'drizzle-orm';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { EnvType } from '~/config/env/env-validation';
@@ -37,7 +37,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: JwtPayloadType): Promise<UserSchemaType> {
+  async validate(payload: JwtPayloadType): Promise<RealUserSchemaType> {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.email, payload.email),

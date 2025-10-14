@@ -51,8 +51,8 @@ const baseSchema = {
 };
 
 export const usersSchema = pgTable('users', {
-  email: text('email').unique(),
-  username: text('username'),
+  email: text('email').unique().notNull(),
+  username: text('username').notNull(),
   name: text('name').notNull(),
   image: text('image'),
   gender: DrizzleUserGenderEnum('gender').notNull(),

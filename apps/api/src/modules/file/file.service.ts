@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
+import type { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 
 @Injectable()
 export class FileService {

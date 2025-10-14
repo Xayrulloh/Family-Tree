@@ -1,15 +1,15 @@
 import { randomUUID } from 'node:crypto';
-import type { UserResponseType } from '@family-tree/shared';
+import type { RealUserResponseType } from '@family-tree/shared';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import type { ConfigService } from '@nestjs/config';
 import { and, eq, isNull } from 'drizzle-orm';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
 import { DICEBAR_URL } from '~/utils/constants';
-import { UserUpdateRequestDto } from './dto/user.dto';
+import type { UserUpdateRequestDto } from './dto/user.dto';
 
 @Injectable()
 export class UserService {
@@ -25,7 +25,7 @@ export class UserService {
       configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
   }
 
-  async getUserByEmail(email: string): Promise<UserResponseType> {
+  async getUserByEmail(email: string): Promise<RealUserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.email, email),
@@ -40,7 +40,7 @@ export class UserService {
     return user;
   }
 
-  async getUserById(id: string): Promise<UserResponseType> {
+  async getUserById(id: string): Promise<RealUserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.id, id),
@@ -55,7 +55,7 @@ export class UserService {
     return user;
   }
 
-  async getUserThemselves(id: string): Promise<UserResponseType> {
+  async getUserThemselves(id: string): Promise<RealUserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.id, id),
@@ -102,7 +102,7 @@ export class UserService {
       .where(eq(schema.usersSchema.id, id));
   }
 
-  async updateUserAvatar(id: string): Promise<UserResponseType> {
+  async updateUserAvatar(id: string): Promise<RealUserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
       where: and(
         eq(schema.usersSchema.id, id),

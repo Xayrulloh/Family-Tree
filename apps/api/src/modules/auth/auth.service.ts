@@ -1,8 +1,8 @@
-import type { JwtPayloadType, UserSchemaType } from '@family-tree/shared';
+import type { JwtPayloadType, RealUserSchemaType } from '@family-tree/shared';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import type { JwtService } from '@nestjs/jwt';
 import { and, eq, isNull } from 'drizzle-orm';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
 
@@ -18,7 +18,7 @@ export class AuthService {
     return this.jwtService.signAsync(payload);
   }
 
-  async signIn(user: UserSchemaType) {
+  async signIn(user: RealUserSchemaType) {
     if (!user || !user.email) {
       throw new BadRequestException('Unauthenticated');
     }
@@ -40,7 +40,7 @@ export class AuthService {
     });
   }
 
-  async registerUser(user: UserSchemaType) {
+  async registerUser(user: RealUserSchemaType) {
     if (!user || !user.email) {
       throw new BadRequestException('Unauthenticated');
     }

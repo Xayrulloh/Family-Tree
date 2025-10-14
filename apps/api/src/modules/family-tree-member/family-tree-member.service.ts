@@ -11,17 +11,15 @@ import type { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
+import type { FamilyTreeResponseDto } from '../family-tree/dto/family-tree.dto';
 import type {
   FamilyTreeMemberCreateRequestDto,
   FamilyTreeMemberGetAllParamDto,
   FamilyTreeMemberGetAllResponseDto,
   FamilyTreeMemberGetParamDto,
   FamilyTreeMemberGetResponseDto,
+  FamilyTreeMemberUpdateRequestDto,
 } from './dto/family-tree-member.dto';
-import type {
-  FamilyTreeResponseDto,
-  FamilyTreeUpdateRequestDto,
-} from '../family-tree/dto/family-tree.dto';
 
 @Injectable()
 export class FamilyTreeMemberService {
@@ -80,7 +78,7 @@ export class FamilyTreeMemberService {
   async updateFamilyTreeMember(
     userId: string,
     param: FamilyTreeMemberGetParamDto,
-    body: FamilyTreeUpdateRequestDto,
+    body: FamilyTreeMemberUpdateRequestDto,
   ) {
     const familyTree = await this.getFamilyTreeById(param.familyTreeId);
 
