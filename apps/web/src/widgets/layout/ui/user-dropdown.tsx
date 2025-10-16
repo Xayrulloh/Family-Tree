@@ -65,7 +65,7 @@ export const UserDropdown = () => {
             </Typography.Text>
           )}
           {/* Gender and Birthdate */}
-          {(userGenderIcon || user.birthdate) && (
+          {(userGenderIcon || user.dob) && (
             <Space direction="vertical" size={4} className="mt-2">
               {user.gender && userGenderIcon && (
                 <Space>
@@ -75,11 +75,11 @@ export const UserDropdown = () => {
                   </Typography.Text>
                 </Space>
               )}
-              {user.birthdate && (
+              {user.dob && (
                 <Space>
                   <CalendarOutlined />
                   <Typography.Text style={{ fontSize: 12 }}>
-                    {user.birthdate}
+                    {user.dob}
                   </Typography.Text>
                 </Space>
               )}
@@ -119,7 +119,7 @@ export const UserDropdown = () => {
                 UserGenderEnum.MALE,
                 UserGenderEnum.FEMALE,
               ][number],
-              birthdate: user.birthdate,
+              dob: user.dob,
             })
           }
           onKeyDown={(_e) => {}}
