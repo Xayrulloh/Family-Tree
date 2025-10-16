@@ -16,6 +16,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBody,
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
@@ -28,12 +29,12 @@ import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import {
-  type FamilyTreeMemberCreateRequestDto,
+  FamilyTreeMemberCreateRequestDto,
   type FamilyTreeMemberGetAllParamDto,
   FamilyTreeMemberGetAllResponseDto,
   type FamilyTreeMemberGetParamDto,
   FamilyTreeMemberGetResponseDto,
-  type FamilyTreeMemberUpdateRequestDto,
+  FamilyTreeMemberUpdateRequestDto,
 } from './dto/family-tree-member.dto';
 import { FamilyTreeMemberService } from './family-tree-member.service';
 
@@ -51,6 +52,7 @@ export class FamilyTreeMemberController {
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ type: FamilyTreeMemberGetResponseDto })
+  @ApiBody({ type: FamilyTreeMemberCreateRequestDto })
   @ZodSerializerDto(FamilyTreeMemberGetResponseSchema)
   async createFamilyTreeMember(
     @Req() req: AuthenticatedRequest,
@@ -69,6 +71,7 @@ export class FamilyTreeMemberController {
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBody({ type: FamilyTreeMemberUpdateRequestDto })
   @ApiParam({ name: 'id', required: true, type: String })
   @ApiNoContentResponse()
   async updateFamilyTreeMember(
