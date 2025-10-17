@@ -40,6 +40,10 @@ type TreeCardProps = {
 export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
   const { token } = theme.useToken();
 
+  // const handleCardClick = () => {
+  //   navigate({ route: 'familyTreeDetail', params: { familyTreeId: tree.id } });
+  // };
+
   const menuItems: MenuProps['items'] = [
     {
       key: 'edit',
@@ -69,6 +73,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
   return (
     <Card
       hoverable
+      // onClick={handleCardClick}
       styles={{
         body: {
           padding: '12px 16px 16px',

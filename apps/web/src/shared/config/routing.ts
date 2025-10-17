@@ -9,6 +9,7 @@ export const routes = {
   notFound: createRoute(),
   registration: createRoute(),
   trees: createRoute(),
+  treesDetail: createRoute(),
 };
 
 export const routesMap = [
@@ -23,6 +24,10 @@ export const routesMap = [
   {
     path: '/family-trees',
     route: routes.trees,
+  },
+  {
+    path: '/family-trees/:familyTreeId',
+    route: routes.treesDetail,
   },
 ];
 

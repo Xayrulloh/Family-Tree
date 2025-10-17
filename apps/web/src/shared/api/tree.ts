@@ -23,12 +23,6 @@ export const tree = {
   delete: (id: string, config?: AxiosRequestConfig) => {
     return base.delete(`/family-trees/${id}`, config);
   },
-  findPublics: (name: string, config?: AxiosRequestConfig) => {
-    return base.get<FamilyTreeResponseType[]>(
-      `/family-trees/publics?name=${name}`,
-      config,
-    );
-  },
   findById: (id: string, config?: AxiosRequestConfig) => {
     return base.get<FamilyTreeResponseType>(`/family-trees/${id}`, config);
   },
