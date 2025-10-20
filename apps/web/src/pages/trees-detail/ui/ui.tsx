@@ -1,4 +1,4 @@
-import { Flex, Spin, Card, Space } from 'antd';
+import { Flex, Spin, Card, Space, theme } from 'antd';
 import { useUnit } from 'effector-react';
 import type React from 'react';
 import { type JSX, useMemo } from 'react';
@@ -27,6 +27,7 @@ const TreeVisualization: React.FC<{
     () => calculatePositions(members, connections),
     [members, connections],
   );
+  const { token } = theme.useToken();
 
   const renderCoupleConnections = () => {
     const transformedConnections = transformConnectionsData(connections);
@@ -153,7 +154,11 @@ const TreeVisualization: React.FC<{
         width="100%"
         height="100%"
         viewBox="0 0 1000 600"
-        className="bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
+        style={{
+          background: 'rgba(249, 250, 251, 0.9)',
+          border: `1px solid ${token.colorBorderSecondary}`,
+          borderRadius: token.borderRadiusLG,
+        }}
         aria-label="Family tree visualization"
       >
         <title>Family Tree</title>
@@ -170,6 +175,7 @@ const TreeVisualization: React.FC<{
 
         {/* Family Members */}
         <g className="family-members">
+          <title>Family Tree</title>
           {members.map((member) => {
             if (!member) return null;
 
@@ -177,19 +183,8 @@ const TreeVisualization: React.FC<{
 
             if (!pos) return null;
 
-            const year = member.dob
-              ? new Date(member.dob).getFullYear().toString()
-              : '';
-
             return (
-              <FamilyTreeNode
-                key={member.id}
-                x={pos.x}
-                y={pos.y}
-                name={member.name}
-                year={year}
-                gender={member.gender}
-              />
+              <FamilyTreeNode key={member.id} member={member} position={pos} />
             );
           })}
         </g>

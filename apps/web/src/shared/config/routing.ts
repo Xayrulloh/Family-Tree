@@ -9,7 +9,7 @@ export const routes = {
   notFound: createRoute(),
   registration: createRoute(),
   trees: createRoute(),
-  treesDetail: createRoute(),
+  treesDetail: createRoute<{ familyTreeId: string }>(),
 };
 
 export const routesMap = [
@@ -31,7 +31,8 @@ export const routesMap = [
   },
 ];
 
-export const routerControls = createRouterControls();
+export const routerControls: ReturnType<typeof createRouterControls> =
+  createRouterControls();
 
 export const router = createHistoryRouter({
   routes: routesMap,

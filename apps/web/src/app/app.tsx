@@ -7,7 +7,6 @@ import { useUnit } from 'effector-react';
 import { Routing } from '~/pages';
 import { useMessageApi } from '~/shared/lib/message';
 import { $theme } from './model';
-// import '../styles.css';
 
 appStarted();
 
