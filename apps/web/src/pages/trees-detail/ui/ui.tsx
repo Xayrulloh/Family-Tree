@@ -1,5 +1,4 @@
-import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Button, Flex, Spin } from 'antd';
+import { Flex, Spin } from 'antd';
 import { useUnit } from 'effector-react';
 import type React from 'react';
 import { useMemo } from 'react';
@@ -8,6 +7,7 @@ import {
   calculatePositions,
   getCouples,
   getChildrenOfCouple,
+  transformConnectionsData,
 } from '~/shared/lib/layout-engine';
 import type { LazyPageProps } from '~/shared/lib/lazy-page';
 import { factory } from '../model';
@@ -29,13 +29,8 @@ const TreeVisualization: React.FC<{
   );
 
   const renderCoupleConnections = () => {
-    const couples = getCouples(
-      connections.map((c) => ({
-        fromMemberId: c.fromMemberId,
-        toMemberId: c.toMemberId,
-        type: c.type.toLowerCase(),
-      })),
-    );
+    const transformedConnections = transformConnectionsData(connections);
+    const couples = getCouples(transformedConnections);
 
     return couples.map((couple) => {
       const pos1 = positions.get(couple.partner1Id);
@@ -62,7 +57,7 @@ const TreeVisualization: React.FC<{
       connections.map((c) => ({
         fromMemberId: c.fromMemberId,
         toMemberId: c.toMemberId,
-        type: c.type.toLowerCase(),
+        type: c.type,
       })),
     );
 
@@ -80,7 +75,7 @@ const TreeVisualization: React.FC<{
         connections.map((c) => ({
           fromMemberId: c.fromMemberId,
           toMemberId: c.toMemberId,
-          type: c.type.toLowerCase(),
+          type: c.type,
         })),
       );
 
@@ -152,7 +147,7 @@ const TreeVisualization: React.FC<{
     <svg
       width="100%"
       height="100%"
-      viewBox="0 0 850 600"
+      viewBox="0 0 1000 600"
       style={{
         background: '#f9fafb',
         border: '1px solid #e5e7eb',
@@ -164,8 +159,15 @@ const TreeVisualization: React.FC<{
       {renderCoupleConnections()}
       {renderGenerationalConnections()}
       {members.map((member) => {
+        if (!member) return null;
+
         const pos = positions.get(member.id);
+
         if (!pos) return null;
+
+        const year = member.dob
+          ? new Date(member.dob).getFullYear().toString()
+          : '';
 
         return (
           <FamilyTreeNode
@@ -173,11 +175,7 @@ const TreeVisualization: React.FC<{
             x={pos.x}
             y={pos.y}
             name={member.name}
-            year={
-              member.dob
-                ? new Date(member.dob).getFullYear().toString()
-                : undefined
-            }
+            year={year}
             gender={member.gender}
           />
         );
@@ -193,8 +191,6 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
     model.$loading,
   ]);
 
-  // const navigate = useNavigate();
-
   if (loading) {
     return (
       <Flex justify="center" align="center" style={{ padding: '64px 0' }}>
@@ -206,65 +202,116 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
   }
 
   return (
-    <div className="w-full h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex flex-col">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 text-white flex items-center gap-4">
-        <Button
-          type="text"
-          icon={<ArrowLeftOutlined />}
-          // onClick={() => navigate({ route: 'familyTreesPage' })}
-          className="!text-white hover:!text-blue-100"
-        />
-        <div>
-          <h1 className="text-3xl font-bold">Family Tree</h1>
-          <p className="text-blue-100 text-sm mt-1">
-            {members.length} members • {connections.length} connections
-          </p>
-        </div>
-      </div>
-
+    <div
+      style={{
+        width: '100%',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'linear-gradient(to bottom right, #eff6ff, #e0e7ff)',
+      }}
+    >
       {/* Legend */}
-      <div className="bg-gray-50 px-6 py-3 flex gap-8 text-sm border-b border-gray-200 items-center">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full bg-blue-300 border-2 border-blue-500"></div>
-          <span className="text-gray-700">Male</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full bg-pink-300 border-2 border-pink-500"></div>
-          <span className="text-gray-700">Female</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <svg width="20" height="3" className="mr-1">
-            <title>Spouse</title>
-            <line
-              x1="0"
-              y1="1.5"
-              x2="20"
-              y2="1.5"
-              stroke="#10b981"
-              strokeWidth="3"
-            />
-          </svg>
-          <span className="text-gray-700 text-xs">Spouse</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <svg width="20" height="3" className="mr-1">
-            <title>Parent-Child</title>
-            <line
-              x1="0"
-              y1="1.5"
-              x2="20"
-              y2="1.5"
-              stroke="#9ca3af"
-              strokeWidth="2"
-            />
-          </svg>
-          <span className="text-gray-700 text-xs">Parent-Child</span>
+      <div
+        style={{
+          background: '#f3f4f6',
+          padding: '12px 24px',
+          borderBottom: '1px solid #e5e7eb',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '24px',
+            fontSize: '14px',
+            alignItems: 'center',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div
+              style={{
+                width: '16px',
+                height: '16px',
+                borderRadius: '50%',
+                background: '#bfdbfe',
+                border: '2px solid #3b82f6',
+                flexShrink: 0,
+              }}
+            ></div>
+            <span style={{ color: '#374151', whiteSpace: 'nowrap' }}>Male</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div
+              style={{
+                width: '16px',
+                height: '16px',
+                borderRadius: '50%',
+                background: '#fbcfe8',
+                border: '2px solid #ec4899',
+                flexShrink: 0,
+              }}
+            ></div>
+            <span style={{ color: '#374151', whiteSpace: 'nowrap' }}>
+              Female
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <svg width="20" height="3" style={{ flexShrink: 0 }}>
+              <title>Spouse connection line</title>
+              <line
+                x1="0"
+                y1="1.5"
+                x2="20"
+                y2="1.5"
+                stroke="#10b981"
+                strokeWidth="3"
+              />
+            </svg>
+            <span
+              style={{
+                color: '#374151',
+                whiteSpace: 'nowrap',
+                fontSize: '12px',
+              }}
+            >
+              Spouse
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <svg width="20" height="3" style={{ flexShrink: 0 }}>
+              <title>Parent-child connection line</title>
+              <line
+                x1="0"
+                y1="1.5"
+                x2="20"
+                y2="1.5"
+                stroke="#9ca3af"
+                strokeWidth="2"
+              />
+            </svg>
+            <span
+              style={{
+                color: '#374151',
+                whiteSpace: 'nowrap',
+                fontSize: '12px',
+              }}
+            >
+              Parent-Child
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Tree Container */}
-      <div className="flex-1 overflow-auto">
+      {/* Tree Container - KEY FIX */}
+      <div
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'auto',
+          position: 'relative',
+        }}
+      >
         <TreeVisualization members={members} connections={connections} />
       </div>
     </div>

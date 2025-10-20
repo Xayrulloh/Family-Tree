@@ -7,30 +7,28 @@ import {
 // Dynamic positioning algorithm for family tree
 type Position = { x: number; y: number };
 
-const GENERATION_SPACING = 140; // Y spacing between generations
-const SIBLING_SPACING = 120; // X spacing between siblings
-
 export const calculatePositions = (
   members: MemberSchemaType[],
   connections: FamilyTreeMemberConnectionGetAllResponseType,
 ): Map<string, Position> => {
-  // Step 1: Assign generations
-  const generations = new Map<string, number>();
+  const memberMap = new Map(members.map((member) => [member.id, member]));
 
-  // Find root members (no parents)
+  const generations = new Map<string, number>();
   const hasParent = new Set<string>();
 
+  // Find parents
   connections.forEach((conn) => {
     if (conn.type === FamilyTreeMemberConnectionEnum.PARENT) {
       hasParent.add(conn.toMemberId);
     }
   });
 
-  const roots = members.filter((m) => !hasParent.has(m.id));
+  // Find roots
+  const roots = Array.from(memberMap.keys()).filter((id) => !hasParent.has(id));
 
-  // BFS to assign generations
+  // BFS for generations
   const queue: Array<{ id: string; gen: number }> = roots.map((r) => ({
-    id: r.id,
+    id: r,
     gen: 0,
   }));
 
@@ -41,7 +39,6 @@ export const calculatePositions = (
 
     generations.set(id, gen);
 
-    // Find children
     const children = connections
       .filter(
         (c) =>
@@ -55,37 +52,54 @@ export const calculatePositions = (
     });
   }
 
-  // Step 2: Group members by generation
+  // If no generations found (no parent-child relations), put all at generation 0
+  if (generations.size === 0) {
+    Array.from(memberMap.keys()).forEach((id) => {
+      generations.set(id, 0);
+    });
+  }
+
+  // Group by generation
   const membersByGen = new Map<number, string[]>();
 
   generations.forEach((gen, memberId) => {
-    const memberGen = membersByGen.get(gen) || [];
-
-    memberGen.push(memberId);
-    membersByGen.set(gen, memberGen);
-
-    // if (!membersByGen.has(gen)) membersByGen.set(gen, []);
-
-    // membersByGen.get(gen)!.push(memberId);
+    if (!membersByGen.has(gen)) membersByGen.set(gen, []);
+    membersByGen.get(gen)!.push(memberId);
   });
 
-  // Step 3: Calculate positions
+  // Calculate positions
   const positions = new Map<string, Position>();
   const maxGeneration = Math.max(...generations.values());
+  const startY = 80;
 
-  const startY = 60;
-
-  for (let gen = 0; gen <= maxGeneration; gen++) {
-    const membersInGen = membersByGen.get(gen) || [];
-    const totalWidth = membersInGen.length * SIBLING_SPACING;
-    const startX = (850 - totalWidth) / 2;
+  // For single generation, center them horizontally
+  if (maxGeneration === 0) {
+    const membersInGen = membersByGen.get(0) || [];
+    const itemWidth = 120;
+    const totalWidth = membersInGen.length * itemWidth;
+    const containerWidth = 1000;
+    const startX = (containerWidth - totalWidth) / 2 + 50;
 
     membersInGen.forEach((memberId, index) => {
-      const x = startX + index * SIBLING_SPACING;
-      const y = startY + gen * GENERATION_SPACING;
-
+      const x = startX + index * itemWidth;
+      const y = startY;
       positions.set(memberId, { x, y });
     });
+  } else {
+    // Multiple generations
+    for (let gen = 0; gen <= maxGeneration; gen++) {
+      const membersInGen = membersByGen.get(gen) || [];
+      const itemWidth = 120;
+      const totalWidth = membersInGen.length * itemWidth;
+      const containerWidth = 1000;
+      const startX = (containerWidth - totalWidth) / 2 + 50;
+
+      membersInGen.forEach((memberId, index) => {
+        const x = startX + index * itemWidth;
+        const y = startY + gen * 180;
+        positions.set(memberId, { x, y });
+      });
+    }
   }
 
   return positions;
@@ -94,6 +108,16 @@ export const calculatePositions = (
 type CoupleInfo = {
   partner1Id: string;
   partner2Id: string;
+};
+
+export const transformConnectionsData = (
+  connections: FamilyTreeMemberConnectionGetAllResponseType,
+) => {
+  return connections.map((c) => ({
+    fromMemberId: c.fromMemberId,
+    toMemberId: c.toMemberId,
+    type: c.type,
+  }));
 };
 
 export const getCouples = (
