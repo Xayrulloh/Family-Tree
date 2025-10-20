@@ -1,7 +1,7 @@
-import { Flex, Spin } from 'antd';
+import { Flex, Spin, Card, Space } from 'antd';
 import { useUnit } from 'effector-react';
 import type React from 'react';
-import { useMemo } from 'react';
+import { type JSX, useMemo } from 'react';
 import { FamilyTreeNode } from '~/shared/ui/family-tree-node';
 import {
   calculatePositions,
@@ -47,6 +47,7 @@ const TreeVisualization: React.FC<{
           y2={pos2.y}
           stroke="#10b981"
           strokeWidth="3"
+          className="transition-all duration-200"
         />
       );
     });
@@ -61,7 +62,7 @@ const TreeVisualization: React.FC<{
       })),
     );
 
-    const connectionLines: any = [];
+    const connectionLines: JSX.Element[] = [];
 
     couples.forEach((couple) => {
       const pos1 = positions.get(couple.partner1Id);
@@ -98,6 +99,7 @@ const TreeVisualization: React.FC<{
           y2={dropY}
           stroke="#9ca3af"
           strokeWidth="2"
+          className="transition-all duration-200"
         />,
       );
 
@@ -117,6 +119,7 @@ const TreeVisualization: React.FC<{
           y2={dropY}
           stroke="#9ca3af"
           strokeWidth="2"
+          className="transition-all duration-200"
         />,
       );
 
@@ -135,6 +138,7 @@ const TreeVisualization: React.FC<{
             y2={childPos.y - 35}
             stroke="#9ca3af"
             strokeWidth="2"
+            className="transition-all duration-200"
           />,
         );
       });
@@ -144,43 +148,53 @@ const TreeVisualization: React.FC<{
   };
 
   return (
-    <svg
-      width="100%"
-      height="100%"
-      viewBox="0 0 1000 600"
-      style={{
-        background: '#f9fafb',
-        border: '1px solid #e5e7eb',
-        borderRadius: '0.5rem',
-      }}
-      aria-label="Family tree visualization"
-    >
-      <title>Family Tree</title>
-      {renderCoupleConnections()}
-      {renderGenerationalConnections()}
-      {members.map((member) => {
-        if (!member) return null;
+    <div className="w-full h-full p-4">
+      <svg
+        width="100%"
+        height="100%"
+        viewBox="0 0 1000 600"
+        className="bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
+        aria-label="Family tree visualization"
+      >
+        <title>Family Tree</title>
+        <desc>
+          Interactive family tree visualization showing relationships between
+          family members
+        </desc>
 
-        const pos = positions.get(member.id);
+        {/* Connection Lines */}
+        <g className="connection-lines">
+          {renderCoupleConnections()}
+          {renderGenerationalConnections()}
+        </g>
 
-        if (!pos) return null;
+        {/* Family Members */}
+        <g className="family-members">
+          {members.map((member) => {
+            if (!member) return null;
 
-        const year = member.dob
-          ? new Date(member.dob).getFullYear().toString()
-          : '';
+            const pos = positions.get(member.id);
 
-        return (
-          <FamilyTreeNode
-            key={member.id}
-            x={pos.x}
-            y={pos.y}
-            name={member.name}
-            year={year}
-            gender={member.gender}
-          />
-        );
-      })}
-    </svg>
+            if (!pos) return null;
+
+            const year = member.dob
+              ? new Date(member.dob).getFullYear().toString()
+              : '';
+
+            return (
+              <FamilyTreeNode
+                key={member.id}
+                x={pos.x}
+                y={pos.y}
+                name={member.name}
+                year={year}
+                gender={member.gender}
+              />
+            );
+          })}
+        </g>
+      </svg>
+    </div>
   );
 };
 
@@ -202,61 +216,53 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
   }
 
   return (
-    <div
-      style={{
-        width: '100%',
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'linear-gradient(to bottom right, #eff6ff, #e0e7ff)',
-      }}
-    >
-      {/* Legend */}
-      <div
-        style={{
-          background: '#f3f4f6',
-          padding: '12px 24px',
-          borderBottom: '1px solid #e5e7eb',
+    <div className="w-full h-screen flex flex-col">
+      {/* Legend using Ant Design Card */}
+      <Card
+        size="small"
+        className="border-0 border-b rounded-none shadow-none"
+        styles={{
+          body: {
+            padding: '12px 24px',
+            backgroundColor: 'rgba(243, 244, 246, 0.8)',
+          },
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '24px',
-            fontSize: '14px',
-            alignItems: 'center',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Space size="large" wrap>
+          {/* Male Legend */}
+          <Space size="small">
             <div
               style={{
-                width: '16px',
-                height: '16px',
+                width: 16,
+                height: 16,
                 borderRadius: '50%',
-                background: '#bfdbfe',
+                backgroundColor: '#bfdbfe',
                 border: '2px solid #3b82f6',
                 flexShrink: 0,
               }}
-            ></div>
+            />
             <span style={{ color: '#374151', whiteSpace: 'nowrap' }}>Male</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          </Space>
+
+          {/* Female Legend */}
+          <Space size="small">
             <div
               style={{
-                width: '16px',
-                height: '16px',
+                width: 16,
+                height: 16,
                 borderRadius: '50%',
-                background: '#fbcfe8',
+                backgroundColor: '#fbcfe8',
                 border: '2px solid #ec4899',
                 flexShrink: 0,
               }}
-            ></div>
+            />
             <span style={{ color: '#374151', whiteSpace: 'nowrap' }}>
               Female
             </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          </Space>
+
+          {/* Connection Legends */}
+          <Space size="small">
             <svg width="20" height="3" style={{ flexShrink: 0 }}>
               <title>Spouse connection line</title>
               <line
@@ -269,16 +275,13 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
               />
             </svg>
             <span
-              style={{
-                color: '#374151',
-                whiteSpace: 'nowrap',
-                fontSize: '12px',
-              }}
+              style={{ color: '#374151', whiteSpace: 'nowrap', fontSize: 12 }}
             >
               Spouse
             </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          </Space>
+
+          <Space size="small">
             <svg width="20" height="3" style={{ flexShrink: 0 }}>
               <title>Parent-child connection line</title>
               <line
@@ -291,27 +294,16 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
               />
             </svg>
             <span
-              style={{
-                color: '#374151',
-                whiteSpace: 'nowrap',
-                fontSize: '12px',
-              }}
+              style={{ color: '#374151', whiteSpace: 'nowrap', fontSize: 12 }}
             >
               Parent-Child
             </span>
-          </div>
-        </div>
-      </div>
+          </Space>
+        </Space>
+      </Card>
 
-      {/* Tree Container - KEY FIX */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          overflowX: 'auto',
-          position: 'relative',
-        }}
-      >
+      {/* Tree Container */}
+      <div className="flex-1 overflow-auto relative bg-gradient-to-br from-blue-50 to-indigo-100">
         <TreeVisualization members={members} connections={connections} />
       </div>
     </div>
