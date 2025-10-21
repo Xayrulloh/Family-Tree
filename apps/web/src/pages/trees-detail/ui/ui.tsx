@@ -1,7 +1,7 @@
 import { Flex, Spin, Card, Space, theme } from 'antd';
 import { useUnit } from 'effector-react';
 import type React from 'react';
-import { type JSX, useMemo } from 'react';
+import { type JSX, useMemo, useState } from 'react';
 import { FamilyTreeNode } from '~/shared/ui/family-tree-node';
 import {
   calculatePositions,
@@ -15,6 +15,7 @@ import type {
   FamilyTreeMemberConnectionGetAllResponseType,
   MemberSchemaType,
 } from '@family-tree/shared';
+import { MemberDetailDrawer } from '~/shared/ui/member-detail-wrapper';
 
 type Model = ReturnType<typeof factory>;
 type Props = LazyPageProps<Model>;
@@ -22,7 +23,8 @@ type Props = LazyPageProps<Model>;
 const TreeVisualization: React.FC<{
   members: MemberSchemaType[];
   connections: FamilyTreeMemberConnectionGetAllResponseType;
-}> = ({ members, connections }) => {
+  onMemberClick: (member: MemberSchemaType) => void;
+}> = ({ members, connections, onMemberClick }) => {
   const positions = useMemo(
     () => calculatePositions(members, connections),
     [members, connections],
@@ -42,13 +44,12 @@ const TreeVisualization: React.FC<{
       return (
         <line
           key={`couple-${couple.partner1Id}-${couple.partner2Id}`}
-          x1={pos1.x + 35}
+          x1={pos1.x + 40}
           y1={pos1.y}
-          x2={pos2.x - 35}
+          x2={pos2.x - 40}
           y2={pos2.y}
           stroke="#10b981"
           strokeWidth="3"
-          className="transition-all duration-200"
         />
       );
     });
@@ -83,13 +84,12 @@ const TreeVisualization: React.FC<{
 
       if (childrenIds.length === 0) return;
 
-      // Vertical line down from couple
       const minChildY = Math.min(
         ...childrenIds
           .map((id) => positions.get(id)?.y ?? 0)
           .filter((y) => y !== 0),
       );
-      const dropY = minChildY - 40;
+      const dropY = minChildY - 20;
 
       connectionLines.push(
         <line
@@ -100,11 +100,9 @@ const TreeVisualization: React.FC<{
           y2={dropY}
           stroke="#9ca3af"
           strokeWidth="2"
-          className="transition-all duration-200"
         />,
       );
 
-      // Horizontal line at top of children
       const childXPositions = childrenIds
         .map((id) => positions.get(id)?.x ?? 0)
         .filter((x) => x !== 0);
@@ -120,14 +118,11 @@ const TreeVisualization: React.FC<{
           y2={dropY}
           stroke="#9ca3af"
           strokeWidth="2"
-          className="transition-all duration-200"
         />,
       );
 
-      // Vertical lines to each child
       childrenIds.forEach((childId) => {
         const childPos = positions.get(childId);
-
         if (!childPos) return;
 
         connectionLines.push(
@@ -136,10 +131,9 @@ const TreeVisualization: React.FC<{
             x1={childPos.x}
             y1={dropY}
             x2={childPos.x}
-            y2={childPos.y - 35}
+            y2={childPos.y}
             stroke="#9ca3af"
             strokeWidth="2"
-            className="transition-all duration-200"
           />,
         );
       });
@@ -162,29 +156,24 @@ const TreeVisualization: React.FC<{
         aria-label="Family tree visualization"
       >
         <title>Family Tree</title>
-        <desc>
-          Interactive family tree visualization showing relationships between
-          family members
-        </desc>
-
-        {/* Connection Lines */}
         <g className="connection-lines">
           {renderCoupleConnections()}
           {renderGenerationalConnections()}
         </g>
 
-        {/* Family Members */}
         <g className="family-members">
-          <title>Family Tree</title>
           {members.map((member) => {
             if (!member) return null;
-
             const pos = positions.get(member.id);
-
             if (!pos) return null;
 
             return (
-              <FamilyTreeNode key={member.id} member={member} position={pos} />
+              <FamilyTreeNode
+                key={member.id}
+                member={member}
+                position={pos}
+                onMemberClick={onMemberClick}
+              />
             );
           })}
         </g>
@@ -200,6 +189,20 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
     model.$loading,
   ]);
 
+  const [selectedMember, setSelectedMember] = useState<MemberSchemaType | null>(
+    null,
+  );
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const handleMemberClick = (member: MemberSchemaType) => {
+    setSelectedMember(member);
+    setDrawerOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    setDrawerOpen(false);
+  };
+
   if (loading) {
     return (
       <Flex justify="center" align="center" style={{ padding: '64px 0' }}>
@@ -211,97 +214,106 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
   }
 
   return (
-    <div className="w-full h-screen flex flex-col">
-      {/* Legend using Ant Design Card */}
-      <Card
-        size="small"
-        className="border-0 border-b rounded-none shadow-none"
-        styles={{
-          body: {
-            padding: '12px 24px',
-            backgroundColor: 'rgba(243, 244, 246, 0.8)',
-          },
-        }}
-      >
-        <Space size="large" wrap>
-          {/* Male Legend */}
-          <Space size="small">
-            <div
-              style={{
-                width: 16,
-                height: 16,
-                borderRadius: '50%',
-                backgroundColor: '#bfdbfe',
-                border: '2px solid #3b82f6',
-                flexShrink: 0,
-              }}
-            />
-            <span style={{ color: '#374151', whiteSpace: 'nowrap' }}>Male</span>
-          </Space>
-
-          {/* Female Legend */}
-          <Space size="small">
-            <div
-              style={{
-                width: 16,
-                height: 16,
-                borderRadius: '50%',
-                backgroundColor: '#fbcfe8',
-                border: '2px solid #ec4899',
-                flexShrink: 0,
-              }}
-            />
-            <span style={{ color: '#374151', whiteSpace: 'nowrap' }}>
-              Female
-            </span>
-          </Space>
-
-          {/* Connection Legends */}
-          <Space size="small">
-            <svg width="20" height="3" style={{ flexShrink: 0 }}>
-              <title>Spouse connection line</title>
-              <line
-                x1="0"
-                y1="1.5"
-                x2="20"
-                y2="1.5"
-                stroke="#10b981"
-                strokeWidth="3"
+    <>
+      <div className="w-full h-screen flex flex-col">
+        <Card
+          size="small"
+          className="border-0 border-b rounded-none shadow-none"
+          styles={{
+            body: {
+              padding: '12px 24px',
+              backgroundColor: 'rgba(243, 244, 246, 0.8)',
+            },
+          }}
+        >
+          <Space size="large" wrap>
+            <Space size="small">
+              <div
+                style={{
+                  width: 16,
+                  height: 16,
+                  borderRadius: '50%',
+                  backgroundColor: '#bfdbfe',
+                  border: '2px solid #3b82f6',
+                  flexShrink: 0,
+                }}
               />
-            </svg>
-            <span
-              style={{ color: '#374151', whiteSpace: 'nowrap', fontSize: 12 }}
-            >
-              Spouse
-            </span>
-          </Space>
+              <span style={{ color: '#374151', whiteSpace: 'nowrap' }}>
+                Male
+              </span>
+            </Space>
 
-          <Space size="small">
-            <svg width="20" height="3" style={{ flexShrink: 0 }}>
-              <title>Parent-child connection line</title>
-              <line
-                x1="0"
-                y1="1.5"
-                x2="20"
-                y2="1.5"
-                stroke="#9ca3af"
-                strokeWidth="2"
+            <Space size="small">
+              <div
+                style={{
+                  width: 16,
+                  height: 16,
+                  borderRadius: '50%',
+                  backgroundColor: '#fbcfe8',
+                  border: '2px solid #ec4899',
+                  flexShrink: 0,
+                }}
               />
-            </svg>
-            <span
-              style={{ color: '#374151', whiteSpace: 'nowrap', fontSize: 12 }}
-            >
-              Parent-Child
-            </span>
-          </Space>
-        </Space>
-      </Card>
+              <span style={{ color: '#374151', whiteSpace: 'nowrap' }}>
+                Female
+              </span>
+            </Space>
 
-      {/* Tree Container */}
-      <div className="flex-1 overflow-auto relative bg-gradient-to-br from-blue-50 to-indigo-100">
-        <TreeVisualization members={members} connections={connections} />
+            <Space size="small">
+              <svg width="20" height="3" style={{ flexShrink: 0 }}>
+                <title>Spouse connection line</title>
+                <line
+                  x1="0"
+                  y1="1.5"
+                  x2="20"
+                  y2="1.5"
+                  stroke="#10b981"
+                  strokeWidth="3"
+                />
+              </svg>
+              <span
+                style={{ color: '#374151', whiteSpace: 'nowrap', fontSize: 12 }}
+              >
+                Spouse
+              </span>
+            </Space>
+
+            <Space size="small">
+              <svg width="20" height="3" style={{ flexShrink: 0 }}>
+                <title>Parent-child connection line</title>
+                <line
+                  x1="0"
+                  y1="1.5"
+                  x2="20"
+                  y2="1.5"
+                  stroke="#9ca3af"
+                  strokeWidth="2"
+                />
+              </svg>
+              <span
+                style={{ color: '#374151', whiteSpace: 'nowrap', fontSize: 12 }}
+              >
+                Parent-Child
+              </span>
+            </Space>
+          </Space>
+        </Card>
+
+        <div className="flex-1 overflow-auto relative bg-gradient-to-br from-blue-50 to-indigo-100">
+          <TreeVisualization
+            members={members}
+            connections={connections}
+            onMemberClick={handleMemberClick}
+          />
+        </div>
       </div>
-    </div>
+
+      <MemberDetailDrawer
+        member={selectedMember}
+        open={drawerOpen}
+        onClose={handleDrawerClose}
+      />
+    </>
   );
 };
 

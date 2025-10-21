@@ -70,7 +70,7 @@ export const calculatePositions = (
   // Calculate positions
   const positions = new Map<string, Position>();
   const maxGeneration = Math.max(...generations.values());
-  const startY = 80;
+  const startY = 60;
 
   // For single generation, center them horizontally
   if (maxGeneration === 0) {
@@ -83,6 +83,7 @@ export const calculatePositions = (
     membersInGen.forEach((memberId, index) => {
       const x = startX + index * itemWidth;
       const y = startY;
+
       positions.set(memberId, { x, y });
     });
   } else {
@@ -96,7 +97,7 @@ export const calculatePositions = (
 
       membersInGen.forEach((memberId, index) => {
         const x = startX + index * itemWidth;
-        const y = startY + gen * 180;
+        const y = startY + gen * 80;
         positions.set(memberId, { x, y });
       });
     }

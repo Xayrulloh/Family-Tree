@@ -4,6 +4,7 @@ import type React from 'react';
 type FamilyTreeNodeProps = {
   member: MemberSchemaType;
   position: { x: number; y: number };
+  onMemberClick?: (member: MemberSchemaType) => void;
 };
 
 const getGenderColor = (gender: string) => {
@@ -12,61 +13,29 @@ const getGenderColor = (gender: string) => {
   return '#9ca3af';
 };
 
-const calculateAgeAndStatus = (member: MemberSchemaType) => {
-  const { dob, dod } = member;
-
-  if (!dob) return { status: 'unknown', years: '' };
-
-  const birthDate = new Date(dob);
-  const deathDate = dod ? new Date(dod) : null;
-
-  if (deathDate) {
-    return {
-      status: 'deceased',
-      years: `${birthDate.getFullYear()} - ${deathDate.getFullYear()}`,
-    };
-  } else {
-    return {
-      status: 'alive',
-      years: `${birthDate.getFullYear()} - Present`,
-    };
-  }
-};
-
 export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
   member,
   position,
+  onMemberClick,
 }) => {
   const color = getGenderColor(member.gender);
-  const { status, years } = calculateAgeAndStatus(member);
+
+  const nodeWidth = 80;
+  const nodeHeight = 40;
+  const nodeX = position.x - nodeWidth / 2;
+  const nodeY = position.y - nodeHeight / 2;
+
+  // Truncate name if too long for the rectangle
   const displayName =
-    member.name.length > 15 ? member.name.split(' ')[0] : member.name;
-
-  // Dynamic card dimensions based on image existence
-  const hasImage = !!member.image;
-  const cardWidth = 100;
-  const imageSectionHeight = hasImage ? 35 : 0;
-  const contentSectionHeight = 55;
-  const cardHeight = imageSectionHeight + contentSectionHeight;
-
-  const cardX = position.x - cardWidth / 2;
-  const cardY = position.y - cardHeight / 2;
-
-  const statusConfig = {
-    alive: { color: '#10b981', label: 'Alive' },
-    deceased: { color: '#6b7280', label: 'Deceased' },
-    unknown: { color: '#9ca3af', label: 'Unknown' },
-  };
-
-  const currentStatus = statusConfig[status as keyof typeof statusConfig];
+    member.name.length > 12 ? member.name.split(' ')[0] : member.name;
 
   return (
-    <g transform={`translate(${cardX}, ${cardY})`}>
-      {/* Card background with gender-colored border */}
+    <g transform={`translate(${nodeX}, ${nodeY})`}>
+      {/* Rectangle background with gender-colored border */}
       <rect
-        width={cardWidth}
-        height={cardHeight}
-        rx="12"
+        width={nodeWidth}
+        height={nodeHeight}
+        rx="6"
         fill="white"
         stroke={color}
         strokeWidth="2"
@@ -75,71 +44,30 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
         }}
       />
 
-      {/* Image section - only if image exists */}
-      {!!member.image && (
-        <image
-          href={member.image}
-          x={cardWidth / 2 - 18} // Slightly smaller image
-          y={10}
-          width={36}
-          height={36}
-          style={{
-            clipPath: 'circle(18px at center)',
-          }}
-        />
-      )}
-
-      {/* Content section - position dynamically based on image existence */}
-      <g transform={`translate(0, ${imageSectionHeight})`}>
-        {/* Member name */}
-        <text
-          x={cardWidth / 2}
-          y={20}
-          textAnchor="middle"
-          fontSize="12"
-          fontWeight="600"
-          fill="#1f2937"
-          className="font-sans"
-        >
-          {displayName}
-        </text>
-
-        {/* Years lived */}
-        <text
-          x={cardWidth / 2}
-          y={35}
-          textAnchor="middle"
-          fontSize="10"
-          fill="#6b7280"
-          className="font-sans"
-        >
-          {years || 'Date unknown'}
-        </text>
-
-        {/* Status label */}
-        <text
-          x={cardWidth / 2}
-          y={50}
-          textAnchor="middle"
-          fontSize="9"
-          fill={currentStatus.color}
-          fontWeight="500"
-          className="font-sans"
-        >
-          {currentStatus.label}
-        </text>
-      </g>
+      {/* Name centered in the rectangle */}
+      <text
+        x={nodeWidth / 2}
+        y={nodeHeight / 2}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontSize="11"
+        fontWeight="600"
+        fill="#1f2937"
+      >
+        {displayName}
+      </text>
 
       {/* Interactive overlay */}
       <rect
-        width={cardWidth}
-        height={cardHeight}
-        rx="12"
+        width={nodeWidth}
+        height={nodeHeight}
+        rx="6"
         fill="transparent"
-        className="cursor-pointer"
+        style={{ cursor: 'pointer' }}
+        onClick={() => onMemberClick?.(member)}
         onMouseEnter={(e) => {
           const rect = e.currentTarget;
-          rect.style.fill = 'rgba(0,0,0,0.03)';
+          rect.style.fill = 'rgba(0,0,0,0.05)';
         }}
         onMouseLeave={(e) => {
           const rect = e.currentTarget;
