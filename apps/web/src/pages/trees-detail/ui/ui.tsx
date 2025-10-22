@@ -42,15 +42,25 @@ const TreeVisualization: React.FC<{
 
       if (!pos1 || !pos2) return null;
 
+      // Calculate the actual distance between spouses
+      const distance = Math.abs(pos2.x - pos1.x);
+
+      // Only draw line if there's reasonable space (at least 40px)
+      if (distance < 40) return null;
+
+      // Draw line with small offsets from the node centers
+      const offset = Math.min(35, distance / 2 - 5);
+
       return (
         <line
           key={`couple-${couple.partner1Id}-${couple.partner2Id}`}
-          x1={pos1.x + 40}
+          x1={pos1.x + offset}
           y1={pos1.y}
-          x2={pos2.x - 40}
+          x2={pos2.x - offset}
           y2={pos2.y}
           stroke="#10b981"
           strokeWidth="3"
+          className="transition-all duration-200"
         />
       );
     });
@@ -85,62 +95,67 @@ const TreeVisualization: React.FC<{
 
       if (childrenIds.length === 0) return;
 
-      // Get all child positions
+      // Get all children positions
       const childPositions = childrenIds
         .map((id) => positions.get(id))
-        .filter((pos) => pos !== undefined) as Position[];
+        .filter(Boolean) as Position[];
 
       if (childPositions.length === 0) return;
 
-      const minChildY = Math.min(...childPositions.map((pos) => pos.y));
-      const minChildX = Math.min(...childPositions.map((pos) => pos.x));
-      const maxChildX = Math.max(...childPositions.map((pos) => pos.x));
+      // Find the bounding box of children
+      const minChildX = Math.min(...childPositions.map((p) => p.x));
+      const maxChildX = Math.max(...childPositions.map((p) => p.x));
+      const minChildY = Math.min(...childPositions.map((p) => p.y));
 
-      // Calculate connection point
-      const connectionPointY = (pos1.y + minChildY) / 2;
+      // Calculate the horizontal line to be centered under parent
+      const childrenCenterX = (minChildX + maxChildX) / 2;
+      const horizontalLineLength = Math.max(maxChildX - minChildX, 80); // Minimum length
 
-      // 1. Vertical line from couple down to horizontal line
+      // Start the horizontal line from the center and extend equally left and right
+      const horizontalStartX = midX - horizontalLineLength / 2;
+      const horizontalEndX = midX + horizontalLineLength / 2;
+      const dropY = minChildY - 30; // Vertical position for horizontal line
+
+      // 1. Vertical line down from parent couple to horizontal line
       connectionLines.push(
         <line
-          key={`spine-${couple.partner1Id}-${couple.partner2Id}`}
+          key={`vertical-${couple.partner1Id}-${couple.partner2Id}`}
           x1={midX}
-          y1={pos1.y}
+          y1={Math.max(pos1.y, pos2.y) + 20} // Start from bottom of parents
           x2={midX}
-          y2={connectionPointY}
+          y2={dropY}
           stroke="#9ca3af"
           strokeWidth="2"
+          className="transition-all duration-200"
         />,
       );
 
-      // 2. Horizontal line connecting all children
-      if (childrenIds.length > 1) {
+      // 2. Horizontal line centered under parent
+      connectionLines.push(
+        <line
+          key={`horizontal-${couple.partner1Id}-${couple.partner2Id}`}
+          x1={horizontalStartX}
+          y1={dropY}
+          x2={horizontalEndX}
+          y2={dropY}
+          stroke="#9ca3af"
+          strokeWidth="2"
+          className="transition-all duration-200"
+        />,
+      );
+
+      // 3. Vertical lines from horizontal line to each child
+      childPositions.forEach((childPos) => {
         connectionLines.push(
           <line
-            key={`horizontal-${couple.partner1Id}-${couple.partner2Id}`}
-            x1={minChildX}
-            y1={connectionPointY}
-            x2={maxChildX}
-            y2={connectionPointY}
-            stroke="#9ca3af"
-            strokeWidth="2"
-          />,
-        );
-      }
-
-      // 3. Vertical lines down to each child
-      childrenIds.forEach((childId) => {
-        const childPos = positions.get(childId);
-        if (!childPos) return;
-
-        connectionLines.push(
-          <line
-            key={`child-line-${couple.partner1Id}-${couple.partner2Id}-${childId}`}
+            key={`child-${couple.partner1Id}-${couple.partner2Id}-${childPos.x}`}
             x1={childPos.x}
-            y1={connectionPointY}
+            y1={dropY}
             x2={childPos.x}
-            y2={childPos.y}
+            y2={childPos.y - 20} // Connect to top of child node
             stroke="#9ca3af"
             strokeWidth="2"
+            className="transition-all duration-200"
           />,
         );
       });
