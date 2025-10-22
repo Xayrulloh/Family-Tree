@@ -8,6 +8,7 @@ import {
   getCouples,
   getChildrenOfCouple,
   transformConnectionsData,
+  type Position,
 } from '~/shared/lib/layout-engine';
 import type { LazyPageProps } from '~/shared/lib/lazy-page';
 import { factory } from '../model';
@@ -84,52 +85,58 @@ const TreeVisualization: React.FC<{
 
       if (childrenIds.length === 0) return;
 
-      const minChildY = Math.min(
-        ...childrenIds
-          .map((id) => positions.get(id)?.y ?? 0)
-          .filter((y) => y !== 0),
-      );
-      const dropY = minChildY - 20;
+      // Get all child positions
+      const childPositions = childrenIds
+        .map((id) => positions.get(id))
+        .filter((pos) => pos !== undefined) as Position[];
 
+      if (childPositions.length === 0) return;
+
+      const minChildY = Math.min(...childPositions.map((pos) => pos.y));
+      const minChildX = Math.min(...childPositions.map((pos) => pos.x));
+      const maxChildX = Math.max(...childPositions.map((pos) => pos.x));
+
+      // Calculate connection point
+      const connectionPointY = (pos1.y + minChildY) / 2;
+
+      // 1. Vertical line from couple down to horizontal line
       connectionLines.push(
         <line
-          key={`vertical-${couple.partner1Id}-${couple.partner2Id}`}
+          key={`spine-${couple.partner1Id}-${couple.partner2Id}`}
           x1={midX}
           y1={pos1.y}
           x2={midX}
-          y2={dropY}
+          y2={connectionPointY}
           stroke="#9ca3af"
           strokeWidth="2"
         />,
       );
 
-      const childXPositions = childrenIds
-        .map((id) => positions.get(id)?.x ?? 0)
-        .filter((x) => x !== 0);
-      const minChildX = Math.min(...childXPositions);
-      const maxChildX = Math.max(...childXPositions);
+      // 2. Horizontal line connecting all children
+      if (childrenIds.length > 1) {
+        connectionLines.push(
+          <line
+            key={`horizontal-${couple.partner1Id}-${couple.partner2Id}`}
+            x1={minChildX}
+            y1={connectionPointY}
+            x2={maxChildX}
+            y2={connectionPointY}
+            stroke="#9ca3af"
+            strokeWidth="2"
+          />,
+        );
+      }
 
-      connectionLines.push(
-        <line
-          key={`horizontal-${couple.partner1Id}-${couple.partner2Id}`}
-          x1={minChildX}
-          y1={dropY}
-          x2={maxChildX}
-          y2={dropY}
-          stroke="#9ca3af"
-          strokeWidth="2"
-        />,
-      );
-
+      // 3. Vertical lines down to each child
       childrenIds.forEach((childId) => {
         const childPos = positions.get(childId);
         if (!childPos) return;
 
         connectionLines.push(
           <line
-            key={`child-${couple.partner1Id}-${couple.partner2Id}-${childId}`}
+            key={`child-line-${couple.partner1Id}-${couple.partner2Id}-${childId}`}
             x1={childPos.x}
-            y1={dropY}
+            y1={connectionPointY}
             x2={childPos.x}
             y2={childPos.y}
             stroke="#9ca3af"

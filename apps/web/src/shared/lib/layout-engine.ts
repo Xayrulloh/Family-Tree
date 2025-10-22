@@ -4,103 +4,156 @@ import {
   type MemberSchemaType,
 } from '@family-tree/shared';
 
-// Dynamic positioning algorithm for family tree
-type Position = { x: number; y: number };
+export type Position = { x: number; y: number };
+
+const GENERATION_HEIGHT = 70;
+const COUPLE_SPACING = 100;
+const FAMILY_UNIT_SPACING = 150;
 
 export const calculatePositions = (
   members: MemberSchemaType[],
   connections: FamilyTreeMemberConnectionGetAllResponseType,
 ): Map<string, Position> => {
-  const memberMap = new Map(members.map((member) => [member.id, member]));
+  const memberMap = new Map(members.map((m) => [m.id, m]));
+  const positions = new Map<string, Position>();
 
-  const generations = new Map<string, number>();
-  const hasParent = new Set<string>();
+  // Build relationship maps
+  const spouseMap = new Map<string, string>();
+  const parentToChildren = new Map<string, Set<string>>();
+  const childToParents = new Map<string, Set<string>>();
 
-  // Find parents
   connections.forEach((conn) => {
-    if (conn.type === FamilyTreeMemberConnectionEnum.PARENT) {
-      hasParent.add(conn.toMemberId);
+    if (conn.type === FamilyTreeMemberConnectionEnum.SPOUSE) {
+      spouseMap.set(conn.fromMemberId, conn.toMemberId);
+      spouseMap.set(conn.toMemberId, conn.fromMemberId);
+    } else if (conn.type === FamilyTreeMemberConnectionEnum.PARENT) {
+      if (!parentToChildren.has(conn.fromMemberId)) {
+        parentToChildren.set(conn.fromMemberId, new Set());
+      }
+      parentToChildren.get(conn.fromMemberId)!.add(conn.toMemberId);
+
+      if (!childToParents.has(conn.toMemberId)) {
+        childToParents.set(conn.toMemberId, new Set());
+      }
+
+      childToParents.get(conn.toMemberId)!.add(conn.fromMemberId);
     }
   });
 
-  // Find roots
-  const roots = Array.from(memberMap.keys()).filter((id) => !hasParent.has(id));
+  // Find root members (those with no parents)
+  const roots = Array.from(memberMap.keys()).filter(
+    (id) => !childToParents.has(id) || childToParents.get(id)!.size === 0,
+  );
 
-  // BFS for generations
-  const queue: Array<{ id: string; gen: number }> = roots.map((r) => ({
-    id: r,
-    gen: 0,
-  }));
+  // CRITICAL FIX: Assign generations in two passes
+  // Pass 1: Assign generation based on parent-child only
+  const generations = new Map<string, number>();
+  const queue: string[] = [...roots];
+
+  roots.forEach((rootId) => generations.set(rootId, 0));
 
   while (queue.length > 0) {
-    const { id, gen } = queue.shift()!;
+    const currentId = queue.shift()!;
+    const currentGen = generations.get(currentId)!;
 
-    if (generations.has(id)) continue;
+    // Get all children from this person
+    const children = parentToChildren.get(currentId);
 
-    generations.set(id, gen);
+    if (children) {
+      children.forEach((childId) => {
+        // Only assign if not already assigned OR if this would put them in a higher generation
+        const existingGen = generations.get(childId);
 
-    const children = connections
-      .filter(
-        (c) =>
-          c.fromMemberId === id &&
-          c.type === FamilyTreeMemberConnectionEnum.PARENT,
-      )
-      .map((c) => c.toMemberId);
-
-    children.forEach((childId) => {
-      queue.push({ id: childId, gen: gen + 1 });
-    });
+        if (existingGen === undefined || existingGen < currentGen + 1) {
+          generations.set(childId, currentGen + 1);
+          queue.push(childId);
+        }
+      });
+    }
   }
 
-  // If no generations found (no parent-child relations), put all at generation 0
-  if (generations.size === 0) {
-    Array.from(memberMap.keys()).forEach((id) => {
+  // Pass 2: Assign spouses to the SAME generation as their partner
+  Array.from(spouseMap.entries()).forEach(([personId, spouseId]) => {
+    const personGen = generations.get(personId);
+    const spouseGen = generations.get(spouseId);
+
+    if (personGen !== undefined && spouseGen === undefined) {
+      generations.set(spouseId, personGen);
+    } else if (spouseGen !== undefined && personGen === undefined) {
+      generations.set(personId, spouseGen);
+    }
+  });
+
+  // Handle disconnected members
+  Array.from(memberMap.keys()).forEach((id) => {
+    if (!generations.has(id)) {
       generations.set(id, 0);
-    });
-  }
+    }
+  });
 
-  // Group by generation
+  // Group members by generation
   const membersByGen = new Map<number, string[]>();
 
   generations.forEach((gen, memberId) => {
-    if (!membersByGen.has(gen)) membersByGen.set(gen, []);
+    if (!membersByGen.has(gen)) {
+      membersByGen.set(gen, []);
+    }
+
     membersByGen.get(gen)!.push(memberId);
   });
 
-  // Calculate positions
-  const positions = new Map<string, Position>();
-  const maxGeneration = Math.max(...generations.values());
-  const startY = 60;
+  // Position each generation
+  const maxGen = Math.max(...Array.from(generations.values()), 0);
+  const containerWidth = 1200;
+  const startY = 50;
 
-  // For single generation, center them horizontally
-  if (maxGeneration === 0) {
-    const membersInGen = membersByGen.get(0) || [];
-    const itemWidth = 120;
-    const totalWidth = membersInGen.length * itemWidth;
-    const containerWidth = 1000;
-    const startX = (containerWidth - totalWidth) / 2 + 50;
+  for (let gen = 0; gen <= maxGen; gen++) {
+    const membersInGen = membersByGen.get(gen) || [];
+    const processed = new Set<string>();
+    const familyUnits: string[][] = [];
 
-    membersInGen.forEach((memberId, index) => {
-      const x = startX + index * itemWidth;
-      const y = startY;
+    // Group into family units (couples or singles)
+    membersInGen.forEach((memberId) => {
+      if (processed.has(memberId)) return;
 
-      positions.set(memberId, { x, y });
+      const spouseId = spouseMap.get(memberId);
+
+      if (
+        spouseId &&
+        membersInGen.includes(spouseId) &&
+        !processed.has(spouseId)
+      ) {
+        familyUnits.push([memberId, spouseId]);
+        processed.add(memberId);
+        processed.add(spouseId);
+      } else if (!processed.has(memberId)) {
+        familyUnits.push([memberId]);
+        processed.add(memberId);
+      }
     });
-  } else {
-    // Multiple generations
-    for (let gen = 0; gen <= maxGeneration; gen++) {
-      const membersInGen = membersByGen.get(gen) || [];
-      const itemWidth = 120;
-      const totalWidth = membersInGen.length * itemWidth;
-      const containerWidth = 1000;
-      const startX = (containerWidth - totalWidth) / 2 + 50;
 
-      membersInGen.forEach((memberId, index) => {
-        const x = startX + index * itemWidth;
-        const y = startY + gen * 80;
-        positions.set(memberId, { x, y });
-      });
-    }
+    // Calculate positions for this generation
+    const totalUnits = familyUnits.length;
+    const totalWidth = totalUnits * FAMILY_UNIT_SPACING;
+    const startX = (containerWidth - totalWidth) / 2 + FAMILY_UNIT_SPACING / 2;
+
+    familyUnits.forEach((unit, unitIndex) => {
+      const unitCenterX = startX + unitIndex * FAMILY_UNIT_SPACING;
+      const y = startY + gen * GENERATION_HEIGHT;
+
+      if (unit.length === 2) {
+        positions.set(unit[0], {
+          x: unitCenterX - COUPLE_SPACING / 2,
+          y,
+        });
+        positions.set(unit[1], {
+          x: unitCenterX + COUPLE_SPACING / 2,
+          y,
+        });
+      } else {
+        positions.set(unit[0], { x: unitCenterX, y });
+      }
+    });
   }
 
   return positions;
