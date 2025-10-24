@@ -17,7 +17,7 @@
     "@ant-design/icons": "^6.0.0",
     "@aws-sdk/client-s3": "^3.850.0",
     "@hookform/resolvers": "3.9.0",
-    "@nestjs/common": "^11.1.5",
+    "@nestjs/common": "^11.1.7",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.5",
     "@nestjs/jwt": "^11.0.0",
