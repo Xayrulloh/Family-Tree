@@ -114,6 +114,46 @@ const TreeVisualization: React.FC<{
   };
 
   /* ===============================
+   * Wheel zoom
+   * =============================== */
+
+  const handleWheel = (e: React.WheelEvent<SVGSVGElement>) => {
+    e.preventDefault(); // prevent page scroll
+
+    const scaleFactor = 1.1; // zoom speed
+    const svg = e.currentTarget;
+    const { width, height, x, y } = viewBox;
+    const rect = svg.getBoundingClientRect();
+
+    // Mouse position in SVG coords
+    const mouseX = ((e.clientX - rect.left) / rect.width) * width + x;
+    const mouseY = ((e.clientY - rect.top) / rect.height) * height + y;
+
+    // Zoom in if deltaY < 0, else out
+    const zoomIn = e.deltaY < 0;
+    const newWidth = zoomIn ? width / scaleFactor : width * scaleFactor;
+    const newHeight = zoomIn ? height / scaleFactor : height * scaleFactor;
+
+    // Clamp zoom between min and max
+    const minZoom = 0.5; // 2x zoom in
+    const maxZoom = 3; // 3x zoom out
+    const currentScale = newWidth / 1200; // compare to initial width
+
+    if (currentScale < minZoom || currentScale > maxZoom) return;
+
+    // Adjust x/y so that zoom centers around cursor
+    const newX = mouseX - ((mouseX - x) * newWidth) / width;
+    const newY = mouseY - ((mouseY - y) * newHeight) / height;
+
+    setViewBox({
+      x: newX,
+      y: newY,
+      width: newWidth,
+      height: newHeight,
+    });
+  };
+
+  /* ===============================
    * CONNECTION RENDERING
    * =============================== */
 
@@ -304,6 +344,7 @@ const TreeVisualization: React.FC<{
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
+        onWheel={handleWheel}
       >
         <title>Family Tree</title>
         <g>{renderCoupleConnections()}</g>
