@@ -1,7 +1,7 @@
-import { Flex, Spin, Card, Space, theme } from 'antd';
+import { Flex, Spin, theme } from 'antd';
 import { useUnit } from 'effector-react';
+import { useMemo, useState, useCallback } from 'react';
 import type React from 'react';
-import { type JSX, useMemo, useState, useCallback } from 'react';
 import { FamilyTreeNode } from '~/shared/ui/family-tree-node';
 import type { LazyPageProps } from '~/shared/lib/lazy-page';
 import { factory } from '../model';
@@ -12,72 +12,20 @@ import type {
 import { MemberDetailDrawer } from '~/shared/ui/member-detail-wrapper';
 import {
   calculatePositions,
-  getChildrenOfCouple,
   getCouples,
-  Position,
   transformConnectionsData,
-} from '~/shared/lib/d3-layout-engine';
+} from '~/shared/lib/layout-engine';
 
 type Model = ReturnType<typeof factory>;
 type Props = LazyPageProps<Model>;
 
-// Constants
 const CONNECTION = {
-  SPOUSE: {
-    color: '#10b981',
-    width: 3,
-    minDistance: 40,
-  },
-  PARENT_CHILD: {
-    color: '#9ca3af',
-    width: 2,
-  },
+  SPOUSE: { color: '#10b981', width: 3 },
+  PARENT_CHILD: { color: '#9ca3af', width: 2 },
 } as const;
 
-const LEGEND_ITEMS = [
-  {
-    type: 'male' as const,
-    label: 'Male',
-    color: '#3b82f6',
-    backgroundColor: '#bfdbfe',
-  },
-  {
-    type: 'female' as const,
-    label: 'Female',
-    color: '#ec4899',
-    backgroundColor: '#fbcfe8',
-  },
-  {
-    type: 'spouse' as const,
-    label: 'Spouse',
-    color: CONNECTION.SPOUSE.color,
-    width: CONNECTION.SPOUSE.width,
-  },
-  {
-    type: 'parent-child' as const,
-    label: 'Parent-Child',
-    color: CONNECTION.PARENT_CHILD.color,
-    width: CONNECTION.PARENT_CHILD.width,
-  },
-] as const;
-
-// Memoized connection data transformation
-const useTransformedConnections = (
-  connections: FamilyTreeMemberConnectionGetAllResponseType,
-) => {
-  return useMemo(() => transformConnectionsData(connections), [connections]);
-};
-
-// Memoized couples calculation
-const useCouples = (
-  connections: FamilyTreeMemberConnectionGetAllResponseType,
-) => {
-  const transformedConnections = useTransformedConnections(connections);
-  return useMemo(
-    () => getCouples(transformedConnections),
-    [transformedConnections],
-  );
-};
+const NODE_WIDTH = 160;
+const NODE_HEIGHT = 80;
 
 const TreeVisualization: React.FC<{
   members: MemberSchemaType[];
@@ -85,125 +33,206 @@ const TreeVisualization: React.FC<{
   onMemberClick: (member: MemberSchemaType) => void;
 }> = ({ members, connections, onMemberClick }) => {
   const { token } = theme.useToken();
+
   const positions = useMemo(
     () => calculatePositions(members, connections),
     [members, connections],
   );
-  const couples = useCouples(connections);
+
+  const couples = useMemo(
+    () => getCouples(transformConnectionsData(connections)),
+    [connections],
+  );
+
+  /* ===============================
+   * Center tree in the viewport
+   * =============================== */
+
+  const [viewBox, setViewBox] = useState('0 0 1200 800');
+
+  useMemo(() => {
+    if (positions.size === 0) return;
+
+    const xs = Array.from(positions.values()).map((p) => p.x);
+    const ys = Array.from(positions.values()).map((p) => p.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    const width = maxX - minX + NODE_WIDTH * 2;
+    const height = maxY - minY + NODE_HEIGHT * 2;
+
+    const vbX = Math.max(0, minX - NODE_WIDTH);
+    const vbY = Math.max(0, minY - NODE_HEIGHT);
+
+    setViewBox(`${vbX} ${vbY} ${width} ${height}`);
+  }, [positions]);
+
+  /* ===============================
+   * CONNECTION RENDERING
+   * =============================== */
 
   const renderCoupleConnections = useCallback(() => {
+    const RECT_WIDTH = NODE_WIDTH / 2;
+
     return couples.map((couple) => {
-      const pos1 = positions.get(couple.partner1Id);
-      const pos2 = positions.get(couple.partner2Id);
+      const p1 = positions.get(couple.partner1Id);
+      const p2 = positions.get(couple.partner2Id);
 
-      if (!pos1 || !pos2) return null;
+      if (!p1 || !p2) return null;
 
-      const distance = Math.abs(pos2.x - pos1.x);
-      if (distance < CONNECTION.SPOUSE.minDistance) return null;
+      const midY = (p1.y + p2.y) / 2;
+
+      // Adjust line to stop at rect edges, not centers
+      const x1 = p1.x + RECT_WIDTH / 2;
+      const x2 = p2.x - RECT_WIDTH / 2;
 
       return (
         <line
-          key={`couple-${couple.partner1Id}-${couple.partner2Id}`}
-          x1={pos1.x}
-          y1={pos1.y}
-          x2={pos2.x}
-          y2={pos2.y}
+          key={`spouse-${couple.partner1Id}-${couple.partner2Id}`}
+          x1={x1}
+          y1={midY}
+          x2={x2}
+          y2={midY}
           stroke={CONNECTION.SPOUSE.color}
           strokeWidth={CONNECTION.SPOUSE.width}
-          className="transition-all duration-200"
         />
       );
     });
   }, [couples, positions]);
 
-  const renderGenerationalConnections = useCallback(() => {
-    const connectionLines: JSX.Element[] = [];
+  const renderParentChildConnections = useCallback(() => {
+    const result: React.ReactNode[] = [];
+
+    // Map couple centers to children
+    const coupleCenters = new Map<string, { x: number; y: number }>();
 
     couples.forEach((couple) => {
-      const pos1 = positions.get(couple.partner1Id);
-      const pos2 = positions.get(couple.partner2Id);
+      const p1 = positions.get(couple.partner1Id);
+      const p2 = positions.get(couple.partner2Id);
 
-      if (!pos1 || !pos2) return;
+      if (!p1 || !p2) return;
 
-      const midX = (pos1.x + pos2.x) / 2;
-      const childrenIds = getChildrenOfCouple(couple, connections);
+      coupleCenters.set(couple.partner1Id, {
+        x: (p1.x + p2.x) / 2,
+        y: (p1.y + p2.y) / 2,
+      });
 
-      if (childrenIds.length === 0) return;
-
-      const childPositions = childrenIds
-        .map((id) => positions.get(id))
-        .filter(Boolean) as Position[];
-
-      if (childPositions.length === 0) return;
-
-      const minChildX = Math.min(...childPositions.map((p) => p.x));
-      const maxChildX = Math.max(...childPositions.map((p) => p.x));
-      const minChildY = Math.min(...childPositions.map((p) => p.y));
-
-      const horizontalLineLength = Math.max(maxChildX - minChildX, 80);
-      const horizontalStartX = midX - horizontalLineLength / 2;
-      const horizontalEndX = midX + horizontalLineLength / 2;
-      const dropY = minChildY - 30;
-
-      // Vertical line from parents to horizontal line
-      connectionLines.push(
-        <line
-          key={`vertical-${couple.partner1Id}-${couple.partner2Id}`}
-          x1={midX}
-          y1={Math.max(pos1.y, pos2.y)}
-          x2={midX}
-          y2={dropY}
-          stroke={CONNECTION.PARENT_CHILD.color}
-          strokeWidth={CONNECTION.PARENT_CHILD.width}
-          className="transition-all duration-200"
-        />,
-      );
-
-      // Horizontal line
-      connectionLines.push(
-        <line
-          key={`horizontal-${couple.partner1Id}-${couple.partner2Id}`}
-          x1={horizontalStartX}
-          y1={dropY}
-          x2={horizontalEndX}
-          y2={dropY}
-          stroke={CONNECTION.PARENT_CHILD.color}
-          strokeWidth={CONNECTION.PARENT_CHILD.width}
-          className="transition-all duration-200"
-        />,
-      );
-
-      // Vertical lines to children
-      childPositions.forEach((childPos) => {
-        connectionLines.push(
-          <line
-            key={`child-${couple.partner1Id}-${childPos.x}-${childPos.y}`}
-            x1={childPos.x}
-            y1={dropY}
-            x2={childPos.x}
-            y2={childPos.y}
-            stroke={CONNECTION.PARENT_CHILD.color}
-            strokeWidth={CONNECTION.PARENT_CHILD.width}
-            className="transition-all duration-200"
-          />,
-        );
+      coupleCenters.set(couple.partner2Id, {
+        x: (p1.x + p2.x) / 2,
+        y: (p1.y + p2.y) / 2,
       });
     });
 
-    return connectionLines;
-  }, [couples, positions, connections]);
+    // Group children by couple
+    const grouped = new Map<string, string[]>();
+
+    connections.forEach((conn) => {
+      if (conn.type !== 'PARENT') return;
+
+      const origin =
+        coupleCenters.get(conn.fromMemberId) ??
+        positions.get(conn.fromMemberId);
+
+      if (!origin) return;
+
+      const key = `${origin.x},${origin.y}`;
+
+      if (!grouped.has(key)) grouped.set(key, []);
+
+      grouped.get(key)?.push(conn.toMemberId);
+    });
+
+    grouped.forEach((childIds, key) => {
+      const [xStr, yStr] = key.split(',');
+      const coupleX = parseFloat(xStr);
+      const coupleY = parseFloat(yStr);
+
+      const childPositions = childIds
+        .map((id) => positions.get(id))
+        .filter(Boolean) as { x: number; y: number }[];
+
+      if (childPositions.length === 0) return;
+
+      const topY = coupleY + 1;
+
+      if (childPositions.length === 1) {
+        const child = childPositions[0];
+        const childTop = child.y - NODE_HEIGHT / 2;
+
+        result.push(
+          <line
+            key={`stem-${key}`}
+            x1={coupleX}
+            y1={topY}
+            x2={childTop}
+            y2={childTop}
+            stroke={CONNECTION.PARENT_CHILD.color}
+            strokeWidth={CONNECTION.PARENT_CHILD.width}
+          />,
+        );
+      } else {
+        const childTops = childPositions.map((c) => c.y - NODE_HEIGHT / 2);
+        const branchY = Math.min(...childTops) - 8;
+        const leftX = Math.min(...childPositions.map((c) => c.x));
+        const rightX = Math.max(...childPositions.map((c) => c.x));
+
+        // vertical stem
+        result.push(
+          <line
+            key={`stem-${key}`}
+            x1={coupleX}
+            y1={topY}
+            x2={coupleX}
+            y2={branchY}
+            stroke={CONNECTION.PARENT_CHILD.color}
+            strokeWidth={CONNECTION.PARENT_CHILD.width}
+          />,
+        );
+
+        // horizontal branch
+        result.push(
+          <line
+            key={`branch-${key}`}
+            x1={leftX}
+            y1={branchY}
+            x2={rightX}
+            y2={branchY}
+            stroke={CONNECTION.PARENT_CHILD.color}
+            strokeWidth={CONNECTION.PARENT_CHILD.width}
+          />,
+        );
+
+        // small vertical stems from each child to branch
+        childPositions.forEach((c, i) => {
+          result.push(
+            <line
+              key={`child-${key}-${i}`}
+              x1={c.x}
+              y1={branchY}
+              x2={c.x}
+              y2={c.y - 20}
+              stroke={CONNECTION.PARENT_CHILD.color}
+              strokeWidth={CONNECTION.PARENT_CHILD.width}
+            />,
+          );
+        });
+      }
+    });
+
+    return result;
+  }, [connections, positions, couples]);
 
   const renderMemberNodes = useCallback(() => {
-    return members.map((member) => {
-      if (!member) return null;
+    return members.map((m) => {
+      const pos = positions.get(m.id);
 
-      const pos = positions.get(member.id);
       if (!pos) return null;
 
       return (
         <FamilyTreeNode
-          key={member.id}
-          member={member}
+          key={m.id}
+          member={m}
           position={pos}
           onMemberClick={onMemberClick}
         />
@@ -211,106 +240,33 @@ const TreeVisualization: React.FC<{
     });
   }, [members, positions, onMemberClick]);
 
+  /* ===============================
+   * SVG RENDERING
+   * =============================== */
   return (
     <div className="w-full h-full p-4">
       <svg
         width="100%"
         height="100%"
-        viewBox="0 0 1000 600"
+        viewBox={viewBox}
         style={{
           background: 'rgba(249, 250, 251, 0.9)',
           border: `1px solid ${token.colorBorderSecondary}`,
           borderRadius: token.borderRadiusLG,
         }}
-        aria-label="Family tree visualization"
       >
         <title>Family Tree</title>
-        <g className="connection-lines">
-          {renderCoupleConnections()}
-          {renderGenerationalConnections()}
-        </g>
-        <g className="family-members">{renderMemberNodes()}</g>
+        <g>{renderCoupleConnections()}</g>
+        <g>{renderParentChildConnections()}</g>
+        <g>{renderMemberNodes()}</g>
       </svg>
     </div>
   );
 };
 
-const Legend: React.FC = () => {
-  const renderLegendIcon = (item: (typeof LEGEND_ITEMS)[number]) => {
-    switch (item.type) {
-      case 'male':
-      case 'female':
-        return (
-          <div
-            style={{
-              width: 16,
-              height: 16,
-              borderRadius: '50%',
-              backgroundColor: item.backgroundColor,
-              border: `2px solid ${item.color}`,
-              flexShrink: 0,
-            }}
-          />
-        );
-      case 'spouse':
-      case 'parent-child':
-        return (
-          <svg width="20" height="3" style={{ flexShrink: 0 }}>
-            <title>{item.label} connection line</title>
-            <line
-              x1="0"
-              y1="1.5"
-              x2="20"
-              y2="1.5"
-              stroke={item.color}
-              strokeWidth={item.width}
-            />
-          </svg>
-        );
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <Card
-      size="small"
-      className="border-0 border-b rounded-none shadow-none"
-      styles={{
-        body: {
-          padding: '12px 24px',
-          backgroundColor: 'rgba(243, 244, 246, 0.8)',
-        },
-      }}
-    >
-      <Space size="large" wrap>
-        {LEGEND_ITEMS.map((item) => (
-          <Space key={item.type} size="small">
-            {renderLegendIcon(item)}
-            <span
-              style={{
-                color: '#374151',
-                whiteSpace: 'nowrap',
-                fontSize:
-                  item.type === 'spouse' || item.type === 'parent-child'
-                    ? 12
-                    : undefined,
-              }}
-            >
-              {item.label}
-            </span>
-          </Space>
-        ))}
-      </Space>
-    </Card>
-  );
-};
-
 const LoadingState: React.FC = () => (
   <Flex justify="center" align="center" style={{ padding: '64px 0' }}>
-    <Spin size="large">
-      <div style={{ padding: 24 }} />
-    </Spin>
+    <Spin size="large" />
   </Flex>
 );
 
@@ -320,42 +276,29 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
     model.$connections,
     model.$loading,
   ]);
-
   const [selectedMember, setSelectedMember] = useState<MemberSchemaType | null>(
     null,
   );
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const handleMemberClick = useCallback((member: MemberSchemaType) => {
-    setSelectedMember(member);
+  const handleMemberClick = useCallback((m: MemberSchemaType) => {
+    setSelectedMember(m);
     setDrawerOpen(true);
   }, []);
 
-  const handleDrawerClose = useCallback(() => {
-    setDrawerOpen(false);
-  }, []);
-
-  if (loading) {
-    return <LoadingState />;
-  }
+  if (loading) return <LoadingState />;
 
   return (
     <>
-      <div className="w-full h-screen flex flex-col">
-        <Legend />
-        <div className="flex-1 overflow-auto relative bg-gradient-to-br from-blue-50 to-indigo-100">
-          <TreeVisualization
-            members={members}
-            connections={connections}
-            onMemberClick={handleMemberClick}
-          />
-        </div>
-      </div>
-
+      <TreeVisualization
+        members={members}
+        connections={connections}
+        onMemberClick={handleMemberClick}
+      />
       <MemberDetailDrawer
         member={selectedMember}
         open={drawerOpen}
-        onClose={handleDrawerClose}
+        onClose={() => setDrawerOpen(false)}
       />
     </>
   );
