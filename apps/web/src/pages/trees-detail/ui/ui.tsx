@@ -48,8 +48,14 @@ const TreeVisualization: React.FC<{
    * Center tree in the viewport
    * =============================== */
 
-  const [viewBox, setViewBox] = useState('0 0 1200 800');
+  const [viewBox, setViewBox] = useState({
+    x: 0,
+    y: 0,
+    width: 1200,
+    height: 800,
+  });
 
+  // Center once based on layout
   useMemo(() => {
     if (positions.size === 0) return;
 
@@ -59,14 +65,53 @@ const TreeVisualization: React.FC<{
     const maxX = Math.max(...xs);
     const minY = Math.min(...ys);
     const maxY = Math.max(...ys);
+
     const width = maxX - minX + NODE_WIDTH * 2;
     const height = maxY - minY + NODE_HEIGHT * 2;
-
     const vbX = Math.max(0, minX - NODE_WIDTH);
     const vbY = Math.max(0, minY - NODE_HEIGHT);
 
-    setViewBox(`${vbX} ${vbY} ${width} ${height}`);
+    setViewBox({ x: vbX, y: vbY, width, height });
   }, [positions]);
+
+  /* ===============================
+   * Drag logic for panning
+   * =============================== */
+  const [isDragging, setIsDragging] = useState(false);
+  const [lastPoint, setLastPoint] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+
+  const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
+    setIsDragging(true);
+    setLastPoint({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!isDragging || !lastPoint) return;
+
+    const dx = e.clientX - lastPoint.x;
+    const dy = e.clientY - lastPoint.y;
+
+    // Move opposite to drag direction
+    setViewBox((prev) => ({
+      ...prev,
+      x: prev.x - dx,
+      y: prev.y - dy,
+    }));
+
+    setLastPoint({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setLastPoint(null);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+    setLastPoint(null);
+  };
 
   /* ===============================
    * CONNECTION RENDERING
@@ -244,16 +289,21 @@ const TreeVisualization: React.FC<{
    * SVG RENDERING
    * =============================== */
   return (
-    <div className="w-full h-full p-4">
+    <div className="w-full h-full p-4 select-none">
       <svg
         width="100%"
         height="100%"
-        viewBox={viewBox}
+        viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
         style={{
           background: 'rgba(249, 250, 251, 0.9)',
           border: `1px solid ${token.colorBorderSecondary}`,
           borderRadius: token.borderRadiusLG,
+          cursor: isDragging ? 'grabbing' : 'grab',
         }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
       >
         <title>Family Tree</title>
         <g>{renderCoupleConnections()}</g>
