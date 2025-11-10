@@ -24,6 +24,7 @@ import {
   FCMTokenCreateDeleteRequestDto,
   FCMTokenResponseDto,
 } from './dto/fcm-token.dto';
+// biome-ignore lint/style/useImportType: <no need>
 import { FCMTokenService } from './fcm-token.service';
 
 @ApiTags('FCM Token')

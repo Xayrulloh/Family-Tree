@@ -20,16 +20,16 @@ import {
   Typography,
   theme,
 } from 'antd';
+import { Link } from 'atomic-router-react';
 import { useUnit } from 'effector-react';
-import { Link } from 'atomic-router-react'; // ← Import Link from atomic-router
 import {
   CreateEditTreeModal,
   createEditTreeModel,
 } from '~/features/tree/create-edit';
 import { DeleteTreeModal, deleteTreeModel } from '~/features/tree/delete';
+import { routes } from '~/shared/config/routing';
 import type { LazyPageProps } from '~/shared/lib/lazy-page';
 import { factory } from '../model';
-import { routes } from '~/shared/config/routing';
 
 // Types
 type Model = ReturnType<typeof factory>;

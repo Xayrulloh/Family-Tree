@@ -33,6 +33,7 @@ import {
   type FamilyTreeMemberConnectionGetParamDto,
   FamilyTreeMemberConnectionUpdateRequestDto,
 } from './dto/family-tree-member-connection.dto';
+// biome-ignore lint/style/useImportType: <no need>
 import { FamilyTreeMemberConnectionService } from './family-tree-member-connection.service';
 
 @ApiTags('Family Tree Member Connection')

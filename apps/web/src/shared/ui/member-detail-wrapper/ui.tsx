@@ -1,16 +1,16 @@
-import { Avatar, Button, Divider, Flex, Modal, Space, Typography } from 'antd';
 import {
-  EditOutlined,
-  LinkOutlined,
-  DeleteOutlined,
-  ManOutlined,
-  WomanOutlined,
-  HeartOutlined,
-  HeartFilled,
   CalendarOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  HeartFilled,
+  HeartOutlined,
+  LinkOutlined,
+  ManOutlined,
   UserOutlined,
+  WomanOutlined,
 } from '@ant-design/icons';
 import type { MemberSchemaType } from '@family-tree/shared';
+import { Avatar, Button, Divider, Flex, Modal, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
 
 const { Title, Paragraph, Text } = Typography;

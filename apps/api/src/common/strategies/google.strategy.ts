@@ -4,6 +4,7 @@ import {
   type UserSchemaType,
 } from '@family-tree/shared';
 import { Inject, Injectable } from '@nestjs/common';
+// biome-ignore lint/style/useImportType: <no need>
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { and, eq, isNull } from 'drizzle-orm';
@@ -22,9 +23,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     private db: NodePgDatabase<typeof schema>,
   ) {
     super({
-      clientID: configService.getOrThrow<EnvType['GOOGLE_CLIENT_ID']>(
-        'GOOGLE_CLIENT_ID',
-      ),
+      clientID:
+        configService.getOrThrow<EnvType['GOOGLE_CLIENT_ID']>(
+          'GOOGLE_CLIENT_ID',
+        ),
       clientSecret: configService.getOrThrow<EnvType['GOOGLE_CLIENT_SECRET']>(
         'GOOGLE_CLIENT_SECRET',
       ),

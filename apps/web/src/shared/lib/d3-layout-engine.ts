@@ -1,7 +1,7 @@
 import {
+  FamilyTreeMemberConnectionEnum,
   type FamilyTreeMemberConnectionGetAllResponseType,
   type MemberSchemaType,
-  FamilyTreeMemberConnectionEnum,
 } from '@family-tree/shared';
 import { hierarchy, tree } from 'd3-hierarchy';
 
