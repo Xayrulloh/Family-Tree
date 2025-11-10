@@ -22,7 +22,7 @@
     "@nestjs/core": "^11.1.5",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.5",
-    "@nestjs/platform-express": "^11.1.5",
+    "@nestjs/platform-express": "^11.1.8",
     "@nestjs/swagger": "^11.2.0",
     "@types/d3": "^7.4.3",
     "@types/d3-hierarchy": "^3.1.7",
