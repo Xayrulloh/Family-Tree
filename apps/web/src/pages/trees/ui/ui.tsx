@@ -28,8 +28,8 @@ import {
 import { DeleteTreeModal, deleteTreeModel } from '~/features/tree/delete';
 import { routes } from '~/shared/config/routing';
 import type { LazyPageProps } from '~/shared/lib/lazy-page';
-import { factory } from '../model';
 import { PageLoading } from '~/shared/ui/loading';
+import { factory } from '../model';
 
 // Types
 type Model = ReturnType<typeof factory>;

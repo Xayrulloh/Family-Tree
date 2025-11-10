@@ -1,20 +1,20 @@
-import { Flex, Spin, theme } from 'antd';
-import { useUnit } from 'effector-react';
-import { useMemo, useState, useCallback } from 'react';
-import type React from 'react';
-import { FamilyTreeNode } from '~/shared/ui/family-tree-node';
-import type { LazyPageProps } from '~/shared/lib/lazy-page';
-import { factory } from '../model';
 import type {
   FamilyTreeMemberConnectionGetAllResponseType,
   MemberSchemaType,
 } from '@family-tree/shared';
-import { MemberDetailDrawer } from '~/shared/ui/member-detail-wrapper';
+import { Flex, Spin, theme } from 'antd';
+import { useUnit } from 'effector-react';
+import type React from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   calculatePositions,
   getCouples,
   transformConnectionsData,
 } from '~/shared/lib/layout-engine';
+import type { LazyPageProps } from '~/shared/lib/lazy-page';
+import { FamilyTreeNode } from '~/shared/ui/family-tree-node';
+import { MemberDetailDrawer } from '~/shared/ui/member-detail-wrapper';
+import { factory } from '../model';
 
 // Types
 type Model = ReturnType<typeof factory>;
