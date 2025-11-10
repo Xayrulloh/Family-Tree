@@ -16,6 +16,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBody,
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
@@ -29,12 +30,13 @@ import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import {
   FamilyTreeArrayResponseDto,
-  type FamilyTreeCreateRequestDto,
+  FamilyTreeCreateRequestDto,
   type FamilyTreeIdParamDto,
   type FamilyTreeNameParamDto,
   FamilyTreeResponseDto,
-  type FamilyTreeUpdateRequestDto,
+  FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
+// biome-ignore lint/style/useImportType: <no need>
 import { FamilyTreeService } from './family-tree.service';
 
 @ApiTags('Family Tree')
@@ -87,6 +89,7 @@ export class FamilyTreeController {
   @Post()
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @ApiBody({ type: FamilyTreeCreateRequestDto })
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ type: FamilyTreeResponseDto })
   @ZodSerializerDto(FamilyTreeResponseSchema)
@@ -108,6 +111,7 @@ export class FamilyTreeController {
   @Put(':id')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @ApiBody({ type: FamilyTreeUpdateRequestDto })
   @ApiParam({ name: 'id', required: true, type: String })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()

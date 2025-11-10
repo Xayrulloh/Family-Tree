@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBody,
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
@@ -20,9 +21,10 @@ import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import {
-  type FCMTokenCreateDeleteRequestDto,
+  FCMTokenCreateDeleteRequestDto,
   FCMTokenResponseDto,
 } from './dto/fcm-token.dto';
+// biome-ignore lint/style/useImportType: <no need>
 import { FCMTokenService } from './fcm-token.service';
 
 @ApiTags('FCM Token')
@@ -34,6 +36,7 @@ export class FCMTokenController {
   @Post()
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @ApiBody({ type: FCMTokenCreateDeleteRequestDto })
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ type: FCMTokenResponseDto })
   @ZodSerializerDto(FCMTokenResponseSchema)
@@ -48,6 +51,7 @@ export class FCMTokenController {
   @Delete()
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @ApiBody({ type: FCMTokenCreateDeleteRequestDto })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   deleteFcmToken(

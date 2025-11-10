@@ -8,6 +8,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+// biome-ignore lint/style/useImportType: <no need>
 import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -22,6 +23,7 @@ import { ZodSerializerDto } from 'nestjs-zod';
 import type { EnvType } from '~/config/env/env-validation';
 import generateRandomString from '~/helpers/random-string.helper';
 import type { FileUploadParamDto, FileUploadResponseDto } from './dto/file.dto';
+// biome-ignore lint/style/useImportType: <no need>
 import { FileService } from './file.service';
 import 'multer';
 
@@ -77,9 +79,10 @@ export class FileController {
       file.mimetype,
     );
 
-    const path = this.configService.get<EnvType['CLOUDFLARE_URL']>(
-      'CLOUDFLARE_URL',
-    ) as string;
+    const path =
+      this.configService.getOrThrow<EnvType['CLOUDFLARE_URL']>(
+        'CLOUDFLARE_URL',
+      );
 
     return {
       message: 'File uploaded successfully',
