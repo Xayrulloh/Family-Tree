@@ -88,12 +88,12 @@ export const EditProfileModal: React.FC = () => {
           {/* === 🎂 Birthdate === */}
           <Controller
             control={form.control}
-            name="birthdate"
+            name="dob"
             render={({ field }) => (
               <FieldWrapper
                 label="Birthdate"
-                isError={!!form.formState.errors.birthdate?.message}
-                message={form.formState.errors.birthdate?.message}
+                isError={!!form.formState.errors.dob?.message}
+                message={form.formState.errors.dob?.message}
               >
                 <DatePicker
                   {...field}

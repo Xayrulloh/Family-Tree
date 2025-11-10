@@ -8,7 +8,6 @@ enum FamilyTreeMemberConnectionEnum {
 
 const FamilyTreeMemberConnectionSchema = z
   .object({
-    familyTreeId: z.string().uuid().describe('The id of the family tree'),
     fromMemberId: z.string().uuid().describe('The id of the from member'),
     toMemberId: z.string().uuid().describe('The id of the to member'),
     type: z

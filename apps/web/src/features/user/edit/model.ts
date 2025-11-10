@@ -27,7 +27,7 @@ export const formSchema = z.object({
     UserGenderEnum.FEMALE,
     UserGenderEnum.UNKNOWN,
   ]),
-  birthdate: z.string().date().nullable(),
+  dob: z.string().date().nullable(),
 });
 
 // Events
@@ -126,7 +126,7 @@ sample({
       edited.image.startsWith('https') &&
       isEqual(
         {
-          birthdate: original?.birthdate,
+          dob: original?.dob,
           gender: original?.gender,
           name: original?.name,
           image: original?.image,

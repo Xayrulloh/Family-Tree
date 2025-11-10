@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBody,
   ApiCookieAuth,
   ApiNoContentResponse,
   ApiOkResponse,
@@ -25,8 +26,9 @@ import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import {
   type UserIdParamDto,
   UserResponseDto,
-  type UserUpdateRequestDto,
+  UserUpdateRequestDto,
 } from './dto/user.dto';
+// biome-ignore lint/style/useImportType: <no need>
 import { UserService } from './user.service';
 
 @ApiTags('User')
@@ -64,6 +66,7 @@ export class UserController {
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBody({ type: UserUpdateRequestDto })
   @ApiNoContentResponse()
   async updateUser(
     @Req() req: AuthenticatedRequest,

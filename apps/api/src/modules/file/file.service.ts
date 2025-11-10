@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+// biome-ignore lint/style/useImportType: <no need>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 
 @Injectable()

@@ -8,18 +8,12 @@ import {
   WomanOutlined,
 } from '@ant-design/icons';
 import { UserGenderEnum } from '@family-tree/shared';
-import {
-  Avatar,
-  Dropdown,
-  type MenuProps,
-  Space,
-  Spin,
-  Typography,
-} from 'antd';
+import { Avatar, Dropdown, type MenuProps, Space, Typography } from 'antd';
 import { useUnit } from 'effector-react';
 import { $theme, themeToggled } from '~/app/model';
 import { userModel } from '~/entities/user';
 import { editProfileModel } from '~/features/user/edit';
+import { InlineLoading } from '~/shared/ui/loading';
 
 export const UserDropdown = () => {
   const [user, logout, theme] = useUnit([
@@ -29,7 +23,7 @@ export const UserDropdown = () => {
   ]);
 
   if (!user) {
-    return <Spin size="small" />;
+    return <InlineLoading />;
   }
 
   const avatarSource = user.image || `https://api.dicebear.com/9.x/lorelei/svg`;
@@ -65,7 +59,7 @@ export const UserDropdown = () => {
             </Typography.Text>
           )}
           {/* Gender and Birthdate */}
-          {(userGenderIcon || user.birthdate) && (
+          {(userGenderIcon || user.dob) && (
             <Space direction="vertical" size={4} className="mt-2">
               {user.gender && userGenderIcon && (
                 <Space>
@@ -75,11 +69,11 @@ export const UserDropdown = () => {
                   </Typography.Text>
                 </Space>
               )}
-              {user.birthdate && (
+              {user.dob && (
                 <Space>
                   <CalendarOutlined />
                   <Typography.Text style={{ fontSize: 12 }}>
-                    {user.birthdate}
+                    {user.dob}
                   </Typography.Text>
                 </Space>
               )}
@@ -119,7 +113,7 @@ export const UserDropdown = () => {
                 UserGenderEnum.MALE,
                 UserGenderEnum.FEMALE,
               ][number],
-              birthdate: user.birthdate,
+              dob: user.dob,
             })
           }
           onKeyDown={(_e) => {}}
