@@ -28,11 +28,14 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
       api.treeMemberConnection.findAll({ familyTreeId }),
   });
 
+  // Samples
+
   // Extract familyTreeId from route params
   sample({
     clock: authorizedRoute.opened,
     source: route.$params,
-    fn: (params) => (params as any).familyTreeId,
+    fn: (params) =>
+      (params as unknown as { familyTreeId: string }).familyTreeId,
     target: $familyTreeId,
   });
 

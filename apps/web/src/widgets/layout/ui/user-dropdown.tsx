@@ -8,18 +8,12 @@ import {
   WomanOutlined,
 } from '@ant-design/icons';
 import { UserGenderEnum } from '@family-tree/shared';
-import {
-  Avatar,
-  Dropdown,
-  type MenuProps,
-  Space,
-  Spin,
-  Typography,
-} from 'antd';
+import { Avatar, Dropdown, type MenuProps, Space, Typography } from 'antd';
 import { useUnit } from 'effector-react';
 import { $theme, themeToggled } from '~/app/model';
 import { userModel } from '~/entities/user';
 import { editProfileModel } from '~/features/user/edit';
+import { InlineLoading } from '~/shared/ui/loading';
 
 export const UserDropdown = () => {
   const [user, logout, theme] = useUnit([
@@ -29,7 +23,7 @@ export const UserDropdown = () => {
   ]);
 
   if (!user) {
-    return <Spin size="small" />;
+    return <InlineLoading />;
   }
 
   const avatarSource = user.image || `https://api.dicebear.com/9.x/lorelei/svg`;

@@ -16,8 +16,14 @@ import {
   transformConnectionsData,
 } from '~/shared/lib/layout-engine';
 
+// Types
 type Model = ReturnType<typeof factory>;
 type Props = LazyPageProps<Model>;
+type TreeVisualizationProps = {
+  members: MemberSchemaType[];
+  connections: FamilyTreeMemberConnectionGetAllResponseType;
+  onMemberClick: (member: MemberSchemaType) => void;
+};
 
 const CONNECTION = {
   SPOUSE: { color: '#10b981', width: 3 },
@@ -27,11 +33,11 @@ const CONNECTION = {
 const NODE_WIDTH = 160;
 const NODE_HEIGHT = 80;
 
-const TreeVisualization: React.FC<{
-  members: MemberSchemaType[];
-  connections: FamilyTreeMemberConnectionGetAllResponseType;
-  onMemberClick: (member: MemberSchemaType) => void;
-}> = ({ members, connections, onMemberClick }) => {
+const TreeVisualization: React.FC<TreeVisualizationProps> = ({
+  members,
+  connections,
+  onMemberClick,
+}) => {
   const { token } = theme.useToken();
 
   const positions = useMemo(
@@ -247,7 +253,7 @@ const TreeVisualization: React.FC<{
 
         result.push(
           <line
-            key={`stem-${key}`}
+            key={`stem-${child.x}-${child.y}`}
             x1={coupleX}
             y1={topY}
             x2={childTop}
@@ -265,7 +271,7 @@ const TreeVisualization: React.FC<{
         // vertical stem
         result.push(
           <line
-            key={`stem-${key}`}
+            key={`stem-${coupleX}-${topY}-${branchY}`}
             x1={coupleX}
             y1={topY}
             x2={coupleX}
@@ -278,7 +284,7 @@ const TreeVisualization: React.FC<{
         // horizontal branch
         result.push(
           <line
-            key={`branch-${key}`}
+            key={`branch-${leftX}-${branchY}-${rightX}`}
             x1={leftX}
             y1={branchY}
             x2={rightX}
@@ -289,10 +295,10 @@ const TreeVisualization: React.FC<{
         );
 
         // small vertical stems from each child to branch
-        childPositions.forEach((c, i) => {
+        childPositions.forEach((c) => {
           result.push(
             <line
-              key={`child-${key}-${i}`}
+              key={`child-${c.x}-${c.y}-${branchY}`}
               x1={c.x}
               y1={branchY}
               x2={c.x}

@@ -16,7 +16,6 @@ import {
   type MenuProps,
   Row,
   Space,
-  Spin,
   Typography,
   theme,
 } from 'antd';
@@ -30,6 +29,7 @@ import { DeleteTreeModal, deleteTreeModel } from '~/features/tree/delete';
 import { routes } from '~/shared/config/routing';
 import type { LazyPageProps } from '~/shared/lib/lazy-page';
 import { factory } from '../model';
+import { PageLoading } from '~/shared/ui/loading';
 
 // Types
 type Model = ReturnType<typeof factory>;
@@ -247,13 +247,7 @@ const TreesPage: React.FC<Props> = ({ model }) => {
 
   // Loader
   if (treesFetching) {
-    return (
-      <Flex justify="center" align="center" style={{ padding: '64px 0' }}>
-        <Spin size="large">
-          <div style={{ padding: 24 }} />
-        </Spin>
-      </Flex>
-    );
+    return <PageLoading />;
   }
 
   return (
