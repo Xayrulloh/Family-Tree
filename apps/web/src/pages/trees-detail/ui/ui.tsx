@@ -2,7 +2,7 @@ import type {
   FamilyTreeMemberConnectionGetAllResponseType,
   MemberSchemaType,
 } from '@family-tree/shared';
-import { Flex, Spin, theme } from 'antd';
+import { theme } from 'antd';
 import { useUnit } from 'effector-react';
 import type React from 'react';
 import { useCallback, useMemo, useState } from 'react';
@@ -15,6 +15,7 @@ import type { LazyPageProps } from '~/shared/lib/lazy-page';
 import { FamilyTreeNode } from '~/shared/ui/family-tree-node';
 import { MemberDetailDrawer } from '~/shared/ui/member-detail-wrapper';
 import { factory } from '../model';
+import { PageLoading } from '~/shared/ui/loading';
 
 // Types
 type Model = ReturnType<typeof factory>;
@@ -361,12 +362,6 @@ const TreeVisualization: React.FC<TreeVisualizationProps> = ({
   );
 };
 
-const LoadingState: React.FC = () => (
-  <Flex justify="center" align="center" style={{ padding: '64px 0' }}>
-    <Spin size="large" />
-  </Flex>
-);
-
 export const FamilyTreeView: React.FC<Props> = ({ model }) => {
   const [members, connections, loading] = useUnit([
     model.$members,
@@ -383,7 +378,7 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
     setDrawerOpen(true);
   }, []);
 
-  if (loading) return <LoadingState />;
+  if (loading) return <PageLoading />;
 
   return (
     <>
