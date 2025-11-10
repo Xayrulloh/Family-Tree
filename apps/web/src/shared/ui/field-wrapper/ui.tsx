@@ -7,7 +7,7 @@ type Props = {
 };
 
 export const FieldWrapper: React.FC<React.PropsWithChildren<Props>> = (
-  props
+  props,
 ) => {
   const { children, message, label, isError } = props;
 

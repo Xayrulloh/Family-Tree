@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBody,
   ApiCookieAuth,
   ApiNoContentResponse,
   ApiOkResponse,
@@ -25,7 +26,7 @@ import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import {
   type UserIdParamDto,
   UserResponseDto,
-  type UserUpdateRequestDto,
+  UserUpdateRequestDto,
 } from './dto/user.dto';
 import { UserService } from './user.service';
 
@@ -47,20 +48,6 @@ export class UserController {
     return this.userService.getUserThemselves(req.user.id);
   }
 
-  // Find exactly one user by its email (instead of mock user, users may connect real users)
-  // @Get(':email')
-  // @UseGuards(JWTAuthGuard)
-  // @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  // @ApiParam({ name: 'email', required: true, type: String })
-  // @HttpCode(HttpStatus.OK)
-  // @ApiOkResponse({ type: UserResponseDto })
-  // @ZodSerializerDto(UserResponseSchema)
-  // async getUserByEmail(
-  //   @Param() param: UserEmailParamDto
-  // ): Promise<UserResponseDto> {
-  //   return this.userService.getUserByEmail(param.email);
-  // } // FIXME: need to think about this
-
   // Find exactly one user by its id
   @Get(':id')
   @UseGuards(JWTAuthGuard)
@@ -78,6 +65,7 @@ export class UserController {
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBody({ type: UserUpdateRequestDto })
   @ApiNoContentResponse()
   async updateUser(
     @Req() req: AuthenticatedRequest,

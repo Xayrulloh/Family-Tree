@@ -14,21 +14,30 @@ jobs:
   main:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
 
-      # Cache node_modules
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'pnpm'
+          node-version: lts/*
+          cache: "pnpm"
 
-      - run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
-      - uses: nrwl/nx-set-shas@v4
+      - name: Derive appropriate SHAs for base and head for `nx affected` commands
+        uses: nrwl/nx-set-shas@v4
 
-      # Check for formatting issues
-      - name: Checking code format
-        run: pnpm run check:lint
+      - name: Install deps
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+
+      - name: Run Checks/Lint/Build
+        run: npx nx affected -t lint build
+
+      # - name: Code Analysis
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   run: npx nx affected -t scan --parallel 1

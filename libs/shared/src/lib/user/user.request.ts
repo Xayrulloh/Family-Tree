@@ -5,8 +5,8 @@ const UserUpdateRequestSchema = UserSchema.pick({
   gender: true,
   image: true,
   name: true,
-  birthdate: true,
-  deathdate: true,
+  dob: true,
+  dod: true,
 }).partial();
 
 const UserEmailParamSchema = z.object({

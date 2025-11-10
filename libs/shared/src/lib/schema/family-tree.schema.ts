@@ -16,7 +16,8 @@ const FamilyTreeSchema = z
       .default(false)
       .describe('Public or private. Public would be visible to all users'),
   })
-  .merge(BaseSchema);
+  .merge(BaseSchema)
+  .describe('Family tree');
 
 type FamilyTreeSchemaType = z.infer<typeof FamilyTreeSchema>;
 

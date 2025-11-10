@@ -11,10 +11,9 @@ export const drizzleProvider = [
   {
     provide: DrizzleAsyncProvider,
     inject: [ConfigService],
-    useFactory: async (configService: ConfigService) => {
-      const connectionString = configService.getOrThrow<EnvType['DATABASE_URL']>(
-        'DATABASE_URL',
-      );
+    useFactory: async (configService: ConfigService<EnvType>) => {
+      const connectionString =
+        configService.getOrThrow<EnvType['DATABASE_URL']>('DATABASE_URL');
       const pool = new Pool({
         connectionString,
       });

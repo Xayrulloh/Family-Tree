@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 import { BaseSchema } from '../schema';
 
 const IdQuerySchema = BaseSchema.pick({ id: true });

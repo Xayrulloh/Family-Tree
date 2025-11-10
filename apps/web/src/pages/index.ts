@@ -1,9 +1,10 @@
 import { createRoutesView } from 'atomic-router-react';
 import { Home } from './home';
+import { NotFound } from './not-found';
 import { Registration } from './registration';
 import { Trees } from './trees';
-import { NotFound } from './not-found';
+import { TreesDetail } from './trees-detail';
 
 export const Routing = createRoutesView({
-  routes: [Home, Registration, Trees, NotFound],
+  routes: [Home, Registration, Trees, TreesDetail, NotFound],
 });

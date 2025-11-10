@@ -1,5 +1,5 @@
+import { Flex, Spin } from 'antd';
 import { Suspense } from 'react';
-import { Spin, Flex } from 'antd';
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => {
   return (

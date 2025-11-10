@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 import { FamilyTreeSchema } from '../schema/family-tree.schema';
 
 const FamilyTreeResponseSchema = FamilyTreeSchema;

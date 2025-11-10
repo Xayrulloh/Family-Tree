@@ -1,5 +1,5 @@
-import { Layout as AntLayout, theme, Typography } from 'antd';
-import { Header, Content, Footer } from 'antd/es/layout/layout';
+import { Layout as AntLayout, Typography, theme } from 'antd';
+import { Content, Footer, Header } from 'antd/es/layout/layout';
 import { EditProfileModal } from '~/features/user/edit';
 import { UserDropdown } from './user-dropdown';
 
@@ -30,12 +30,16 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
                 window.open('/family-trees', '_self');
               }
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.color = token.colorPrimary)
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color = token.colorText)
-            }
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = token.colorPrimary;
+
+              return e.currentTarget.style.color;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = token.colorText;
+
+              return e.currentTarget.style.color;
+            }}
           >
             Family Tree
           </Typography.Title>
