@@ -19,6 +19,8 @@ type MemberDetailDrawerProps = {
   member: MemberSchemaType | null;
   open: boolean;
   onClose: () => void;
+  // Это должно быть слотом
+  // editSlot?: React.ReactNode;
   onEditMember?: (member: MemberSchemaType) => void;
   onEditConnection?: (member: MemberSchemaType) => void;
   onDeleteMember?: (member: MemberSchemaType) => void;
@@ -179,6 +181,7 @@ export const MemberDetailDrawer: React.FC<MemberDetailDrawerProps> = ({
             >
               Edit Member
             </Button>
+            {/* editSlot instead of Button above */}
             <Button
               type="primary"
               danger

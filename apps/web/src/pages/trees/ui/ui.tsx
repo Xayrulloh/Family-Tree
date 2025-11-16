@@ -69,7 +69,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
   ];
 
   return (
-    <Link to={routes.treesDetail} params={{ familyTreeId: tree.id }}>
+    <Link to={routes.treesDetail} params={{ id: tree.id }}>
       {''}
       {/* ← Wrap with Link */}
       <Card
