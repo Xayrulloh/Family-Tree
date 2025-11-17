@@ -10,6 +10,7 @@ import {
 } from '~/shared/lib/layout-engine';
 import { FamilyTreeNode } from '~/shared/ui/family-tree-node';
 import type { Props } from './ui';
+import { previewMemberModel } from '~/features/tree-member/preview';
 
 const MemoizedFamilyTreeNode = memo(FamilyTreeNode);
 
@@ -182,8 +183,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
               key={m.id}
               member={m}
               position={positions.get(m.id)!}
-              // TODO: add feature event
-              // onMemberClick={onMemberClick}
+              onMemberClick={previewMemberModel.previewMemberTriggered}
             />
           ))}
         </g>
@@ -339,10 +339,10 @@ const ParentChildConnections: React.FC<{
       );
 
       // small vertical stems from each child to branch
-      childPositions.forEach((c) => {
+      childPositions.forEach((c, i) => {
         result.push(
           <line
-            key={`child-${c.x}-${c.y}-${branchY}`}
+            key={`child-${c.x + i}-${c.y}-${branchY}`}
             x1={c.x}
             y1={branchY}
             x2={c.x}

@@ -55,7 +55,7 @@ export const EditProfileModal: React.FC = () => {
               <FieldWrapper
                 label="Name"
                 isError={!!form.formState.errors.name?.message}
-                message={form.formState.errors.name?.message}
+                message={form.formState.errors.name?.message?.toString()}
               >
                 <Input {...field} placeholder="Enter your name" />
               </FieldWrapper>
@@ -70,7 +70,7 @@ export const EditProfileModal: React.FC = () => {
               <FieldWrapper
                 label="Gender"
                 isError={!!form.formState.errors.gender?.message}
-                message={form.formState.errors.gender?.message}
+                message={form.formState.errors.gender?.message?.toString()}
               >
                 <Select
                   {...field}
@@ -93,7 +93,7 @@ export const EditProfileModal: React.FC = () => {
               <FieldWrapper
                 label="Birthdate"
                 isError={!!form.formState.errors.dob?.message}
-                message={form.formState.errors.dob?.message}
+                message={form.formState.errors.dob?.message?.toString()}
               >
                 <DatePicker
                   {...field}

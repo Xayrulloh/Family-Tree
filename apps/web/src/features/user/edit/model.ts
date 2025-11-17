@@ -1,4 +1,4 @@
-import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
+import { FileUploadFolderEnum, UserSchema } from '@family-tree/shared';
 import type { RcFile } from 'antd/es/upload';
 import {
   attach,
@@ -9,7 +9,7 @@ import {
 } from 'effector';
 import { isEqual } from 'lodash';
 import { delay, or } from 'patronum';
-import { z } from 'zod';
+import type { z } from 'zod';
 import { userModel } from '~/entities/user';
 import { api } from '~/shared/api';
 import { createForm } from '~/shared/lib/create-form';
@@ -19,15 +19,11 @@ import { infoFx } from '~/shared/lib/message';
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
 
-export const formSchema = z.object({
-  name: z.string().min(3, { message: 'Required field' }),
-  image: z.string().min(10, { message: 'Required field' }),
-  gender: z.enum([
-    UserGenderEnum.MALE,
-    UserGenderEnum.FEMALE,
-    UserGenderEnum.UNKNOWN,
-  ]),
-  dob: z.string().date().nullable(),
+export const formSchema = UserSchema.pick({
+  name: true,
+  image: true,
+  gender: true,
+  dob: true,
 });
 
 // Events
