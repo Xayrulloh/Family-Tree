@@ -1,15 +1,15 @@
-import { useUnit } from 'effector-react';
-import { Props } from './ui';
+import type { FamilyTreeMemberConnectionSchemaType } from '@family-tree/shared';
 import { theme } from 'antd';
-import { useMemo, useState, useCallback, memo } from 'react';
+import { useUnit } from 'effector-react';
+import { memo, useMemo, useState } from 'react';
 import {
   calculatePositions,
   getCouples,
-  Position,
+  type Position,
   transformConnectionsData,
 } from '~/shared/lib/layout-engine';
 import { FamilyTreeNode } from '~/shared/ui/family-tree-node';
-import { FamilyTreeMemberConnectionSchemaType } from '@family-tree/shared';
+import type { Props } from './ui';
 
 const MemoizedFamilyTreeNode = memo(FamilyTreeNode);
 
@@ -169,7 +169,13 @@ export const Visualization: React.FC<Props> = ({ model }) => {
         <g>
           <CoupleConnections couples={couples} positions={positions} />
         </g>
-        <g><ParentChildConnections couples={couples} positions={positions} connections={connections} /></g>
+        <g>
+          <ParentChildConnections
+            couples={couples}
+            positions={positions}
+            connections={connections}
+          />
+        </g>
         <g>
           {members.map((m) => (
             <MemoizedFamilyTreeNode
@@ -225,13 +231,13 @@ const CoupleConnections: React.FC<{
 
 //#region ParentChildConnections
 const ParentChildConnections: React.FC<{
-    couples: {
+  couples: {
     partner1Id: string;
     partner2Id: string;
   }[];
   positions: Map<string, Position>;
-  connections: FamilyTreeMemberConnectionSchemaType[]
-}> = ({couples, positions, connections}) => {
+  connections: FamilyTreeMemberConnectionSchemaType[];
+}> = memo(({ couples, positions, connections }) => {
   const result: React.ReactNode[] = [];
 
   // Map couple centers to children
@@ -350,5 +356,5 @@ const ParentChildConnections: React.FC<{
   });
 
   return result;
-};
+});
 //#endregion
