@@ -69,7 +69,6 @@ export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
   return (
     <Modal
       open={isOpen}
-      title="Member Details"
       onCancel={() => model.disclosure.closed()}
       width={480}
       centered

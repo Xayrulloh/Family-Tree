@@ -23,7 +23,7 @@ export const form = createForm<FormValues>();
 // Open modal and reset form with values on edit trigger
 sample({
   clock: previewMemberTriggered,
-  target: [disclosure.opened],
+  target: [disclosure.opened, form.resetFx],
 });
 
 // Close modal on reset or successful edit
