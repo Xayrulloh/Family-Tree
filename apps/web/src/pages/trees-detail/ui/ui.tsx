@@ -6,7 +6,7 @@ import { factory } from '../model';
 import { Visualization } from './visualization';
 import { PreviewMemberModal } from '~/features/tree-member/preview';
 import { Button } from 'antd';
-import { DeleteOutlined, EditOutlined, LinkOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 
 // Types
 type Model = ReturnType<typeof factory>;
@@ -27,7 +27,7 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
             icon={<EditOutlined />}
             block
             size="large"
-            // onClick={() => onEditMember?.(member)}
+            // onClick={() => onEditMember?.(member)} // should trigger event
           >
             Edit Member
           </Button>
@@ -39,19 +39,19 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
             icon={<DeleteOutlined />}
             block
             size="large"
-            // onClick={() => onDeleteMember?.(member)}
+            // onClick={() => onDeleteMember?.(member)} // should trigger event
           >
             Delete Member
           </Button>
         }
         editConnectionSlot={
           <Button
-            icon={<LinkOutlined />}
+            icon={<PlusOutlined />}
             block
             size="large"
-            // onClick={() => onEditConnection?.(member)}
+            // onClick={() => onEditConnection?.(member)} // should trigger event
           >
-            Edit Connections
+            Add Connections
           </Button>
         }
       />
