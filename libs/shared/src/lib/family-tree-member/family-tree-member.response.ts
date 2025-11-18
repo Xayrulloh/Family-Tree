@@ -1,9 +1,9 @@
-import z from 'zod';
-import { MemberSchema } from '../schema';
+import type z from 'zod';
+import { FamilyTreeMemberSchema } from '../schema';
 
 // schemas
-const FamilyTreeMemberGetResponseSchema = z.object({
-  member: MemberSchema.omit({ familyTreeId: true }).nullable(),
+const FamilyTreeMemberGetResponseSchema = FamilyTreeMemberSchema.omit({
+  familyTreeId: true,
 });
 
 const FamilyTreeMemberGetAllResponseSchema =

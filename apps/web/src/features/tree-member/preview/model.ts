@@ -1,4 +1,4 @@
-import { MemberSchema } from '@family-tree/shared';
+import { FamilyTreeMemberSchema } from '@family-tree/shared';
 import { createEvent, sample } from 'effector';
 import type z from 'zod';
 import { createForm } from '~/shared/lib/create-form';
@@ -7,7 +7,7 @@ import { createDisclosure } from '~/shared/lib/disclosure';
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
 
-export const formSchema = MemberSchema.omit({ familyTreeId: true });
+export const formSchema = FamilyTreeMemberSchema.omit({ familyTreeId: true });
 
 // Events
 export const previewMemberTriggered = createEvent<FormValues>();

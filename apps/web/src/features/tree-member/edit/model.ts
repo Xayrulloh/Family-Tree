@@ -1,4 +1,7 @@
-import { FileUploadFolderEnum, MemberSchema } from '@family-tree/shared';
+import {
+  FamilyTreeMemberSchema,
+  FileUploadFolderEnum,
+} from '@family-tree/shared';
 import type { RcFile } from 'antd/es/upload';
 import { attach, createEvent, createStore, sample } from 'effector';
 import { isEqual } from 'lodash';
@@ -13,7 +16,7 @@ import { infoFx } from '~/shared/lib/message';
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
 
-export const formSchema = MemberSchema.omit({ familyTreeId: true });
+export const formSchema = FamilyTreeMemberSchema.omit({ familyTreeId: true });
 
 // Events
 export const editTriggered = createEvent<FormValues>();

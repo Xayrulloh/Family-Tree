@@ -51,22 +51,12 @@ export class FamilyTreeMemberService {
       );
     }
 
-    const [member] = await this.db
-      .insert(schema.membersSchema)
+    const [familyTreeMember] = await this.db
+      .insert(schema.familyTreeMembersSchema)
       .values({ ...body, familyTreeId })
       .returning();
 
-    await this.db
-      .insert(schema.familyTreeMembersSchema)
-      .values({
-        familyTreeId,
-        memberId: member.id,
-      })
-      .returning();
-
-    return {
-      member,
-    };
+    return familyTreeMember;
   }
 
   // update member
@@ -83,18 +73,22 @@ export class FamilyTreeMemberService {
       );
     }
 
-    const { member } = await this.getFamilyTreeMember(param);
+    const familyTreeMember = await this.getFamilyTreeMember(param);
 
-    if (body.image && member?.image && member.image !== body.image) {
-      this.cloudflareConfig.deleteFile(member.image);
+    if (
+      body.image &&
+      familyTreeMember?.image &&
+      familyTreeMember.image !== body.image
+    ) {
+      this.cloudflareConfig.deleteFile(familyTreeMember.image);
     }
 
     await this.db
-      .update(schema.membersSchema)
+      .update(schema.familyTreeMembersSchema)
       .set({
         ...body,
       })
-      .where(and(eq(schema.membersSchema.id, param.id)));
+      .where(and(eq(schema.familyTreeMembersSchema.id, param.id)));
   }
 
   // delete member
@@ -111,27 +105,19 @@ export class FamilyTreeMemberService {
     }
 
     await this.db
-      .delete(schema.membersSchema)
-      .where(eq(schema.membersSchema.id, param.id));
+      .delete(schema.familyTreeMembersSchema)
+      .where(eq(schema.familyTreeMembersSchema.id, param.id));
   }
 
   // get all members
   async getAllFamilyTreeMembers(
     param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetAllResponseDto> {
-    const familyTreeMembers =
-      await this.db.query.familyTreeMembersSchema.findMany({
-        where: and(
-          eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
-        ),
-        with: {
-          member: true,
-        },
-      });
-
-    return familyTreeMembers.map((familyTreeMember) => ({
-      member: familyTreeMember.member,
-    }));
+    return this.db.query.familyTreeMembersSchema.findMany({
+      where: and(
+        eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
+      ),
+    });
   }
 
   // get single member
@@ -141,23 +127,18 @@ export class FamilyTreeMemberService {
     const familyTreeMember =
       await this.db.query.familyTreeMembersSchema.findFirst({
         where: and(
-          eq(schema.familyTreeMembersSchema.memberId, param.id),
+          eq(schema.familyTreeMembersSchema.id, param.id),
           eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
         ),
-        with: {
-          member: true,
-        },
       });
 
-    if (!familyTreeMember?.member) {
+    if (!familyTreeMember) {
       throw new NotFoundException(
-        `member member with id ${param.id} not found`,
+        `Family tree member with id ${param.id} not found`,
       );
     }
 
-    return {
-      member: familyTreeMember.member,
-    };
+    return familyTreeMember;
   }
 
   // get family tree

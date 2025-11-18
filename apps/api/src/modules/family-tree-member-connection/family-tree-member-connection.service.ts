@@ -147,21 +147,15 @@ export class FamilyTreeMemberConnectionService {
       await Promise.all([
         this.db.query.familyTreeMembersSchema.findFirst({
           where: and(
-            eq(schema.familyTreeMembersSchema.memberId, fromMemberId),
+            eq(schema.familyTreeMembersSchema.id, fromMemberId),
             eq(schema.familyTreeMembersSchema.familyTreeId, familyTreeId),
           ),
-          with: {
-            member: true,
-          },
         }),
         this.db.query.familyTreeMembersSchema.findFirst({
           where: and(
-            eq(schema.familyTreeMembersSchema.memberId, toMemberId),
+            eq(schema.familyTreeMembersSchema.id, toMemberId),
             eq(schema.familyTreeMembersSchema.familyTreeId, familyTreeId),
           ),
-          with: {
-            member: true,
-          },
         }),
         this.db.query.familyTreesSchema.findFirst({
           where: eq(schema.familyTreesSchema.id, familyTreeId),
@@ -174,21 +168,21 @@ export class FamilyTreeMemberConnectionService {
       );
     }
 
-    if (!fromFamilyTreeMember?.member) {
+    if (!fromFamilyTreeMember) {
       throw new NotFoundException(
-        `Member "from member" with id ${fromMemberId} not found`,
+        `Family Tree Member "from member" with id ${fromMemberId} not found`,
       );
     }
 
-    if (!toFamilyTreeMember?.member) {
+    if (!toFamilyTreeMember) {
       throw new NotFoundException(
-        `Member "to member" with id ${toMemberId} not found`,
+        `Family Tree Member "to member" with id ${toMemberId} not found`,
       );
     }
 
     return {
-      fromMember: fromFamilyTreeMember.member,
-      toMember: toFamilyTreeMember.member,
+      fromMember: fromFamilyTreeMember,
+      toMember: toFamilyTreeMember,
       familyTree,
     };
   }

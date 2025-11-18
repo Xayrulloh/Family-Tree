@@ -147,7 +147,7 @@ export class FamilyTreeController {
         {
           name: 'Jane Doe',
           gender: UserGenderEnum.FEMALE,
-          image: `https://api.dicebear.com/7.x/notionists/svg?seed=${husband.member?.id}`,
+          image: `https://api.dicebear.com/7.x/notionists/svg?seed=${husband}`,
           description: 'Wife',
           dob: '1990-01-01',
           dod: null,
@@ -159,8 +159,8 @@ export class FamilyTreeController {
         req.user.id,
         { familyTreeId: familyTree.id },
         {
-          fromMemberId: husband.member?.id!,
-          toMemberId: wife.member?.id!,
+          fromMemberId: husband.id,
+          toMemberId: wife.id,
           type: FamilyTreeMemberConnectionEnum.SPOUSE,
         },
       );
