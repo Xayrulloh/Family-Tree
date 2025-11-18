@@ -30,6 +30,10 @@ import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
+// biome-ignore lint/style/useImportType: <throws an error if put type>
+import { FamilyTreeMemberService } from '../family-tree-member/family-tree-member.service';
+// biome-ignore lint/style/useImportType: <throws an error if put type>
+import { FamilyTreeMemberConnectionService } from '../family-tree-member-connection/family-tree-member-connection.service';
 import {
   FamilyTreeArrayResponseDto,
   FamilyTreeCreateRequestDto,
@@ -40,10 +44,6 @@ import {
 } from './dto/family-tree.dto';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { FamilyTreeService } from './family-tree.service';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { FamilyTreeMemberService } from '../family-tree-member/family-tree-member.service';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { FamilyTreeMemberConnectionService } from '../family-tree-member-connection/family-tree-member-connection.service';
 
 @ApiTags('Family Tree')
 @Controller('family-trees')

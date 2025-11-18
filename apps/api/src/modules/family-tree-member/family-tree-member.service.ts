@@ -1,3 +1,4 @@
+import { FamilyTreeMemberConnectionEnum } from '@family-tree/shared';
 import {
   BadRequestException,
   Inject,
@@ -22,7 +23,6 @@ import type {
   FamilyTreeMemberGetResponseDto,
   FamilyTreeMemberUpdateRequestDto,
 } from './dto/family-tree-member.dto';
-import { FamilyTreeMemberConnectionEnum } from '@family-tree/shared';
 
 @Injectable()
 export class FamilyTreeMemberService {
