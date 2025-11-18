@@ -28,7 +28,7 @@ import {
   UserResponseDto,
   UserUpdateRequestDto,
 } from './dto/user.dto';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { UserService } from './user.service';
 
 @ApiTags('User')

@@ -1,14 +1,15 @@
+import { FamilyTreeMemberConnectionEnum } from '@family-tree/shared';
 import {
   BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
@@ -25,7 +26,7 @@ import type {
 
 @Injectable()
 export class FamilyTreeMemberService {
-  private cloudflareR2Path: string;
+  protected cloudflareR2Path: string;
 
   constructor(
     @Inject(DrizzleAsyncProvider)
@@ -37,7 +38,7 @@ export class FamilyTreeMemberService {
       configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
   }
 
-  // member member create
+  // create member
   async createFamilyTreeMember(
     userId: string,
     familyTreeId: string,
@@ -51,29 +52,15 @@ export class FamilyTreeMemberService {
       );
     }
 
-    if (body.image && !body.image?.includes(this.cloudflareR2Path)) {
-      throw new BadRequestException('Image is not uploaded');
-    }
-
-    const [member] = await this.db
-      .insert(schema.membersSchema)
-      .values(body)
-      .returning();
-
-    await this.db
+    const [familyTreeMember] = await this.db
       .insert(schema.familyTreeMembersSchema)
-      .values({
-        familyTreeId,
-        memberId: member.id,
-      })
+      .values({ ...body, familyTreeId })
       .returning();
 
-    return {
-      member,
-    };
+    return familyTreeMember;
   }
 
-  // update member member
+  // update member
   async updateFamilyTreeMember(
     userId: string,
     param: FamilyTreeMemberGetParamDto,
@@ -87,25 +74,25 @@ export class FamilyTreeMemberService {
       );
     }
 
-    const { member } = await this.getFamilyTreeMember(param);
+    const familyTreeMember = await this.getFamilyTreeMember(param);
 
-    if (body.image && !body.image?.includes(this.cloudflareR2Path)) {
-      throw new BadRequestException('Image is not uploaded');
-    }
-
-    if (body.image && member?.image && member.image !== body.image) {
-      this.cloudflareConfig.deleteFile(member.image);
+    if (
+      body.image &&
+      familyTreeMember?.image &&
+      familyTreeMember.image !== body.image
+    ) {
+      this.cloudflareConfig.deleteFile(familyTreeMember.image);
     }
 
     await this.db
-      .update(schema.membersSchema)
+      .update(schema.familyTreeMembersSchema)
       .set({
         ...body,
       })
-      .where(and(eq(schema.membersSchema.id, param.id)));
+      .where(and(eq(schema.familyTreeMembersSchema.id, param.id)));
   }
 
-  // delete member member
+  // delete member
   async deleteFamilyTreeMember(
     userId: string,
     param: FamilyTreeMemberGetParamDto,
@@ -118,67 +105,60 @@ export class FamilyTreeMemberService {
       );
     }
 
-    // FIXME: also need to delete all connections
+    // check descendants
+    const descendants =
+      await this.db.query.familyTreeMemberConnectionsSchema.findMany({
+        where: and(
+          eq(schema.familyTreeMemberConnectionsSchema.fromMemberId, param.id),
+          eq(
+            schema.familyTreeMemberConnectionsSchema.type,
+            FamilyTreeMemberConnectionEnum.PARENT,
+          ),
+        ),
+        limit: 5,
+      });
+
+    if (descendants.length) {
+      throw new BadRequestException(
+        `Family tree member with id ${param.id} has descendants`,
+      );
+    }
 
     await this.db
-      .update(schema.familyTreeMembersSchema)
-      .set({
-        deletedAt: new Date(),
-      })
+      .delete(schema.familyTreeMembersSchema)
       .where(eq(schema.familyTreeMembersSchema.id, param.id));
-
-    await this.db
-      .update(schema.membersSchema)
-      .set({
-        deletedAt: new Date(),
-      })
-      .where(eq(schema.membersSchema.id, param.id));
   }
 
-  // get all member members
+  // get all members
   async getAllFamilyTreeMembers(
     param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetAllResponseDto> {
-    const familyTreeMembers =
-      await this.db.query.familyTreeMembersSchema.findMany({
-        where: and(
-          eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
-        ),
-        with: {
-          member: true,
-        },
-      });
-
-    return familyTreeMembers.map((familyTreeMember) => ({
-      member: familyTreeMember.member,
-    }));
+    return this.db.query.familyTreeMembersSchema.findMany({
+      where: and(
+        eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
+      ),
+    });
   }
 
-  // get single member member
+  // get single member
   async getFamilyTreeMember(
     param: FamilyTreeMemberGetParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
     const familyTreeMember =
       await this.db.query.familyTreeMembersSchema.findFirst({
         where: and(
-          eq(schema.familyTreeMembersSchema.memberId, param.id),
+          eq(schema.familyTreeMembersSchema.id, param.id),
           eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
-          isNull(schema.familyTreeMembersSchema.deletedAt),
         ),
-        with: {
-          member: true,
-        },
       });
 
-    if (!familyTreeMember?.member) {
+    if (!familyTreeMember) {
       throw new NotFoundException(
-        `member member with id ${param.id} not found`,
+        `Family tree member with id ${param.id} not found`,
       );
     }
 
-    return {
-      member: familyTreeMember.member,
-    };
+    return familyTreeMember;
   }
 
   // get family tree
@@ -186,10 +166,7 @@ export class FamilyTreeMemberService {
     familyTreeId: string,
   ): Promise<FamilyTreeResponseDto> {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
-      where: and(
-        eq(schema.familyTreesSchema.id, familyTreeId),
-        isNull(schema.familyTreesSchema.deletedAt),
-      ),
+      where: eq(schema.familyTreesSchema.id, familyTreeId),
     });
 
     if (!familyTree) {

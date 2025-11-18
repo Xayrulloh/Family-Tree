@@ -6,12 +6,12 @@ import {
   UserOutlined,
   WomanOutlined,
 } from '@ant-design/icons';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Avatar, Divider, Flex, Modal, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { useUnit } from 'effector-react';
-import * as model from './model';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import * as model from './model';
 
 const { Title, Paragraph, Text } = Typography;
 

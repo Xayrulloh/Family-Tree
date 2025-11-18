@@ -1,13 +1,13 @@
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
 import { useUnit } from 'effector-react';
 import type React from 'react';
+import { EditMemberModal, editMemberModel } from '~/features/tree-member/edit';
+import { PreviewMemberModal } from '~/features/tree-member/preview';
 import type { LazyPageProps } from '~/shared/lib/lazy-page';
 import { PageLoading } from '~/shared/ui/loading';
 import { factory } from '../model';
 import { Visualization } from './visualization';
-import { PreviewMemberModal } from '~/features/tree-member/preview';
-import { Button } from 'antd';
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { EditMemberModal, editMemberModel } from '~/features/tree-member/edit';
 
 // Types
 type Model = ReturnType<typeof factory>;

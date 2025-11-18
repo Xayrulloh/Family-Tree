@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import type { UserResponseType } from '@family-tree/shared';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
-import { and, eq, isNull } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
@@ -29,10 +29,7 @@ export class UserService {
 
   async getUserByEmail(email: string): Promise<UserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
-      where: and(
-        eq(schema.usersSchema.email, email),
-        isNull(schema.usersSchema.deletedAt),
-      ),
+      where: eq(schema.usersSchema.email, email),
     });
 
     if (!user) {
@@ -44,10 +41,7 @@ export class UserService {
 
   async getUserById(id: string): Promise<UserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
-      where: and(
-        eq(schema.usersSchema.id, id),
-        isNull(schema.usersSchema.deletedAt),
-      ),
+      where: eq(schema.usersSchema.id, id),
     });
 
     if (!user) {
@@ -59,10 +53,7 @@ export class UserService {
 
   async getUserThemselves(id: string): Promise<UserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
-      where: and(
-        eq(schema.usersSchema.id, id),
-        isNull(schema.usersSchema.deletedAt),
-      ),
+      where: eq(schema.usersSchema.id, id),
     });
 
     if (!user) {
@@ -74,10 +65,7 @@ export class UserService {
 
   async updateUser(id: string, body: UserUpdateRequestDto): Promise<void> {
     const user = await this.db.query.usersSchema.findFirst({
-      where: and(
-        eq(schema.usersSchema.id, id),
-        isNull(schema.usersSchema.deletedAt),
-      ),
+      where: eq(schema.usersSchema.id, id),
     });
 
     if (!user) {
@@ -106,10 +94,7 @@ export class UserService {
 
   async updateUserAvatar(id: string): Promise<UserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
-      where: and(
-        eq(schema.usersSchema.id, id),
-        isNull(schema.usersSchema.deletedAt),
-      ),
+      where: eq(schema.usersSchema.id, id),
     });
 
     if (!user) {

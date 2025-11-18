@@ -4,10 +4,10 @@ import {
   type UserSchemaType,
 } from '@family-tree/shared';
 import { Inject, Injectable } from '@nestjs/common';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { and, eq, isNull } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Strategy, type VerifyCallback } from 'passport-google-oauth2';
 import type { EnvType } from '~/config/env/env-validation';
@@ -46,10 +46,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const { id, name, emails, photos } = profile;
 
     let user = await this.db.query.usersSchema.findFirst({
-      where: and(
-        eq(schema.usersSchema.email, emails[0].value),
-        isNull(schema.usersSchema.deletedAt),
-      ),
+      where: eq(schema.usersSchema.email, emails[0].value),
     });
 
     if (!user) {

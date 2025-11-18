@@ -1,6 +1,6 @@
 import type {
   FamilyTreeMemberConnectionSchemaType,
-  MemberSchemaType,
+  FamilyTreeMemberSchemaType,
 } from '@family-tree/shared';
 import { attach, createStore, sample } from 'effector';
 import { or } from 'patronum';
@@ -8,13 +8,15 @@ import { userModel } from '~/entities/user';
 import { api } from '~/shared/api';
 import type { LazyPageFactoryParams } from '~/shared/lib/lazy-page';
 
-export const factory = ({ route }: LazyPageFactoryParams<{id: string}>) => {
+export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   const authorizedRoute = userModel.chainAuthorized({ route });
 
   // Stores
-  const $members = createStore<MemberSchemaType[]>([]);
+  const $members = createStore<
+    Omit<FamilyTreeMemberSchemaType, 'familyTreeId'>[]
+  >([]);
   const $connections = createStore<FamilyTreeMemberConnectionSchemaType[]>([]);
-  const $id = authorizedRoute.$params.map(params => params.id ?? null);
+  const $id = authorizedRoute.$params.map((params) => params.id ?? null);
 
   // Effects
   const fetchMembersFx = attach({
@@ -39,7 +41,7 @@ export const factory = ({ route }: LazyPageFactoryParams<{id: string}>) => {
   // Update stores with API responses
   sample({
     clock: fetchMembersFx.doneData,
-    fn: (response) => response.data.map((data) => data.member!),
+    fn: (response) => response.data,
     target: $members,
   });
 

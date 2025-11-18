@@ -10,7 +10,7 @@ services:
     ports:
       - '${POSTGRES_PORT}:5432'
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - family_tree_postgres_data:/var/lib/postgresql/data
       - ./init-db:/docker-entrypoint-initdb.d
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
@@ -36,5 +36,5 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
+  family_tree_postgres_data:
     driver: local
