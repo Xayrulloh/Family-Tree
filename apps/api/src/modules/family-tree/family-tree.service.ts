@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
-import { and, asc, eq, ilike, isNull } from 'drizzle-orm';
+import { and, asc, eq, ilike } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
@@ -38,10 +38,7 @@ export class FamilyTreeService {
     userId: string,
   ): Promise<FamilyTreeArrayResponseDto> {
     return this.db.query.familyTreesSchema.findMany({
-      where: and(
-        eq(schema.familyTreesSchema.createdBy, userId),
-        isNull(schema.familyTreesSchema.deletedAt),
-      ),
+      where: eq(schema.familyTreesSchema.createdBy, userId),
       orderBy: asc(schema.familyTreesSchema.createdAt),
     });
   }
@@ -53,7 +50,6 @@ export class FamilyTreeService {
       where: and(
         ilike(schema.familyTreesSchema.name, `%${name}%`),
         eq(schema.familyTreesSchema.public, true),
-        isNull(schema.familyTreesSchema.deletedAt),
       ),
       limit: 5,
     });
@@ -61,10 +57,7 @@ export class FamilyTreeService {
 
   async getFamilyTreeById(id: string): Promise<FamilyTreeResponseDto> {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
-      where: and(
-        eq(schema.familyTreesSchema.id, id),
-        isNull(schema.familyTreesSchema.deletedAt),
-      ),
+      where: eq(schema.familyTreesSchema.id, id),
     });
 
     if (!familyTree) {
@@ -113,7 +106,6 @@ export class FamilyTreeService {
       where: and(
         eq(schema.familyTreesSchema.id, id),
         eq(schema.familyTreesSchema.createdBy, userId),
-        isNull(schema.familyTreesSchema.deletedAt),
       ),
     });
 
@@ -151,17 +143,8 @@ export class FamilyTreeService {
       throw new NotFoundException(`Family tree with id ${id} not found`);
     }
 
-    if (familyTree.deletedAt) {
-      await this.db
-        .delete(schema.familyTreesSchema)
-        .where(eq(schema.familyTreesSchema.id, id));
-    } else {
-      await this.db
-        .update(schema.familyTreesSchema)
-        .set({
-          deletedAt: new Date(),
-        })
-        .where(eq(schema.familyTreesSchema.id, id));
-    }
+    await this.db
+      .delete(schema.familyTreesSchema)
+      .where(eq(schema.familyTreesSchema.id, id));
   }
 }

@@ -69,6 +69,9 @@ export const membersSchema = pgTable('members', {
   description: text('description'),
   dob: date('dob', { mode: 'string' }),
   dod: date('dod', { mode: 'string' }),
+  familyTreeId: uuid('family_tree_id')
+    .references(() => familyTreesSchema.id, { onDelete: 'cascade' })
+    .notNull(),
   ...baseSchema,
 });
 

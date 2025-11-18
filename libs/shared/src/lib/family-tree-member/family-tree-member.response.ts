@@ -3,7 +3,7 @@ import { MemberSchema } from '../schema';
 
 // schemas
 const FamilyTreeMemberGetResponseSchema = z.object({
-  member: MemberSchema.nullable(),
+  member: MemberSchema.omit({ familyTreeId: true }).nullable(),
 });
 
 const FamilyTreeMemberGetAllResponseSchema =

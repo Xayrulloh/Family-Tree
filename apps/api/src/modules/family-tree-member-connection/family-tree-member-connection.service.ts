@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
@@ -87,10 +87,7 @@ export class FamilyTreeMemberConnectionService {
     param: FamilyTreeMemberConnectionGetParamDto,
   ) {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
-      where: and(
-        eq(schema.familyTreesSchema.id, param.familyTreeId),
-        isNull(schema.familyTreesSchema.deletedAt),
-      ),
+      where: eq(schema.familyTreesSchema.id, param.familyTreeId),
     });
 
     if (!familyTree) {
@@ -152,7 +149,6 @@ export class FamilyTreeMemberConnectionService {
           where: and(
             eq(schema.familyTreeMembersSchema.memberId, fromMemberId),
             eq(schema.familyTreeMembersSchema.familyTreeId, familyTreeId),
-            isNull(schema.familyTreeMembersSchema.deletedAt),
           ),
           with: {
             member: true,
@@ -162,17 +158,13 @@ export class FamilyTreeMemberConnectionService {
           where: and(
             eq(schema.familyTreeMembersSchema.memberId, toMemberId),
             eq(schema.familyTreeMembersSchema.familyTreeId, familyTreeId),
-            isNull(schema.familyTreeMembersSchema.deletedAt),
           ),
           with: {
             member: true,
           },
         }),
         this.db.query.familyTreesSchema.findFirst({
-          where: and(
-            eq(schema.familyTreesSchema.id, familyTreeId),
-            isNull(schema.familyTreesSchema.deletedAt),
-          ),
+          where: eq(schema.familyTreesSchema.id, familyTreeId),
         }),
       ]);
 

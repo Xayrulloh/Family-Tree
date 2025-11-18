@@ -4,6 +4,7 @@ import { BaseSchema, MemberSchema } from '../schema';
 // schemas
 const FamilyTreeMemberCreateRequestSchema = MemberSchema.omit({
   id: true,
+  familyTreeId: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
@@ -11,6 +12,7 @@ const FamilyTreeMemberCreateRequestSchema = MemberSchema.omit({
 
 const FamilyTreeMemberUpdateRequestSchema = MemberSchema.partial().omit({
   id: true,
+  familyTreeId: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true,

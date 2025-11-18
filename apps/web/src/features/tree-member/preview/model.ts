@@ -7,7 +7,7 @@ import { createDisclosure } from '~/shared/lib/disclosure';
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
 
-export const formSchema = MemberSchema;
+export const formSchema = MemberSchema.omit({ familyTreeId: true });
 
 // Events
 export const previewMemberTriggered = createEvent<FormValues>();

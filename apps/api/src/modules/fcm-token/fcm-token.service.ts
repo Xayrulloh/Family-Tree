@@ -5,7 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
@@ -27,7 +27,6 @@ export class FCMTokenService {
         eq(schema.FCMTokensSchema.userId, userId),
         eq(schema.FCMTokensSchema.token, body.token),
         eq(schema.FCMTokensSchema.deviceType, body.deviceType),
-        isNull(schema.FCMTokensSchema.deletedAt),
       ),
     });
 
@@ -58,7 +57,6 @@ export class FCMTokenService {
         eq(schema.FCMTokensSchema.userId, userId),
         eq(schema.FCMTokensSchema.token, body.token),
         eq(schema.FCMTokensSchema.deviceType, body.deviceType),
-        isNull(schema.FCMTokensSchema.deletedAt),
       ),
     });
 

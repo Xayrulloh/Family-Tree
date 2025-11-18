@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
@@ -37,7 +37,7 @@ export class FamilyTreeMemberService {
       configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
   }
 
-  // member member create
+  // create member
   async createFamilyTreeMember(
     userId: string,
     familyTreeId: string,
@@ -53,7 +53,7 @@ export class FamilyTreeMemberService {
 
     const [member] = await this.db
       .insert(schema.membersSchema)
-      .values(body)
+      .values({ ...body, familyTreeId })
       .returning();
 
     await this.db
@@ -69,7 +69,7 @@ export class FamilyTreeMemberService {
     };
   }
 
-  // update member member
+  // update member
   async updateFamilyTreeMember(
     userId: string,
     param: FamilyTreeMemberGetParamDto,
@@ -97,7 +97,7 @@ export class FamilyTreeMemberService {
       .where(and(eq(schema.membersSchema.id, param.id)));
   }
 
-  // delete member member
+  // delete member
   async deleteFamilyTreeMember(
     userId: string,
     param: FamilyTreeMemberGetParamDto,
@@ -110,24 +110,12 @@ export class FamilyTreeMemberService {
       );
     }
 
-    // FIXME: also need to delete all connections
-
     await this.db
-      .update(schema.familyTreeMembersSchema)
-      .set({
-        deletedAt: new Date(),
-      })
-      .where(eq(schema.familyTreeMembersSchema.id, param.id));
-
-    await this.db
-      .update(schema.membersSchema)
-      .set({
-        deletedAt: new Date(),
-      })
+      .delete(schema.membersSchema)
       .where(eq(schema.membersSchema.id, param.id));
   }
 
-  // get all member members
+  // get all members
   async getAllFamilyTreeMembers(
     param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetAllResponseDto> {
@@ -146,7 +134,7 @@ export class FamilyTreeMemberService {
     }));
   }
 
-  // get single member member
+  // get single member
   async getFamilyTreeMember(
     param: FamilyTreeMemberGetParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
@@ -155,7 +143,6 @@ export class FamilyTreeMemberService {
         where: and(
           eq(schema.familyTreeMembersSchema.memberId, param.id),
           eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
-          isNull(schema.familyTreeMembersSchema.deletedAt),
         ),
         with: {
           member: true,
@@ -178,10 +165,7 @@ export class FamilyTreeMemberService {
     familyTreeId: string,
   ): Promise<FamilyTreeResponseDto> {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
-      where: and(
-        eq(schema.familyTreesSchema.id, familyTreeId),
-        isNull(schema.familyTreesSchema.deletedAt),
-      ),
+      where: eq(schema.familyTreesSchema.id, familyTreeId),
     });
 
     if (!familyTree) {

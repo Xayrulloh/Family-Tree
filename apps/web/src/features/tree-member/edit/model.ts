@@ -13,7 +13,7 @@ import { infoFx } from '~/shared/lib/message';
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
 
-export const formSchema = MemberSchema;
+export const formSchema = MemberSchema.omit({ familyTreeId: true });
 
 // Events
 export const editTriggered = createEvent<FormValues>();

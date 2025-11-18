@@ -3,7 +3,7 @@ import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { and, eq, isNull } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -40,10 +40,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   async validate(payload: JwtPayloadType): Promise<UserSchemaType> {
     const user = await this.db.query.usersSchema.findFirst({
-      where: and(
-        eq(schema.usersSchema.email, payload.email),
-        isNull(schema.usersSchema.deletedAt),
-      ),
+      where: eq(schema.usersSchema.email, payload.email),
     });
 
     if (!user) throw new UnauthorizedException('Please log in to continue');

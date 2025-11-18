@@ -2,7 +2,7 @@ import type { JwtPayloadType, UserSchemaType } from '@family-tree/shared';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { JwtService } from '@nestjs/jwt';
-import { and, eq, isNull } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
@@ -25,10 +25,7 @@ export class AuthService {
     }
 
     const userExists = await this.db.query.usersSchema.findFirst({
-      where: and(
-        eq(schema.usersSchema.email, user.email),
-        isNull(schema.usersSchema.deletedAt),
-      ),
+      where: eq(schema.usersSchema.email, user.email),
     });
 
     if (!userExists) {

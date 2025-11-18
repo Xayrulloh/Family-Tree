@@ -19,6 +19,7 @@ const MemberSchema = z
     dod: z.string().date().nullable().describe('Date of death'),
     dob: z.string().date().nullable().describe('Date of birth'),
     description: z.string().nullable().describe('Description of user'),
+    familyTreeId: z.string().uuid().describe('The family tree'),
   })
   .merge(BaseSchema)
   .describe('Member of family tree');

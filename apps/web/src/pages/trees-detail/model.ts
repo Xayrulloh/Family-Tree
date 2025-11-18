@@ -8,13 +8,13 @@ import { userModel } from '~/entities/user';
 import { api } from '~/shared/api';
 import type { LazyPageFactoryParams } from '~/shared/lib/lazy-page';
 
-export const factory = ({ route }: LazyPageFactoryParams<{id: string}>) => {
+export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   const authorizedRoute = userModel.chainAuthorized({ route });
 
   // Stores
-  const $members = createStore<MemberSchemaType[]>([]);
+  const $members = createStore<Omit<MemberSchemaType, 'familyTreeId'>[]>([]);
   const $connections = createStore<FamilyTreeMemberConnectionSchemaType[]>([]);
-  const $id = authorizedRoute.$params.map(params => params.id ?? null);
+  const $id = authorizedRoute.$params.map((params) => params.id ?? null);
 
   // Effects
   const fetchMembersFx = attach({
