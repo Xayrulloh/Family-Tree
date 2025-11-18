@@ -4,11 +4,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
 import { and, eq, isNull } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
@@ -25,7 +25,7 @@ import type {
 
 @Injectable()
 export class FamilyTreeMemberService {
-  private cloudflareR2Path: string;
+  protected cloudflareR2Path: string;
 
   constructor(
     @Inject(DrizzleAsyncProvider)
@@ -49,10 +49,6 @@ export class FamilyTreeMemberService {
       throw new BadRequestException(
         `Family tree with id ${familyTreeId} does not belong to user with id ${userId}`,
       );
-    }
-
-    if (body.image && !body.image?.includes(this.cloudflareR2Path)) {
-      throw new BadRequestException('Image is not uploaded');
     }
 
     const [member] = await this.db
@@ -88,10 +84,6 @@ export class FamilyTreeMemberService {
     }
 
     const { member } = await this.getFamilyTreeMember(param);
-
-    if (body.image && !body.image?.includes(this.cloudflareR2Path)) {
-      throw new BadRequestException('Image is not uploaded');
-    }
 
     if (body.image && member?.image && member.image !== body.image) {
       this.cloudflareConfig.deleteFile(member.image);

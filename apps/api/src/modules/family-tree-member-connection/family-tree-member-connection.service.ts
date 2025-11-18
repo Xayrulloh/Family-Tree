@@ -27,18 +27,18 @@ export class FamilyTreeMemberConnectionService {
   // create connection
   async createFamilyTreeMemberConnection(
     userId: string,
-    { familyTreeId }: FamilyTreeMemberConnectionGetAllParamDto,
+    param: FamilyTreeMemberConnectionGetAllParamDto,
     body: FamilyTreeMemberConnectionCreateRequestDto,
   ): Promise<FamilyTreeMemberConnectionGetAllResponseDto> {
     const { familyTree } = await this.getFamilyTreeMembers(
       body.fromMemberId,
       body.toMemberId,
-      familyTreeId,
+      param.familyTreeId,
     );
 
     if (familyTree.createdBy !== userId) {
       throw new BadRequestException(
-        `Family tree with id ${familyTreeId} does not belong to user with id ${userId}`,
+        `Family tree with id ${param.familyTreeId} does not belong to user with id ${userId}`,
       );
     }
 
@@ -47,7 +47,7 @@ export class FamilyTreeMemberConnectionService {
     const connection = await this.db
       .insert(schema.familyTreeMemberConnectionsSchema)
       .values({
-        familyTreeId,
+        familyTreeId: param.familyTreeId,
         ...body,
       })
       .returning();

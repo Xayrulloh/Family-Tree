@@ -77,7 +77,9 @@ export const familyTreesSchema = pgTable(
   {
     name: text('name').notNull(),
     createdBy: uuid('created_by')
-      .references(() => usersSchema.id)
+      .references(() => usersSchema.id, {
+        onDelete: 'cascade',
+      })
       .notNull(),
     image: text('image'),
     public: boolean('public').default(false).notNull(),
@@ -95,7 +97,9 @@ export const familyTreeMembersSchema = pgTable('family_tree_members', {
     })
     .notNull(),
   memberId: uuid('member_id')
-    .references(() => membersSchema.id)
+    .references(() => membersSchema.id, {
+      onDelete: 'cascade',
+    })
     .notNull(),
   ...baseSchema,
 });
@@ -109,10 +113,14 @@ export const familyTreeMemberConnectionsSchema = pgTable(
       })
       .notNull(),
     fromMemberId: uuid('from_member_id')
-      .references(() => membersSchema.id)
+      .references(() => membersSchema.id, {
+        onDelete: 'cascade',
+      })
       .notNull(),
     toMemberId: uuid('to_member_id')
-      .references(() => membersSchema.id)
+      .references(() => membersSchema.id, {
+        onDelete: 'cascade',
+      })
       .notNull(),
     type: DrizzleFamilyTreeMemberConnectionEnum('type').notNull(),
     ...baseSchema,
@@ -122,7 +130,9 @@ export const familyTreeMemberConnectionsSchema = pgTable(
 export const FCMTokensSchema = pgTable('fcm_tokens', {
   token: text('token').notNull(),
   userId: uuid('user_id')
-    .references(() => usersSchema.id)
+    .references(() => usersSchema.id, {
+      onDelete: 'cascade',
+    })
     .notNull(),
   deviceType: DrizzleFCMTokenDeviceEnum('device_type').notNull(),
   ...baseSchema,
@@ -131,17 +141,23 @@ export const FCMTokensSchema = pgTable('fcm_tokens', {
 export const notificationsSchema = pgTable('notifications', {
   content: text('content').notNull(),
   receiverUserId: uuid('receiver_user_id')
-    .references(() => usersSchema.id)
+    .references(() => usersSchema.id, {
+      onDelete: 'cascade',
+    })
     .notNull(),
   senderUserId: uuid('sender_user_id')
-    .references(() => usersSchema.id)
+    .references(() => usersSchema.id, {
+      onDelete: 'cascade',
+    })
     .notNull(),
   ...baseSchema,
 });
 
 export const notificationReadsSchema = pgTable('notification_reads', {
   userId: uuid('user_id')
-    .references(() => usersSchema.id)
+    .references(() => usersSchema.id, {
+      onDelete: 'cascade',
+    })
     .notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true })
     .defaultNow()
@@ -152,6 +168,11 @@ export const notificationReadsSchema = pgTable('notification_reads', {
 export const usersRelations = relations(usersSchema, ({ many }) => ({
   familyTrees: many(familyTreesSchema, { relationName: 'family-tree-creator' }),
   fcmTokens: many(FCMTokensSchema, { relationName: 'user-fcm-token' }),
+  sentNotifications: many(notificationsSchema, { relationName: 'sender' }),
+  receivedNotifications: many(notificationsSchema, {
+    relationName: 'receiver',
+  }),
+  notificationReads: many(notificationReadsSchema),
 }));
 
 export const familyTreesRelations = relations(
@@ -174,6 +195,12 @@ export const familyTreesRelations = relations(
 export const membersRelations = relations(membersSchema, ({ many }) => ({
   familyTreeMembers: many(familyTreeMembersSchema, {
     relationName: 'family-tree-member',
+  }),
+  fromConnections: many(familyTreeMemberConnectionsSchema, {
+    relationName: 'family-tree-member-connection-from-member',
+  }),
+  toConnections: many(familyTreeMemberConnectionsSchema, {
+    relationName: 'family-tree-member-connection-to-member',
   }),
 }));
 
@@ -228,10 +255,12 @@ export const notificationsRelations = relations(
     sender: one(usersSchema, {
       fields: [notificationsSchema.senderUserId],
       references: [usersSchema.id],
+      relationName: 'sender',
     }),
     receiver: one(usersSchema, {
       fields: [notificationsSchema.receiverUserId],
       references: [usersSchema.id],
+      relationName: 'receiver',
     }),
   }),
 );

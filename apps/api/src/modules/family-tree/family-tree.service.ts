@@ -4,11 +4,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
 import { and, asc, eq, ilike, isNull } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
@@ -81,7 +81,7 @@ export class FamilyTreeService {
     const isFamilyTreeExist = await this.db.query.familyTreesSchema.findFirst({
       where: and(
         eq(schema.familyTreesSchema.createdBy, userId),
-        ilike(schema.familyTreesSchema.name, `%${body.name}%`),
+        eq(schema.familyTreesSchema.name, body.name),
       ),
     });
 
@@ -89,10 +89,6 @@ export class FamilyTreeService {
       throw new BadRequestException(
         `Family tree with name ${body.name} already exist`,
       );
-    }
-
-    if (body.image && !body.image?.includes(this.cloudflareR2Path)) {
-      throw new BadRequestException('Image is not uploaded');
     }
 
     const [familyTree] = await this.db

@@ -1,6 +1,6 @@
 import type { JwtPayloadType, UserSchemaType } from '@family-tree/shared';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { and, eq, isNull } from 'drizzle-orm';
