@@ -22,6 +22,7 @@ import type {
   FamilyTreeMemberGetResponseDto,
   FamilyTreeMemberUpdateRequestDto,
 } from './dto/family-tree-member.dto';
+import { FamilyTreeMemberConnectionEnum } from '@family-tree/shared';
 
 @Injectable()
 export class FamilyTreeMemberService {
@@ -101,6 +102,25 @@ export class FamilyTreeMemberService {
     if (familyTree.createdBy !== userId) {
       throw new BadRequestException(
         `Family tree with id ${param.familyTreeId} does not belong to user with id ${userId}`,
+      );
+    }
+
+    // check descendants
+    const descendants =
+      await this.db.query.familyTreeMemberConnectionsSchema.findMany({
+        where: and(
+          eq(schema.familyTreeMemberConnectionsSchema.fromMemberId, param.id),
+          eq(
+            schema.familyTreeMemberConnectionsSchema.type,
+            FamilyTreeMemberConnectionEnum.PARENT,
+          ),
+        ),
+        limit: 5,
+      });
+
+    if (descendants.length) {
+      throw new BadRequestException(
+        `Family tree member with id ${param.id} has descendants`,
       );
     }
 
