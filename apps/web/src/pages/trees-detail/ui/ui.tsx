@@ -7,6 +7,7 @@ import { Visualization } from './visualization';
 import { PreviewMemberModal } from '~/features/tree-member/preview';
 import { Button } from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { EditMemberModal, editMemberModel } from '~/features/tree-member/edit';
 
 // Types
 type Model = ReturnType<typeof factory>;
@@ -27,7 +28,7 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
             icon={<EditOutlined />}
             block
             size="large"
-            // onClick={() => onEditMember?.(member)} // should trigger event
+            onClick={() => editMemberModel} // should trigger event
           >
             Edit Member
           </Button>
@@ -55,6 +56,7 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
           </Button>
         }
       />
+      <EditMemberModal />
     </>
   );
 };
