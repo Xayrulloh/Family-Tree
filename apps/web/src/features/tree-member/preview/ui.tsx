@@ -12,19 +12,20 @@ import dayjs from 'dayjs';
 import { useUnit } from 'effector-react';
 import { useForm } from 'react-hook-form';
 import * as model from './model';
+import type { FamilyTreeMemberSchemaType } from '@family-tree/shared';
 
 const { Title, Paragraph, Text } = Typography;
 
 type PreviewMemberModalProps = {
-  editMemberSlot?: React.ReactNode;
-  deleteMemberSlot?: React.ReactNode;
-  editConnectionSlot?: React.ReactNode;
+  renderEditMemberSlot?: (member: FamilyTreeMemberSchemaType) =>  React.ReactNode;
+  renderDeleteMemberSlot?: (member: FamilyTreeMemberSchemaType) =>  React.ReactNode;
+  renderEditConnectionSlot?: (member: FamilyTreeMemberSchemaType) =>  React.ReactNode;
 };
 
 export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
-  editMemberSlot,
-  deleteMemberSlot,
-  editConnectionSlot,
+  renderDeleteMemberSlot,
+  renderEditConnectionSlot,
+  renderEditMemberSlot,
 }) => {
   const [isOpen] = useUnit([model.disclosure.$isOpen]);
 
@@ -172,10 +173,10 @@ export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
           size={8}
         >
           <Flex gap={12} style={{ width: '100%' }}>
-            {editMemberSlot}
-            {deleteMemberSlot}
+            {renderEditMemberSlot?.(member)}
+            {renderDeleteMemberSlot?.(member)}
           </Flex>
-          {editConnectionSlot}
+          {renderEditConnectionSlot?.(member)}
         </Space>
       </Space>
     </Modal>

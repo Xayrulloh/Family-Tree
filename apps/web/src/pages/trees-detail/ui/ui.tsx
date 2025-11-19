@@ -22,38 +22,38 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
     <>
       <Visualization model={model} />
       <PreviewMemberModal
-        editMemberSlot={
+        renderEditMemberSlot={(member) => 
           <Button
             type="primary"
             icon={<EditOutlined />}
             block
             size="large"
-            onClick={() => editMemberModel} // should trigger event
+            onClick={() => editMemberModel.editTriggered(member)} // should trigger event
           >
             Edit Member
           </Button>
         }
-        deleteMemberSlot={
+        renderDeleteMemberSlot={ (member) =>
           <Button
             type="primary"
             danger
             icon={<DeleteOutlined />}
             block
             size="large"
-            // onClick={() => onDeleteMember?.(member)} // should trigger event
+            onClick={() => onDeleteMember?.(member)} // should trigger event
           >
             Delete Member
           </Button>
         }
-        editConnectionSlot={
-          <Button
+        renderEditConnectionSlot={(member) => <Button
             icon={<PlusOutlined />}
             block
             size="large"
-            // onClick={() => onEditConnection?.(member)} // should trigger event
+            onClick={() => onEditConnection?.(member)} // should trigger event
           >
             Add Connections
           </Button>
+          
         }
       />
       <EditMemberModal />

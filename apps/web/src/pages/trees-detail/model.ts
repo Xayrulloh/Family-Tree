@@ -5,6 +5,8 @@ import type {
 import { attach, createStore, sample } from 'effector';
 import { or } from 'patronum';
 import { userModel } from '~/entities/user';
+import { editMemberModel } from '~/features/tree-member/edit';
+import { previewMemberModel } from '~/features/tree-member/preview';
 import { api } from '~/shared/api';
 import type { LazyPageFactoryParams } from '~/shared/lib/lazy-page';
 
@@ -50,6 +52,11 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
     fn: (response) => response.data,
     target: $connections,
   });
+
+  sample({
+    clock: editMemberModel.editTriggered,
+    target: previewMemberModel.reset,
+  })
 
   return {
     $members,
