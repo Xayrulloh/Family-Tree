@@ -1,10 +1,13 @@
-import { type MemberSchemaType, UserGenderEnum } from '@family-tree/shared';
+import {
+  type FamilyTreeMemberGetResponseType,
+  UserGenderEnum,
+} from '@family-tree/shared';
 import type React from 'react';
 
 type FamilyTreeNodeProps = {
-  member: MemberSchemaType;
+  member: FamilyTreeMemberGetResponseType;
   position: { x: number; y: number };
-  onMemberClick: (member: MemberSchemaType) => void;
+  onMemberClick: (member: FamilyTreeMemberGetResponseType) => void;
 };
 
 const getGenderColor = (gender: string) => {

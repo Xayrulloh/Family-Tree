@@ -1,7 +1,7 @@
 import {
   FamilyTreeMemberConnectionEnum,
   type FamilyTreeMemberConnectionGetAllResponseType,
-  type MemberSchemaType,
+  type FamilyTreeMemberGetResponseType,
 } from '@family-tree/shared';
 import { hierarchy, tree } from 'd3-hierarchy';
 
@@ -9,12 +9,12 @@ export type Position = { x: number; y: number };
 
 type FamilyNode = {
   id: string;
-  partners: MemberSchemaType[];
+  partners: FamilyTreeMemberGetResponseType[];
   children: FamilyNode[];
 };
 
 const buildFamilyHierarchy = (
-  members: MemberSchemaType[],
+  members: FamilyTreeMemberGetResponseType[],
   connections: FamilyTreeMemberConnectionGetAllResponseType,
 ): FamilyNode[] => {
   const memberMap = new Map(members.map((m) => [m.id, m]));
@@ -60,7 +60,7 @@ const buildFamilyHierarchy = (
       member,
       ...(Array.from(spouses)
         .map((id) => memberMap.get(id))
-        .filter(Boolean) as MemberSchemaType[]),
+        .filter(Boolean) as FamilyTreeMemberGetResponseType[]),
     ];
 
     partners.forEach((p) => visited.add(p.id));
@@ -114,7 +114,7 @@ const buildFamilyHierarchy = (
 };
 
 export const calculatePositions = (
-  members: MemberSchemaType[],
+  members: FamilyTreeMemberGetResponseType[],
   connections: FamilyTreeMemberConnectionGetAllResponseType,
   containerWidth = 1200,
 ): Map<string, Position> => {

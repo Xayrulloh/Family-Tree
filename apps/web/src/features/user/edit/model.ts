@@ -26,6 +26,13 @@ export const formSchema = UserSchema.pick({
   dob: true,
 });
 
+export const DEFAULT_VALUES: FormValues = {
+  name: '',
+  image: null as unknown as FormValues['image'],
+  gender: null as unknown as FormValues['gender'],
+  dob: null as unknown as FormValues['dob'],
+};
+
 // Events
 export const editTriggered = createEvent<FormValues>();
 export const randomAvatarTriggered = createEvent();

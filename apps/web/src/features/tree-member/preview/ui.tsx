@@ -6,20 +6,24 @@ import {
   UserOutlined,
   WomanOutlined,
 } from '@ant-design/icons';
-import { zodResolver } from '@hookform/resolvers/zod';
+import type { FamilyTreeMemberGetResponseType } from '@family-tree/shared';
 import { Avatar, Divider, Flex, Modal, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { useUnit } from 'effector-react';
-import { useForm } from 'react-hook-form';
 import * as model from './model';
-import type { FamilyTreeMemberSchemaType } from '@family-tree/shared';
 
 const { Title, Paragraph, Text } = Typography;
 
 type PreviewMemberModalProps = {
-  renderEditMemberSlot?: (member: FamilyTreeMemberSchemaType) =>  React.ReactNode;
-  renderDeleteMemberSlot?: (member: FamilyTreeMemberSchemaType) =>  React.ReactNode;
-  renderEditConnectionSlot?: (member: FamilyTreeMemberSchemaType) =>  React.ReactNode;
+  renderEditMemberSlot?: (
+    member: FamilyTreeMemberGetResponseType,
+  ) => React.ReactNode;
+  renderDeleteMemberSlot?: (
+    member: FamilyTreeMemberGetResponseType,
+  ) => React.ReactNode;
+  renderEditConnectionSlot?: (
+    member: FamilyTreeMemberGetResponseType,
+  ) => React.ReactNode;
 };
 
 export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
@@ -29,13 +33,9 @@ export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
 }) => {
   const [isOpen] = useUnit([model.disclosure.$isOpen]);
 
-  const form = useForm({
-    resolver: zodResolver(model.formSchema),
-  });
+  const member = useUnit(model.$member);
 
-  model.form.useBindFormWithModel({ form });
-
-  const member = form.getValues();
+  if (!member) return null;
 
   // Calculate age and status
   const calculateAgeInfo = () => {

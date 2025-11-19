@@ -1,6 +1,6 @@
 import type {
-  FamilyTreeMemberConnectionSchemaType,
-  FamilyTreeMemberSchemaType,
+  FamilyTreeMemberConnectionGetAllResponseType,
+  FamilyTreeMemberGetAllResponseType,
 } from '@family-tree/shared';
 import { attach, createStore, sample } from 'effector';
 import { or } from 'patronum';
@@ -14,10 +14,10 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   const authorizedRoute = userModel.chainAuthorized({ route });
 
   // Stores
-  const $members = createStore<
-    Omit<FamilyTreeMemberSchemaType, 'familyTreeId'>[]
-  >([]);
-  const $connections = createStore<FamilyTreeMemberConnectionSchemaType[]>([]);
+  const $members = createStore<FamilyTreeMemberGetAllResponseType>([]);
+  const $connections =
+    createStore<FamilyTreeMemberConnectionGetAllResponseType>([]);
+
   const $id = authorizedRoute.$params.map((params) => params.id ?? null);
 
   // Effects
@@ -56,7 +56,7 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   sample({
     clock: editMemberModel.editTriggered,
     target: previewMemberModel.reset,
-  })
+  });
 
   return {
     $members,

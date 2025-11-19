@@ -1,6 +1,7 @@
 import {
-  FamilyTreeMemberSchema,
+  FamilyTreeMemberGetResponseSchema,
   FileUploadFolderEnum,
+  UserGenderEnum,
 } from '@family-tree/shared';
 import type { RcFile } from 'antd/es/upload';
 import { attach, createEvent, createStore, sample } from 'effector';
@@ -16,7 +17,20 @@ import { infoFx } from '~/shared/lib/message';
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
 
-export const formSchema = FamilyTreeMemberSchema.omit({ familyTreeId: true });
+export const formSchema = FamilyTreeMemberGetResponseSchema;
+
+export const DEFAULT_VALUES: FormValues = {
+  id: '',
+  name: '',
+  image: null,
+  gender: UserGenderEnum.MALE,
+  dob: null,
+  dod: null,
+  description: '',
+  createdAt: null as unknown as FormValues['createdAt'],
+  updatedAt: null as unknown as FormValues['updatedAt'],
+  deletedAt: null as unknown as FormValues['deletedAt'],
+};
 
 // Events
 export const editTriggered = createEvent<FormValues>();
@@ -52,7 +66,7 @@ const uploadImageFx = attach({
 // Sends form values to edit user profile
 const editProfileFx = attach({
   source: form.$formValues,
-  effect: (values) => api.user.update(values),
+  effect: (values) => api.treeMember.update(values),
 });
 
 // Generates preview URL and assigns it to form image field
