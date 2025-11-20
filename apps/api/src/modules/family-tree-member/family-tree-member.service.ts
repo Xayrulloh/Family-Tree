@@ -124,6 +124,21 @@ export class FamilyTreeMemberService {
       );
     }
 
+    // check he is not the last member
+    const familyTreeMembers =
+      await this.db.query.familyTreeMembersSchema.findMany({
+        where: and(
+          eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
+        ),
+        limit: 5,
+      });
+
+    if (familyTreeMembers.length === 1) {
+      throw new BadRequestException(
+        `Member with id ${param.id} is the last member of the family tree`,
+      );
+    }
+
     await this.db
       .delete(schema.familyTreeMembersSchema)
       .where(eq(schema.familyTreeMembersSchema.id, param.id));

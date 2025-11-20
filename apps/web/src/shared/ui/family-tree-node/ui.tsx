@@ -3,6 +3,7 @@ import {
   UserGenderEnum,
 } from '@family-tree/shared';
 import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type FamilyTreeNodeProps = {
   member: FamilyTreeMemberGetResponseType;
@@ -21,6 +22,16 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
   position,
   onMemberClick,
 }) => {
+  const [hover, setHover] = useState(false);
+  const hideTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hideTimeout.current) clearTimeout(hideTimeout.current);
+    };
+  }, []);
+
   const color = getGenderColor(member.gender);
 
   const nodeWidth = 80;
@@ -33,8 +44,19 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
     member.name.length > 12 ? member.name.split(' ')[0] : member.name;
 
   return (
-    <g transform={`translate(${nodeX}, ${nodeY})`}>
-      {/* Rectangle background with gender-colored border */}
+    <g
+      onMouseEnter={() => {
+        if (hideTimeout.current) clearTimeout(hideTimeout.current);
+        setHover(true);
+      }}
+      onMouseLeave={() => {
+        hideTimeout.current = setTimeout(() => {
+          setHover(false);
+        }, 200);
+      }}
+      transform={`translate(${nodeX}, ${nodeY})`}
+    >
+      {/* Node rectangle */}
       <rect
         width={nodeWidth}
         height={nodeHeight}
@@ -42,12 +64,10 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
         fill="white"
         stroke={color}
         strokeWidth="2"
-        style={{
-          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
-        }}
+        style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}
       />
 
-      {/* Name centered in the rectangle */}
+      {/* Node name */}
       <text
         x={nodeWidth / 2}
         y={nodeHeight / 2}
@@ -60,7 +80,7 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
         {displayName}
       </text>
 
-      {/* Interactive overlay */}
+      {/* Click overlay */}
       <rect
         width={nodeWidth}
         height={nodeHeight}
@@ -68,15 +88,40 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
         fill="transparent"
         style={{ cursor: 'pointer' }}
         onClick={() => onMemberClick(member)}
-        onMouseEnter={(e) => {
-          const rect = e.currentTarget;
-          rect.style.fill = 'rgba(0,0,0,0.05)';
-        }}
-        onMouseLeave={(e) => {
-          const rect = e.currentTarget;
-          rect.style.fill = 'transparent';
-        }}
       />
+
+      {/* ================================
+          HOVER CHILDREN BUTTONS
+         ================================ */}
+      {hover && member.gender === UserGenderEnum.FEMALE && (
+        <g>
+          {/* Left blue button */}
+          <rect
+            x={nodeWidth / 2 - 26}
+            y={nodeHeight + 6}
+            width={20}
+            height={20}
+            rx={4}
+            fill="#3b82f6"
+            stroke="#1e40af"
+            strokeWidth="1.5"
+            style={{ cursor: 'pointer' }}
+          />
+
+          {/* Right pink button */}
+          <rect
+            x={nodeWidth / 2 + 6}
+            y={nodeHeight + 6}
+            width={20}
+            height={20}
+            rx={4}
+            fill="#ec4899"
+            stroke="#be185d"
+            strokeWidth="1.5"
+            style={{ cursor: 'pointer' }}
+          />
+        </g>
+      )}
     </g>
   );
 };

@@ -166,7 +166,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
         onMouseLeave={handleMouseLeave}
         onWheel={handleWheel}
       >
-        <title>Family Tree</title>
+        {/* <title>Family Tree</title> */}
         <g>
           <CoupleConnections couples={couples} positions={positions} />
         </g>
