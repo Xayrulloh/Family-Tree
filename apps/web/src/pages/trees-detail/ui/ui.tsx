@@ -28,26 +28,18 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
       <PreviewMemberModal
         renderEditMemberSlot={(member) => (
           <Button
-            type="primary"
-            icon={<EditOutlined />}
-            block
-            size="large"
+            type="text"
+            icon={<EditOutlined style={{ fontSize: 18 }} />}
             onClick={() => editMemberModel.editTriggered(member)}
-          >
-            Edit Member
-          </Button>
+          />
         )}
         renderDeleteMemberSlot={(member) => (
           <Button
-            type="primary"
+            type="text"
             danger
-            icon={<DeleteOutlined />}
-            block
-            size="large"
-            onClick={() => deleteMemberModel.deleteTriggered(member)} // should trigger event
-          >
-            Delete Member
-          </Button>
+            icon={<DeleteOutlined style={{ fontSize: 18 }} />}
+            onClick={() => deleteMemberModel.deleteTriggered(member)}
+          />
         )}
       />
       <EditMemberModal />

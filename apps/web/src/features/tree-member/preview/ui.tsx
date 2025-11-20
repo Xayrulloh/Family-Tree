@@ -72,6 +72,12 @@ export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
       footer={null}
       destroyOnHidden
     >
+      {/* === Top-right Action Icons === */}
+      <Flex style={{ position: 'absolute', top: 12, right: 50 }} gap={8}>
+        {renderEditMemberSlot(member)}
+        {renderDeleteMemberSlot(member)}
+      </Flex>
+
       {/* Header - Centered */}
       <Flex vertical align="center" gap={15} style={{ marginBottom: 24 }}>
         <Avatar
@@ -161,18 +167,6 @@ export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
             </div>
           </>
         )}
-
-        {/* Action Buttons */}
-        <Space
-          direction="vertical"
-          style={{ width: '100%', marginTop: 8 }}
-          size={8}
-        >
-          <Flex gap={12} style={{ width: '100%' }}>
-            {renderEditMemberSlot(member)}
-            {renderDeleteMemberSlot(member)}
-          </Flex>
-        </Space>
       </Space>
     </Modal>
   );
