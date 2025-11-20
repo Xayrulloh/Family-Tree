@@ -21,6 +21,7 @@ export const formSchema = FamilyTreeMemberGetResponseSchema;
 
 export const DEFAULT_VALUES: FormValues = {
   id: '',
+  familyTreeId: '',
   name: '',
   image: null,
   gender: UserGenderEnum.MALE,
@@ -66,7 +67,11 @@ const uploadImageFx = attach({
 // Sends form values to edit user profile
 const editProfileFx = attach({
   source: form.$formValues,
-  effect: (values) => api.treeMember.update(values),
+  effect: (value) =>
+    api.treeMember.update(
+      { familyTreeId: value.familyTreeId, id: value.id },
+      value,
+    ),
 });
 
 // Generates preview URL and assigns it to form image field

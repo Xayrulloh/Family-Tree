@@ -47,7 +47,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
       key: 'edit',
       label: 'Edit',
       icon: <EditOutlined />,
-      onClick: (event) =>  {
+      onClick: (event) => {
         event.domEvent.stopPropagation();
         createEditTreeModel.editTriggered({
           id: tree.id,
@@ -56,7 +56,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
             name: tree.name,
             public: tree.public,
           },
-        })
+        });
       },
     },
     {
@@ -64,7 +64,8 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
       label: 'Delete',
       icon: <DeleteOutlined />,
       danger: true,
-      onClick: () => {
+      onClick: (event) => {
+        event.domEvent.stopPropagation();
         deleteTreeModel.deleteTriggered({ id: tree.id });
       },
     },

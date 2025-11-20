@@ -15,21 +15,17 @@ import * as model from './model';
 const { Title, Paragraph, Text } = Typography;
 
 type PreviewMemberModalProps = {
-  renderEditMemberSlot?: (
+  renderEditMemberSlot: (
     member: FamilyTreeMemberGetResponseType,
   ) => React.ReactNode;
-  renderDeleteMemberSlot?: (
-    member: FamilyTreeMemberGetResponseType,
-  ) => React.ReactNode;
-  renderEditConnectionSlot?: (
+  renderDeleteMemberSlot: (
     member: FamilyTreeMemberGetResponseType,
   ) => React.ReactNode;
 };
 
 export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
-  renderDeleteMemberSlot,
-  renderEditConnectionSlot,
   renderEditMemberSlot,
+  renderDeleteMemberSlot,
 }) => {
   const [isOpen] = useUnit([model.disclosure.$isOpen]);
 
@@ -173,10 +169,9 @@ export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
           size={8}
         >
           <Flex gap={12} style={{ width: '100%' }}>
-            {renderEditMemberSlot?.(member)}
-            {renderDeleteMemberSlot?.(member)}
+            {renderEditMemberSlot(member)}
+            {renderDeleteMemberSlot(member)}
           </Flex>
-          {renderEditConnectionSlot?.(member)}
         </Space>
       </Space>
     </Modal>

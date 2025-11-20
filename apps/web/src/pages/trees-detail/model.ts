@@ -5,6 +5,7 @@ import type {
 import { attach, createStore, sample } from 'effector';
 import { or } from 'patronum';
 import { userModel } from '~/entities/user';
+import { deleteMemberModel } from '~/features/tree-member/delete';
 import { editMemberModel } from '~/features/tree-member/edit';
 import { previewMemberModel } from '~/features/tree-member/preview';
 import { api } from '~/shared/api';
@@ -33,7 +34,6 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   });
 
   // Samples
-
   // Trigger fetches when familyTreeId is set
   sample({
     clock: authorizedRoute.opened,
@@ -53,9 +53,22 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
     target: $connections,
   });
 
+  // Reset preview on member edit
   sample({
     clock: editMemberModel.editTriggered,
     target: previewMemberModel.reset,
+  });
+
+  // Reset preview on member delete active
+  sample({
+    clock: deleteMemberModel.deleteTriggered,
+    target: previewMemberModel.reset,
+  });
+
+  // Rerender after member deleted
+  sample({
+    clock: deleteMemberModel.mutated,
+    target: [fetchMembersFx, fetchConnectionsFx],
   });
 
   return {

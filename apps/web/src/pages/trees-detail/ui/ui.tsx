@@ -1,7 +1,11 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import { useUnit } from 'effector-react';
 import type React from 'react';
+import {
+  DeleteMemberModal,
+  deleteMemberModel,
+} from '~/features/tree-member/delete';
 import { EditMemberModal, editMemberModel } from '~/features/tree-member/edit';
 import { PreviewMemberModal } from '~/features/tree-member/preview';
 import type { LazyPageProps } from '~/shared/lib/lazy-page';
@@ -40,23 +44,14 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
             icon={<DeleteOutlined />}
             block
             size="large"
-            // onClick={() => onDeleteMember?.(member)} // should trigger event
+            onClick={() => deleteMemberModel.deleteTriggered(member)} // should trigger event
           >
             Delete Member
           </Button>
         )}
-        renderEditConnectionSlot={(member) => (
-          <Button
-            icon={<PlusOutlined />}
-            block
-            size="large"
-            // onClick={() => onEditConnection?.(member)} // should trigger event
-          >
-            Add Connections
-          </Button>
-        )}
       />
       <EditMemberModal />
+      <DeleteMemberModal />
     </>
   );
 };
