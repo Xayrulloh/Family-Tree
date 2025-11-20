@@ -35,8 +35,8 @@ export const DEFAULT_VALUES: FormValues = {
 };
 
 // Initialization of Events
-export const createTriggered = createEvent();
-export const editTriggered = createEvent<{ id: string; values: FormValues }>();
+export const createTrigger = createEvent();
+export const editTrigger = createEvent<{ id: string; values: FormValues }>();
 export const formValidated = createEvent();
 export const reset = createEvent();
 export const uploaded = createEvent<RcFile>();
@@ -66,7 +66,7 @@ export const form = createForm<FormValues>();
 
 // Events without Clock
 // Triggers when user creating or editing
-$mode.on(createTriggered, () => 'create').on(editTriggered, () => 'edit');
+$mode.on(createTrigger, () => 'create').on(editTrigger, () => 'edit');
 
 // Effects
 // Uploads image to Cloudflare
@@ -138,20 +138,20 @@ export const mutated = merge([createTreeFx.done, editTreeFx.done]);
 // Samples
 // If user starts creating or editing, open the form
 sample({
-  clock: [editTriggered, createTriggered],
+  clock: [editTrigger, createTrigger],
   target: disclosure.opened,
 });
 
 // If user starts editing copy original tree
 sample({
-  clock: editTriggered,
+  clock: editTrigger,
   fn: ({ values }) => values,
   target: $originalTree,
 });
 
 // If user starts editing, put values to form
 sample({
-  clock: editTriggered,
+  clock: editTrigger,
   target: spread({
     values: form.resetFx,
     id: $id,

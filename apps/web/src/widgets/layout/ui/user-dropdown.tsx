@@ -90,7 +90,7 @@ export const UserDropdown = () => {
       key: 'random-avatar',
       label: (
         <div
-          onClick={() => editProfileModel.randomAvatarTriggered()}
+          onClick={() => editProfileModel.randomAvatarTrigger()}
           onKeyDown={(_e) => {}}
           style={{ display: 'flex', alignItems: 'center', gap: 8 }}
         >
@@ -106,7 +106,7 @@ export const UserDropdown = () => {
       label: (
         <div
           onClick={() =>
-            editProfileModel.editTriggered({
+            editProfileModel.editTrigger({
               name: user.name,
               image: user.image as string,
               gender: user.gender as [

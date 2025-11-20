@@ -29,6 +29,7 @@ import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import {
+  FamilyTreeMemberCreateChildRequestDto,
   FamilyTreeMemberCreateRequestDto,
   type FamilyTreeMemberGetAllParamDto,
   FamilyTreeMemberGetAllResponseDto,
@@ -61,6 +62,26 @@ export class FamilyTreeMemberController {
     @Param() param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
     return this.FamilyTreeMemberService.createFamilyTreeMember(
+      req.user.id,
+      param.familyTreeId,
+      body,
+    );
+  }
+
+  // member create (child)
+  @Post('child')
+  @UseGuards(JWTAuthGuard)
+  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiCreatedResponse({ type: FamilyTreeMemberGetResponseDto })
+  @ApiBody({ type: FamilyTreeMemberCreateChildRequestDto })
+  @ZodSerializerDto(FamilyTreeMemberGetResponseSchema)
+  async createFamilyTreeMemberChild(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: FamilyTreeMemberCreateChildRequestDto,
+    @Param() param: FamilyTreeMemberGetAllParamDto,
+  ): Promise<FamilyTreeMemberGetResponseDto> {
+    return this.FamilyTreeMemberService.createFamilyTreeMemberChild(
       req.user.id,
       param.familyTreeId,
       body,

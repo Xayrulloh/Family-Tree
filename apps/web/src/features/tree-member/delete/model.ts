@@ -4,7 +4,7 @@ import { api } from '~/shared/api';
 import { createDisclosure } from '~/shared/lib/disclosure';
 
 // Initialization of Events
-export const deleteTriggered = createEvent<FamilyTreeMemberGetResponseType>();
+export const deleteTrigger = createEvent<FamilyTreeMemberGetResponseType>();
 export const deleted = createEvent();
 
 // Stores created tree id
@@ -42,13 +42,13 @@ export const mutated = deleteTreeFx.done;
 // Events of Samples
 // If user starts deleting, open the Dropdown
 sample({
-  clock: deleteTriggered,
+  clock: deleteTrigger,
   target: disclosure.opened,
 });
 
 // If user starts deleting, put id to $id
 sample({
-  clock: deleteTriggered,
+  clock: deleteTrigger,
   target: $member,
 });
 

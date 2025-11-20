@@ -34,7 +34,7 @@ export const DEFAULT_VALUES: FormValues = {
 };
 
 // Events
-export const editTriggered = createEvent<FormValues>();
+export const editTrigger = createEvent<FormValues>();
 export const formValidated = createEvent();
 export const reset = createEvent();
 export const uploaded = createEvent<RcFile>();
@@ -99,7 +99,7 @@ export const mutated = editProfileFx.done;
 // Samples
 // Open modal and reset form with values on edit trigger
 sample({
-  clock: editTriggered,
+  clock: editTrigger,
   target: [disclosure.opened, form.resetFx, $originalMember],
 });
 

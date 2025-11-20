@@ -1,5 +1,6 @@
 import type z from 'zod';
 import { FamilyTreeMemberSchema } from '../schema';
+import { FamilyTreeMemberConnectionCreateRequestSchema } from '../family-tree-member-connection';
 
 // schemas
 const FamilyTreeMemberCreateRequestSchema = FamilyTreeMemberSchema.omit({
@@ -9,6 +10,14 @@ const FamilyTreeMemberCreateRequestSchema = FamilyTreeMemberSchema.omit({
   updatedAt: true,
   deletedAt: true,
 });
+
+const FamilyTreeMemberCreateChildRequestSchema = FamilyTreeMemberSchema.pick({
+  gender: true,
+}).merge(
+  FamilyTreeMemberConnectionCreateRequestSchema.pick({
+    fromMemberId: true,
+  }),
+);
 
 const FamilyTreeMemberUpdateRequestSchema =
   FamilyTreeMemberCreateRequestSchema.partial();
@@ -27,6 +36,10 @@ type FamilyTreeMemberCreateRequestType = z.infer<
   typeof FamilyTreeMemberCreateRequestSchema
 >;
 
+type FamilyTreeMemberCreateChildRequestType = z.infer<
+  typeof FamilyTreeMemberCreateChildRequestSchema
+>;
+
 type FamilyTreeMemberUpdateRequestType = z.infer<
   typeof FamilyTreeMemberUpdateRequestSchema
 >;
@@ -41,10 +54,12 @@ type FamilyTreeMemberGetAllParamType = z.infer<
 
 export {
   FamilyTreeMemberCreateRequestSchema,
+  FamilyTreeMemberCreateChildRequestSchema,
   FamilyTreeMemberUpdateRequestSchema,
   FamilyTreeMemberGetParamSchema,
   FamilyTreeMemberGetAllParamSchema,
   type FamilyTreeMemberCreateRequestType,
+  type FamilyTreeMemberCreateChildRequestType,
   type FamilyTreeMemberUpdateRequestType,
   type FamilyTreeMemberGetParamType,
   type FamilyTreeMemberGetAllParamType,

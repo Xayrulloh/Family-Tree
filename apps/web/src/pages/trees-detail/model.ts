@@ -5,6 +5,7 @@ import type {
 import { attach, createStore, sample } from 'effector';
 import { or } from 'patronum';
 import { userModel } from '~/entities/user';
+import { addMemberModel } from '~/features/tree-member/add';
 import { deleteMemberModel } from '~/features/tree-member/delete';
 import { editMemberModel } from '~/features/tree-member/edit';
 import { previewMemberModel } from '~/features/tree-member/preview';
@@ -55,19 +56,19 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
 
   // Reset preview on member edit
   sample({
-    clock: editMemberModel.editTriggered,
+    clock: editMemberModel.editTrigger,
     target: previewMemberModel.reset,
   });
 
   // Reset preview on member delete active
   sample({
-    clock: deleteMemberModel.deleteTriggered,
+    clock: deleteMemberModel.deleteTrigger,
     target: previewMemberModel.reset,
   });
 
   // Rerender after member deleted
   sample({
-    clock: deleteMemberModel.mutated,
+    clock: [deleteMemberModel.mutated, addMemberModel.created],
     target: [fetchMembersFx, fetchConnectionsFx],
   });
 

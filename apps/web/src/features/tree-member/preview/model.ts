@@ -3,7 +3,7 @@ import { createEvent, createStore, sample } from 'effector';
 import { createDisclosure } from '~/shared/lib/disclosure';
 
 // Events
-export const previewMemberTriggered =
+export const previewMemberTrigger =
   createEvent<FamilyTreeMemberGetResponseType>();
 export const reset = createEvent();
 
@@ -18,7 +18,7 @@ export const disclosure = createDisclosure();
 // Samples
 // Open modal and reset form with values on edit trigger
 sample({
-  clock: previewMemberTriggered,
+  clock: previewMemberTrigger,
   target: [disclosure.opened, $member],
 });
 

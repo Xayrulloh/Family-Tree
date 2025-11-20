@@ -30,7 +30,7 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
           <Button
             type="text"
             icon={<EditOutlined style={{ fontSize: 18 }} />}
-            onClick={() => editMemberModel.editTriggered(member)}
+            onClick={() => editMemberModel.editTrigger(member)}
           />
         )}
         renderDeleteMemberSlot={(member) => (
@@ -38,7 +38,7 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
             type="text"
             danger
             icon={<DeleteOutlined style={{ fontSize: 18 }} />}
-            onClick={() => deleteMemberModel.deleteTriggered(member)}
+            onClick={() => deleteMemberModel.deleteTrigger(member)}
           />
         )}
       />

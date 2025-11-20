@@ -1,4 +1,7 @@
-import { FamilyTreeMemberConnectionEnum } from '@family-tree/shared';
+import {
+  FamilyTreeMemberConnectionEnum,
+  UserGenderEnum,
+} from '@family-tree/shared';
 import {
   BadRequestException,
   Inject,
@@ -7,7 +10,7 @@ import {
 } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, or } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
@@ -16,6 +19,7 @@ import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
 import type { FamilyTreeResponseDto } from '../family-tree/dto/family-tree.dto';
 import type {
+  FamilyTreeMemberCreateChildRequestDto,
   FamilyTreeMemberCreateRequestDto,
   FamilyTreeMemberGetAllParamDto,
   FamilyTreeMemberGetAllResponseDto,
@@ -58,6 +62,78 @@ export class FamilyTreeMemberService {
       .returning();
 
     return familyTreeMember;
+  }
+
+  // create child
+  async createFamilyTreeMemberChild(
+    userId: string,
+    familyTreeId: string,
+    body: FamilyTreeMemberCreateChildRequestDto,
+  ): Promise<FamilyTreeMemberGetResponseDto> {
+    const familyTree = await this.getFamilyTreeById(familyTreeId);
+
+    if (familyTree.createdBy !== userId) {
+      throw new BadRequestException(
+        `Family tree with id ${familyTreeId} does not belong to user with id ${userId}`,
+      );
+    }
+
+    // Parent logic
+    const parents =
+      await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+        where: and(
+          eq(
+            schema.familyTreeMemberConnectionsSchema.familyTreeId,
+            familyTreeId,
+          ),
+          eq(
+            schema.familyTreeMemberConnectionsSchema.type,
+            FamilyTreeMemberConnectionEnum.SPOUSE,
+          ),
+          or(
+            eq(
+              schema.familyTreeMemberConnectionsSchema.fromMemberId,
+              body.fromMemberId,
+            ),
+            eq(
+              schema.familyTreeMemberConnectionsSchema.toMemberId,
+              body.fromMemberId,
+            ),
+          ),
+        ),
+      });
+
+    if (!parents) {
+      throw new BadRequestException(
+        `Family tree member with id ${body.fromMemberId} has no spouse`,
+      );
+    }
+
+    const [child] = await this.db
+      .insert(schema.familyTreeMembersSchema)
+      .values({
+        gender: body.gender,
+        name: body.gender === UserGenderEnum.MALE ? 'Boy' : 'Girl',
+        familyTreeId,
+      })
+      .returning();
+
+    await Promise.all([
+      await this.db.insert(schema.familyTreeMemberConnectionsSchema).values({
+        familyTreeId: familyTreeId,
+        fromMemberId: parents?.fromMemberId,
+        toMemberId: child.id,
+        type: FamilyTreeMemberConnectionEnum.PARENT,
+      }),
+      await this.db.insert(schema.familyTreeMemberConnectionsSchema).values({
+        familyTreeId: familyTreeId,
+        fromMemberId: parents?.toMemberId,
+        toMemberId: child.id,
+        type: FamilyTreeMemberConnectionEnum.PARENT,
+      }),
+    ]);
+
+    return child;
   }
 
   // update member

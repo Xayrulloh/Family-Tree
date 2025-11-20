@@ -8,7 +8,9 @@ import { useEffect, useRef, useState } from 'react';
 type FamilyTreeNodeProps = {
   member: FamilyTreeMemberGetResponseType;
   position: { x: number; y: number };
-  onMemberClick: (member: FamilyTreeMemberGetResponseType) => void;
+  onPreviewClick: (member: FamilyTreeMemberGetResponseType) => void;
+  onAddBoyClick: (member: FamilyTreeMemberGetResponseType) => void;
+  onAddGirlClick: (member: FamilyTreeMemberGetResponseType) => void;
 };
 
 const getGenderColor = (gender: string) => {
@@ -20,7 +22,9 @@ const getGenderColor = (gender: string) => {
 export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
   member,
   position,
-  onMemberClick,
+  onPreviewClick,
+  onAddBoyClick,
+  onAddGirlClick,
 }) => {
   const [hover, setHover] = useState(false);
   const hideTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -87,7 +91,7 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
         rx="6"
         fill="transparent"
         style={{ cursor: 'pointer' }}
-        onClick={() => onMemberClick(member)}
+        onClick={() => onPreviewClick(member)}
       />
 
       {/* ================================
@@ -106,6 +110,7 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
             stroke="#1e40af"
             strokeWidth="1.5"
             style={{ cursor: 'pointer' }}
+            onClick={() => onAddBoyClick(member)}
           />
 
           {/* Right pink button */}
@@ -119,6 +124,7 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
             stroke="#be185d"
             strokeWidth="1.5"
             style={{ cursor: 'pointer' }}
+            onClick={() => onAddGirlClick(member)}
           />
         </g>
       )}

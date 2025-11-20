@@ -11,6 +11,7 @@ import {
 } from '~/shared/lib/layout-engine';
 import { FamilyTreeNode } from '~/shared/ui/family-tree-node';
 import type { Props } from './ui';
+import { addMemberModel } from '~/features/tree-member/add';
 
 const MemoizedFamilyTreeNode = memo(FamilyTreeNode);
 
@@ -184,7 +185,9 @@ export const Visualization: React.FC<Props> = ({ model }) => {
               member={m}
               // biome-ignore lint/style/noNonNullAssertion: <I hope it's always gets the position)>
               position={positions.get(m.id)!}
-              onMemberClick={previewMemberModel.previewMemberTriggered}
+              onPreviewClick={previewMemberModel.previewMemberTrigger}
+              onAddBoyClick={addMemberModel.addBoyTrigger}
+              onAddGirlClick={addMemberModel.addGirlTrigger}
             />
           ))}
         </g>

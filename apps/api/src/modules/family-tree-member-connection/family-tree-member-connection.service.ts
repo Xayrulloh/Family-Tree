@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, or } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
@@ -16,6 +16,7 @@ import type {
   FamilyTreeMemberConnectionGetParamDto,
   FamilyTreeMemberConnectionUpdateRequestDto,
 } from './dto/family-tree-member-connection.dto';
+import { FamilyTreeMemberConnectionEnum } from '@family-tree/shared';
 
 @Injectable()
 export class FamilyTreeMemberConnectionService {
@@ -42,7 +43,57 @@ export class FamilyTreeMemberConnectionService {
       );
     }
 
-    // FIXME: check fromMemberId connections
+    // Parent logic
+    if (FamilyTreeMemberConnectionEnum.PARENT === body.type) {
+      const parents =
+        await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+          where: and(
+            eq(
+              schema.familyTreeMemberConnectionsSchema.familyTreeId,
+              param.familyTreeId,
+            ),
+            eq(
+              schema.familyTreeMemberConnectionsSchema.type,
+              FamilyTreeMemberConnectionEnum.SPOUSE,
+            ),
+            or(
+              eq(
+                schema.familyTreeMemberConnectionsSchema.fromMemberId,
+                body.fromMemberId,
+              ),
+              eq(
+                schema.familyTreeMemberConnectionsSchema.toMemberId,
+                body.fromMemberId,
+              ),
+            ),
+          ),
+        });
+
+      if (!parents) {
+        throw new BadRequestException(
+          `Family tree member with id ${body.fromMemberId} has no spouse`,
+        );
+      }
+
+      const connection = await this.db
+        .insert(schema.familyTreeMemberConnectionsSchema)
+        .values({
+          familyTreeId: param.familyTreeId,
+          fromMemberId: parents?.fromMemberId,
+          toMemberId: body.toMemberId,
+          type: FamilyTreeMemberConnectionEnum.PARENT,
+        })
+        .returning();
+
+      await this.db.insert(schema.familyTreeMemberConnectionsSchema).values({
+        familyTreeId: param.familyTreeId,
+        fromMemberId: parents?.toMemberId,
+        toMemberId: body.toMemberId,
+        type: FamilyTreeMemberConnectionEnum.PARENT,
+      });
+
+      return connection;
+    }
 
     const connection = await this.db
       .insert(schema.familyTreeMemberConnectionsSchema)

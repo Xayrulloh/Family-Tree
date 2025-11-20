@@ -1,8 +1,8 @@
-import { createTriggered, editTriggered, mutated } from './model';
+import { createTrigger, editTrigger, mutated } from './model';
 
 export { CreateEditTreeModal } from './ui';
 export const createEditTreeModel = {
-  editTriggered,
-  createTriggered,
+  editTrigger,
+  createTrigger,
   mutated,
 };

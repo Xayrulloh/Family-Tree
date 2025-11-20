@@ -49,7 +49,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
       icon: <EditOutlined />,
       onClick: (event) => {
         event.domEvent.stopPropagation();
-        createEditTreeModel.editTriggered({
+        createEditTreeModel.editTrigger({
           id: tree.id,
           values: {
             image: tree.image,
@@ -66,7 +66,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
       danger: true,
       onClick: (event) => {
         event.domEvent.stopPropagation();
-        deleteTreeModel.deleteTriggered({ id: tree.id });
+        deleteTreeModel.deleteTrigger({ id: tree.id });
       },
     },
   ];
@@ -213,7 +213,7 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
           <Col xs={12} sm={8} md={6} lg={6} xl={4}>
             <Card
               hoverable
-              onClick={() => createEditTreeModel.createTriggered()}
+              onClick={() => createEditTreeModel.createTrigger()}
               style={{
                 height: '100%',
                 minHeight: 220,
