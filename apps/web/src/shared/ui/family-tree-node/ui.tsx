@@ -158,12 +158,15 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
       {/* ================================
           HOVER: PARENT BUTTON (if allowed)
         ================================ */}
+      {/* ================================
+      HOVER: PARENT BUTTON (rounded split)
+   ================================ */}
       {hover && !isParent && (
         <g
           style={{ cursor: 'pointer' }}
           onClick={() => onAddParentClick(member)}
         >
-          {/* Wrapper square */}
+          {/* Rounded outer shape */}
           <rect
             x={nodeWidth / 2 - 10}
             y={-26}
@@ -171,24 +174,49 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
             height={20}
             rx={4}
             fill="#ffffff"
-            stroke="#374151"
-            strokeWidth="1.5"
           />
-          {/* Left BLUE half */}
+
+          {/* Clip inner content so rounded edges apply */}
+          <clipPath id={`parentClip-${member.id}`}>
+            <rect
+              x={nodeWidth / 2 - 10}
+              y={-26}
+              width={20}
+              height={20}
+              rx={4}
+            />
+          </clipPath>
+
+          {/* Left (blue) */}
           <rect
+            clipPath={`url(#parentClip-${member.id})`}
             x={nodeWidth / 2 - 10}
             y={-26}
             width={10}
             height={20}
             fill="#3b82f6"
           />
-          {/* Right PINK half */}
+
+          {/* Right (pink) */}
           <rect
+            clipPath={`url(#parentClip-${member.id})`}
             x={nodeWidth / 2}
             y={-26}
             width={10}
             height={20}
             fill="#ec4899"
+          />
+
+          {/* Border around full button */}
+          <rect
+            x={nodeWidth / 2 - 10}
+            y={-26}
+            width={20}
+            height={20}
+            rx={4}
+            fill="transparent"
+            stroke="#374151"
+            strokeWidth="1.5"
           />
         </g>
       )}
