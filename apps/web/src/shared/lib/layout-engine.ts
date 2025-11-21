@@ -118,16 +118,42 @@ const buildFamilyHierarchy = (
   /* -------------------------------------------
    * Identify root families (no parents)
    * ------------------------------------------- */
-  const childMemberIds = new Set<string>();
-  connections.forEach((c) => {
-    if (c.type === FamilyTreeMemberConnectionEnum.PARENT) {
-      childMemberIds.add(c.toMemberId);
-    }
-  });
+  const parentMap = new Map<string, Set<string>>();
 
-  const rootMembers = members.filter((m) => !childMemberIds.has(m.id));
+  for (const c of connections) {
+    if (c.type === FamilyTreeMemberConnectionEnum.PARENT) {
+      if (!parentMap.has(c.toMemberId)) {
+        parentMap.set(c.toMemberId, new Set());
+      }
+      parentMap.get(c.toMemberId)?.add(c.fromMemberId);
+    }
+  }
+
+  function findUltimateRoot(id: string): string {
+    let current = id;
+    const visited = new Set<string>();
+
+    while (parentMap.has(current)) {
+      const parents = Array.from(parentMap.get(current) ?? []);
+
+      if (parents.length === 0) break;
+      if (visited.has(current)) break;
+
+      visited.add(current);
+      current = parents[0];
+    }
+
+    return current;
+  }
+
+  const rootIds = new Set(members.map((m) => findUltimateRoot(m.id)));
+
+  const roots = Array.from(rootIds)
+    .map((id) => memberMap.get(id))
+    .filter(Boolean);
+
   const rootFamilies = new Set(
-    rootMembers.map((m) => {
+    roots.map((m) => {
       if (!m) throw new Error('Member not found');
 
       return familyKeyOf.get(m.id);
