@@ -20,6 +20,7 @@ import * as schema from '~/database/schema';
 import type { FamilyTreeResponseDto } from '../family-tree/dto/family-tree.dto';
 import type {
   FamilyTreeMemberCreateChildRequestDto,
+  FamilyTreeMemberCreateParentsRequestDto,
   FamilyTreeMemberCreateRequestDto,
   FamilyTreeMemberCreateSpouseRequestDto,
   FamilyTreeMemberGetAllParamDto,
@@ -207,6 +208,147 @@ export class FamilyTreeMemberService {
     });
 
     return spouse;
+  }
+
+  // create parents
+  async createFamilyTreeMemberParents(
+    userId: string,
+    familyTreeId: string,
+    body: FamilyTreeMemberCreateParentsRequestDto,
+  ): Promise<FamilyTreeMemberGetResponseDto> {
+    const familyTree = await this.getFamilyTreeById(familyTreeId);
+
+    if (familyTree.createdBy !== userId) {
+      throw new BadRequestException(
+        `Family tree with id ${familyTreeId} does not belong to user with id ${userId}`,
+      );
+    }
+
+    const member = await this.getFamilyTreeMember({
+      id: body.fromMemberId,
+      familyTreeId,
+    });
+
+    // Parents logic (make sure member has no parents)
+    // Current member parents
+    const memberParents =
+      await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+        where: and(
+          eq(
+            schema.familyTreeMemberConnectionsSchema.familyTreeId,
+            familyTreeId,
+          ),
+          eq(
+            schema.familyTreeMemberConnectionsSchema.type,
+            FamilyTreeMemberConnectionEnum.PARENT,
+          ),
+          eq(schema.familyTreeMemberConnectionsSchema.toMemberId, member.id),
+        ),
+      });
+
+    if (memberParents) {
+      throw new BadRequestException(
+        `Family tree member with id ${body.fromMemberId} has already parents`,
+      );
+    }
+
+    // if member has spouse we should also check spouse parents
+    const spouse =
+      await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+        where: and(
+          eq(
+            schema.familyTreeMemberConnectionsSchema.familyTreeId,
+            familyTreeId,
+          ),
+          eq(
+            schema.familyTreeMemberConnectionsSchema.type,
+            FamilyTreeMemberConnectionEnum.SPOUSE,
+          ),
+          or(
+            eq(
+              schema.familyTreeMemberConnectionsSchema.fromMemberId,
+              member.id,
+            ),
+            eq(schema.familyTreeMemberConnectionsSchema.toMemberId, member.id),
+          ),
+        ),
+      });
+
+    if (spouse) {
+      const spouseParents =
+        await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+          where: and(
+            eq(
+              schema.familyTreeMemberConnectionsSchema.familyTreeId,
+              familyTreeId,
+            ),
+            eq(
+              schema.familyTreeMemberConnectionsSchema.type,
+              FamilyTreeMemberConnectionEnum.PARENT,
+            ),
+            or(
+              eq(
+                schema.familyTreeMemberConnectionsSchema.toMemberId,
+                spouse.toMemberId,
+              ),
+              eq(
+                schema.familyTreeMemberConnectionsSchema.toMemberId,
+                spouse.fromMemberId,
+              ),
+            ),
+          ),
+        });
+
+      if (spouseParents) {
+        throw new BadRequestException(
+          `Family tree member spouse with id ${spouse.toMemberId} has already parents`,
+        );
+      }
+    }
+
+    // creating parents
+    const [[father], [mother]] = await Promise.all([
+      this.db
+        .insert(schema.familyTreeMembersSchema)
+        .values({
+          gender: UserGenderEnum.MALE,
+          name: 'Father',
+          familyTreeId,
+        })
+        .returning(),
+      this.db
+        .insert(schema.familyTreeMembersSchema)
+        .values({
+          gender: UserGenderEnum.FEMALE,
+          name: 'Mother',
+          familyTreeId,
+        })
+        .returning(),
+    ]);
+
+    // creating parent connection
+    await this.db.insert(schema.familyTreeMemberConnectionsSchema).values([
+      {
+        familyTreeId: familyTreeId,
+        fromMemberId: father.id,
+        toMemberId: member.id,
+        type: FamilyTreeMemberConnectionEnum.PARENT,
+      },
+      {
+        familyTreeId: familyTreeId,
+        fromMemberId: mother.id,
+        toMemberId: member.id,
+        type: FamilyTreeMemberConnectionEnum.PARENT,
+      },
+      {
+        familyTreeId: familyTreeId,
+        fromMemberId: father.id,
+        toMemberId: mother.id,
+        type: FamilyTreeMemberConnectionEnum.SPOUSE,
+      },
+    ]);
+
+    return member;
   }
 
   // update member

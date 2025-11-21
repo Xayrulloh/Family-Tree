@@ -9,10 +9,12 @@ type FamilyTreeNodeProps = {
   member: FamilyTreeMemberGetResponseType;
   position: { x: number; y: number };
   hasMarriage: boolean;
+  isParent: boolean;
   onPreviewClick: (member: FamilyTreeMemberGetResponseType) => void;
   onAddBoyClick: (member: FamilyTreeMemberGetResponseType) => void;
   onAddGirlClick: (member: FamilyTreeMemberGetResponseType) => void;
   onAddSpouseClick: (member: FamilyTreeMemberGetResponseType) => void;
+  onAddParentClick: (member: FamilyTreeMemberGetResponseType) => void;
 };
 
 const getGenderColor = (gender: string) => {
@@ -25,10 +27,12 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
   member,
   position,
   hasMarriage,
+  isParent,
   onPreviewClick,
   onAddBoyClick,
   onAddGirlClick,
   onAddSpouseClick,
+  onAddParentClick,
 }) => {
   const [hover, setHover] = useState(false);
   const hideTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -133,7 +137,7 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
         </g>
       )}
       {/* ================================
-        HOVER: SPOUSE BUTTON (only if no marriage)
+          HOVER: SPOUSE BUTTON (only if no marriage)
         ================================ */}
       {hover && !hasMarriage && (
         <rect
@@ -150,6 +154,43 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
           style={{ cursor: 'pointer' }}
           onClick={() => onAddSpouseClick(member)}
         />
+      )}
+      {/* ================================
+          HOVER: PARENT BUTTON (if allowed)
+        ================================ */}
+      {hover && !isParent && (
+        <g
+          style={{ cursor: 'pointer' }}
+          onClick={() => onAddParentClick(member)}
+        >
+          {/* Wrapper square */}
+          <rect
+            x={nodeWidth / 2 - 10}
+            y={-26}
+            width={20}
+            height={20}
+            rx={4}
+            fill="#ffffff"
+            stroke="#374151"
+            strokeWidth="1.5"
+          />
+          {/* Left BLUE half */}
+          <rect
+            x={nodeWidth / 2 - 10}
+            y={-26}
+            width={10}
+            height={20}
+            fill="#3b82f6"
+          />
+          {/* Right PINK half */}
+          <rect
+            x={nodeWidth / 2}
+            y={-26}
+            width={10}
+            height={20}
+            fill="#ec4899"
+          />
+        </g>
       )}
     </g>
   );

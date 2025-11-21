@@ -9,6 +9,7 @@ import { api } from '~/shared/api';
 export const addBoyTrigger = createEvent<FamilyTreeMemberGetResponseType>(); // Mother
 export const addGirlTrigger = createEvent<FamilyTreeMemberGetResponseType>(); // Mother
 export const addSpouseTrigger = createEvent<FamilyTreeMemberGetResponseType>(); // Husband or Wife
+export const addParentsTrigger = createEvent<FamilyTreeMemberGetResponseType>(); // Husband or Wife
 export const created = createEvent();
 
 // Stores
@@ -61,6 +62,20 @@ const addSpouseFx = attach({
   },
 });
 
+const addParentsFx = attach({
+  source: $member,
+  effect: (value) => {
+    if (!value) throw new Error('Member is not initialized');
+
+    return api.treeMember.createParents(
+      { familyTreeId: value.familyTreeId },
+      {
+        fromMemberId: value.id,
+      },
+    );
+  },
+});
+
 // Samples
 // Create Member
 sample({
@@ -78,8 +93,13 @@ sample({
   target: [$member, addSpouseFx],
 });
 
+sample({
+  clock: addParentsTrigger,
+  target: [$member, addParentsFx],
+});
+
 // Ending part
 sample({
-  clock: [addBoyFx.done, addGirlFx.done, addSpouseFx.done],
+  clock: [addBoyFx.done, addGirlFx.done, addSpouseFx.done, addParentsFx.done],
   target: [created, $member.reinit],
 });

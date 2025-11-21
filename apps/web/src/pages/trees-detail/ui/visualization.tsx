@@ -36,16 +36,27 @@ export const Visualization: React.FC<Props> = ({ model }) => {
   );
 
   const couples = useMemo(() => getCouples(connections), [connections]);
-  const marriageSet = useMemo(() => {
-    const set = new Set<string>();
+  const marriageMap = useMemo(() => {
+    const map = new Map<string, string>();
 
     couples.forEach(({ fromMemberId, toMemberId }) => {
-      set.add(fromMemberId);
-      set.add(toMemberId);
+      map.set(fromMemberId, toMemberId);
+      map.set(toMemberId, fromMemberId);
+    });
+
+    return map;
+  }, [couples]);
+  const parentsSet = useMemo(() => {
+    const set = new Set<string>();
+
+    connections.forEach(({ toMemberId, type }) => {
+      if (type === FamilyTreeMemberConnectionEnum.PARENT) {
+        set.add(toMemberId);
+      }
     });
 
     return set;
-  }, [couples]);
+  }, [connections]);
 
   /* ===============================
    * Center tree in the viewport
@@ -195,11 +206,18 @@ export const Visualization: React.FC<Props> = ({ model }) => {
               member={m}
               // biome-ignore lint/style/noNonNullAssertion: <I hope it's always gets the position)>
               position={positions.get(m.id)!}
-              hasMarriage={marriageSet.has(m.id)}
+              hasMarriage={marriageMap.has(m.id)}
+              isParent={
+                !(
+                  !parentsSet.has(m.id) &&
+                  !parentsSet.has(marriageMap.get(m.id) || '')
+                )
+              }
               onPreviewClick={previewMemberModel.previewMemberTrigger}
               onAddBoyClick={addMemberModel.addBoyTrigger}
               onAddGirlClick={addMemberModel.addGirlTrigger}
               onAddSpouseClick={addMemberModel.addSpouseTrigger}
+              onAddParentClick={addMemberModel.addParentsTrigger}
             />
           ))}
         </g>

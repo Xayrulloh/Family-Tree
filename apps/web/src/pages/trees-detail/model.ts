@@ -68,7 +68,11 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
 
   // Rerender after member deleted
   sample({
-    clock: [deleteMemberModel.mutated, addMemberModel.created],
+    clock: [
+      editMemberModel.mutated,
+      deleteMemberModel.mutated,
+      addMemberModel.created,
+    ],
     target: [fetchMembersFx, fetchConnectionsFx],
   });
 

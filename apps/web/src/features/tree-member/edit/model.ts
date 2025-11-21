@@ -8,7 +8,6 @@ import { attach, createEvent, createStore, sample } from 'effector';
 import { isEqual } from 'lodash';
 import { delay, or } from 'patronum';
 import type { z } from 'zod';
-import { userModel } from '~/entities/user';
 import { api } from '~/shared/api';
 import { createForm } from '~/shared/lib/create-form';
 import { createDisclosure } from '~/shared/lib/disclosure';
@@ -161,12 +160,6 @@ sample({
 sample({
   clock: delay(setPathToFormFx.done, 0), // FIXME: delay workaround, remove if no race conditions
   target: editProfileFx,
-});
-
-// After successful profile edit, refresh session user
-sample({
-  clock: editProfileFx.done,
-  target: userModel.sessionFx,
 });
 
 // Close modal on reset or successful edit
