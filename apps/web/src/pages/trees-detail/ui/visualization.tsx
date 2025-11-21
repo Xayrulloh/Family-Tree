@@ -5,7 +5,7 @@ import {
 } from '@family-tree/shared';
 import { theme } from 'antd';
 import { useUnit } from 'effector-react';
-import { memo, useMemo, useState } from 'react';
+import { memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
 import {
@@ -30,8 +30,24 @@ export const Visualization: React.FC<Props> = ({ model }) => {
   const [connections, members] = useUnit([model.$connections, model.$members]);
   const { token } = theme.useToken();
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(1200);
+
+  useLayoutEffect(() => {
+    const update = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth);
+      }
+    };
+    update();
+
+    window.addEventListener('resize', update);
+
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
   const positions = useMemo(
-    () => calculatePositions(members, connections),
+    () => calculatePositions(members, connections, containerWidth),
     [members, connections],
   );
 
@@ -171,7 +187,11 @@ export const Visualization: React.FC<Props> = ({ model }) => {
    * SVG RENDERING
    * =============================== */
   return (
-    <div className="w-full h-full p-4 select-none">
+    <div
+      ref={containerRef}
+      className="w-full p-4 select-none"
+      style={{ height: 'calc(100vh - 160px)' }}
+    >
       {/** biome-ignore lint/a11y/noSvgWithoutTitle: <There's no need for title> */}
       <svg
         width="100%"

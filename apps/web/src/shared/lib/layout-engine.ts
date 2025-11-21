@@ -18,11 +18,13 @@ const buildFamilyHierarchy = (
   connections: FamilyTreeMemberConnectionGetAllResponseType,
 ): FamilyNode[] => {
   const memberMap = new Map(members.map((m) => [m.id, m]));
-  const spouseMap = new Map<string, Set<string>>();
-  const childMap = new Map<string, Set<string>>();
 
-  // Build relationship maps
-  for (const c of connections) {
+  /* -------------------------------------------
+   * Build spouse pairs (bidirectional)
+   * ------------------------------------------- */
+  const spouseMap = new Map<string, Set<string>>();
+
+  connections.forEach((c) => {
     if (c.type === FamilyTreeMemberConnectionEnum.SPOUSE) {
       if (!spouseMap.has(c.fromMemberId)) {
         spouseMap.set(c.fromMemberId, new Set());
@@ -30,85 +32,115 @@ const buildFamilyHierarchy = (
       if (!spouseMap.has(c.toMemberId)) {
         spouseMap.set(c.toMemberId, new Set());
       }
-
       spouseMap.get(c.fromMemberId)?.add(c.toMemberId);
       spouseMap.get(c.toMemberId)?.add(c.fromMemberId);
-    } else if (c.type === FamilyTreeMemberConnectionEnum.PARENT) {
-      if (!childMap.has(c.fromMemberId)) {
-        childMap.set(c.fromMemberId, new Set());
+    }
+  });
+
+  /* -------------------------------------------
+   * Create family keys (couple-id or single)
+   * ------------------------------------------- */
+  const familyKeyOf = new Map<string, string>();
+
+  members.forEach((m) => {
+    const spouses = spouseMap.get(m.id);
+
+    if (spouses && spouses.size === 1) {
+      const [s] = Array.from(spouses);
+      const key = [m.id, s].sort().join('-');
+
+      familyKeyOf.set(m.id, key);
+      familyKeyOf.set(s, key);
+    } else {
+      // single or multi-spouse (rare)
+      familyKeyOf.set(m.id, m.id);
+    }
+  });
+
+  /* -------------------------------------------
+   * Build children mapping per familyKey
+   * ------------------------------------------- */
+  const familyChildren = new Map<string, Set<string>>();
+
+  connections.forEach((c) => {
+    if (c.type === FamilyTreeMemberConnectionEnum.PARENT) {
+      const parentFamily = familyKeyOf.get(c.fromMemberId);
+
+      if (!parentFamily) return;
+
+      if (!familyChildren.has(parentFamily)) {
+        familyChildren.set(parentFamily, new Set());
       }
 
-      childMap.get(c.fromMemberId)?.add(c.toMemberId);
+      familyChildren.get(parentFamily)?.add(c.toMemberId);
     }
-  }
+  });
 
-  const visited = new Set<string>();
+  /* -------------------------------------------
+   * Build FamilyNode tree recursively
+   * ------------------------------------------- */
 
-  const buildNode = (memberId: string): FamilyNode | null => {
-    if (visited.has(memberId)) {
-      return null;
-    }
+  const visitedFamilies = new Set<string>();
 
-    const member = memberMap.get(memberId);
-
-    if (!member) {
-      return null;
-    }
-
-    const spouses = spouseMap.get(memberId) ?? new Set();
-    const partners = [
-      member,
-      ...(Array.from(spouses)
-        .map((id) => memberMap.get(id))
-        .filter(Boolean) as FamilyTreeMemberGetResponseType[]),
-    ];
-
-    partners.forEach((p) => visited.add(p.id));
-
-    const allChildren = new Set<string>();
-
-    for (const p of partners) {
-      const kids = childMap.get(p.id);
-
-      if (kids) {
-        kids.forEach((k) => allChildren.add(k));
-      }
+  const buildUnit = (familyKey: string): FamilyNode => {
+    if (visitedFamilies.has(familyKey)) {
+      // Prevent loops
+      return { id: familyKey, partners: [], children: [] };
     }
 
-    const childrenNodes = Array.from(allChildren)
-      .map((id) => buildNode(id))
-      .filter(Boolean) as FamilyNode[];
+    visitedFamilies.add(familyKey);
 
-    return { id: member.id, partners, children: childrenNodes };
+    const partnerIds = members
+      .filter((m) => familyKeyOf.get(m.id) === familyKey)
+      .map((m) => m.id);
+
+    const partners = partnerIds
+      .map((id) => memberMap.get(id))
+      .filter(Boolean) as FamilyTreeMemberGetResponseType[];
+
+    const childIds = Array.from(familyChildren.get(familyKey) ?? []);
+
+    const childNodes = childIds
+      .map((cid) => familyKeyOf.get(cid))
+      .map((childFamily) => {
+        if (!childFamily) throw new Error('Family key not found');
+
+        return buildUnit(childFamily);
+      });
+
+    return {
+      id: familyKey,
+      partners,
+      children: childNodes,
+    };
   };
 
-  // Find roots (no parents)
-  const hasParent = new Set<string>();
-
-  for (const c of connections) {
+  /* -------------------------------------------
+   * Identify root families (no parents)
+   * ------------------------------------------- */
+  const childMemberIds = new Set<string>();
+  connections.forEach((c) => {
     if (c.type === FamilyTreeMemberConnectionEnum.PARENT) {
-      hasParent.add(c.toMemberId);
+      childMemberIds.add(c.toMemberId);
     }
-  }
+  });
 
-  const roots = members.filter((m) => !hasParent.has(m.id));
+  const rootMembers = members.filter((m) => !childMemberIds.has(m.id));
+  const rootFamilies = new Set(
+    rootMembers.map((m) => {
+      if (!m) throw new Error('Member not found');
+
+      return familyKeyOf.get(m.id);
+    }),
+  );
 
   const result: FamilyNode[] = [];
 
-  for (const root of roots) {
-    const node = buildNode(root.id);
+  rootFamilies.forEach((familyKey) => {
+    if (!familyKey) throw new Error('Family key not found');
 
-    if (node) {
-      result.push(node);
-    }
-  }
-
-  // Unconnected members
-  for (const m of members) {
-    if (!visited.has(m.id)) {
-      result.push({ id: m.id, partners: [m], children: [] });
-    }
-  }
+    result.push(buildUnit(familyKey));
+  });
 
   return result;
 };
@@ -116,22 +148,31 @@ const buildFamilyHierarchy = (
 export const calculatePositions = (
   members: FamilyTreeMemberGetResponseType[],
   connections: FamilyTreeMemberConnectionGetAllResponseType,
-  containerWidth = 1200,
+  containerWidth: number,
+  verticalGap = 90, // shorter parent-child vertical distance
+  horizontalGap = 180, // spacing between subtrees
 ): Map<string, Position> => {
   const positions = new Map<string, Position>();
-
-  if (members.length === 0) {
-    return positions;
-  }
+  if (members.length === 0) return positions;
 
   try {
+    /* --------------------------------------------
+     * 1. Build hierarchy (FamilyUnits instead of persons)
+     * -------------------------------------------- */
     const trees = buildFamilyHierarchy(members, connections);
+
+    /* --------------------------------------------
+     * 2. D3 tree generator with NEW vertical spacing
+     * -------------------------------------------- */
     const treeLayout = tree<FamilyNode>()
-      .nodeSize([220, 180])
-      .separation((a, b) => (a.parent === b.parent ? 1.4 : 2));
+      .nodeSize([horizontalGap, verticalGap]) // ← reduced gaps for parent-child
+      .separation((a, b) => (a.parent === b.parent ? 1.3 : 2));
 
     let offsetX = 0;
 
+    /* --------------------------------------------
+     * 3. Place each root tree side-by-side
+     * -------------------------------------------- */
     for (const t of trees) {
       const root = hierarchy(t);
       const layout = treeLayout(root);
@@ -141,35 +182,48 @@ export const calculatePositions = (
       const maxX = Math.max(...xs);
       const treeWidth = maxX - minX;
 
+      /* --------------------------------------------
+       * 4. Place partners horizontally inside each FamilyUnit
+       * -------------------------------------------- */
       layout.descendants().forEach((node) => {
         const cx = offsetX + (node.x - minX);
         const cy = node.y;
-        const partners = node.data.partners;
 
-        const totalWidth = (partners.length - 1) * 100;
+        const partners = node.data.partners;
+        const partnerCount = partners.length;
+
+        const totalWidth = (partnerCount - 1) * 100;
         const partnerPositions: Position[] = [];
 
         partners.forEach((p, i) => {
-          const dx = partners.length > 1 ? i * 100 - totalWidth / 2 : 0;
+          const dx = partnerCount > 1 ? i * 100 - totalWidth / 2 : 0;
           const pos = { x: cx + dx, y: cy };
 
           positions.set(p.id, pos);
           partnerPositions.push(pos);
         });
 
-        // Also save couple center for unified child links
+        /* --------------------------------------------
+         * 5. Save couple center (for child line origins)
+         * -------------------------------------------- */
         if (partnerPositions.length > 0) {
           const avgX =
             partnerPositions.reduce((acc, p) => acc + p.x, 0) /
             partnerPositions.length;
-          positions.set(`couple-${node.data.id}`, { x: avgX, y: cy });
+
+          positions.set(`family-${node.data.id}`, {
+            x: avgX,
+            y: cy,
+          });
         }
       });
 
-      offsetX += treeWidth + 250;
+      offsetX += treeWidth + horizontalGap * 1.5;
     }
 
-    // Shift to center horizontally
+    /* --------------------------------------------
+     * 6. Center EVERYTHING inside containerWidth
+     * -------------------------------------------- */
     let minX = Infinity;
     let maxX = -Infinity;
 
@@ -178,14 +232,16 @@ export const calculatePositions = (
       if (pos.x > maxX) maxX = pos.x;
     });
 
-    const totalWidth = maxX - minX;
-    const offsetToCenter = (containerWidth - totalWidth) / 2 - minX;
+    const usedWidth = maxX - minX;
+    const offsetToCenter = (containerWidth - usedWidth) / 2 - minX;
 
-    // Apply shift
+    /* --------------------------------------------
+     * 7. Apply centering + top padding
+     * -------------------------------------------- */
     const shifted = new Map<string, Position>();
 
     positions.forEach((p, id) =>
-      shifted.set(id, { x: p.x + offsetToCenter, y: p.y + 80 }),
+      shifted.set(id, { x: p.x + offsetToCenter, y: p.y + 40 }),
     );
 
     return shifted;
