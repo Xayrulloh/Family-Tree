@@ -1,6 +1,6 @@
 import type z from 'zod';
-import { FamilyTreeMemberSchema } from '../schema';
 import { FamilyTreeMemberConnectionCreateRequestSchema } from '../family-tree-member-connection';
+import { FamilyTreeMemberSchema } from '../schema';
 
 // schemas
 const FamilyTreeMemberCreateRequestSchema = FamilyTreeMemberSchema.omit({

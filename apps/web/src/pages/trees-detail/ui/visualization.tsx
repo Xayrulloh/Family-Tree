@@ -1,11 +1,12 @@
 import {
+  FamilyTreeMemberConnectionEnum,
   type FamilyTreeMemberConnectionGetAllResponseType,
   type FamilyTreeMemberConnectionSchemaType,
-  FamilyTreeMemberConnectionEnum,
 } from '@family-tree/shared';
 import { theme } from 'antd';
 import { useUnit } from 'effector-react';
 import { memo, useMemo, useState } from 'react';
+import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
 import {
   calculatePositions,
@@ -14,7 +15,6 @@ import {
 } from '~/shared/lib/layout-engine';
 import { FamilyTreeNode } from '~/shared/ui/family-tree-node';
 import type { Props } from './ui';
-import { addMemberModel } from '~/features/tree-member/add';
 
 const MemoizedFamilyTreeNode = memo(FamilyTreeNode);
 
@@ -172,6 +172,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
    * =============================== */
   return (
     <div className="w-full h-full p-4 select-none">
+      {/** biome-ignore lint/a11y/noSvgWithoutTitle: <There's no need for title> */}
       <svg
         width="100%"
         height="100%"
