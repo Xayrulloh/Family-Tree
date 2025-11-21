@@ -199,22 +199,7 @@ export const calculatePositions = (
 };
 
 // Helpers
-export const transformConnectionsData = (
+export const getCouples = (
   connections: FamilyTreeMemberConnectionGetAllResponseType,
 ) =>
-  connections.map((c) => ({
-    fromMemberId: c.fromMemberId,
-    toMemberId: c.toMemberId,
-    type: c.type,
-  }));
-
-export const getCouples = (
-  connections: Array<{
-    fromMemberId: string;
-    toMemberId: string;
-    type: string;
-  }>,
-) =>
-  connections
-    .filter((c) => c.type === FamilyTreeMemberConnectionEnum.SPOUSE)
-    .map((c) => ({ partner1Id: c.fromMemberId, partner2Id: c.toMemberId }));
+  connections.filter((c) => c.type === FamilyTreeMemberConnectionEnum.SPOUSE);

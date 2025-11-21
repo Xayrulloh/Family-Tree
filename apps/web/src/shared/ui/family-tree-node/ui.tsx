@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 type FamilyTreeNodeProps = {
   member: FamilyTreeMemberGetResponseType;
   position: { x: number; y: number };
+  hasMarriage: boolean;
   onPreviewClick: (member: FamilyTreeMemberGetResponseType) => void;
   onAddBoyClick: (member: FamilyTreeMemberGetResponseType) => void;
   onAddGirlClick: (member: FamilyTreeMemberGetResponseType) => void;
@@ -22,6 +23,7 @@ const getGenderColor = (gender: string) => {
 export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
   member,
   position,
+  hasMarriage,
   onPreviewClick,
   onAddBoyClick,
   onAddGirlClick,
@@ -97,7 +99,7 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
       {/* ================================
           HOVER CHILDREN BUTTONS
          ================================ */}
-      {hover && member.gender === UserGenderEnum.FEMALE && (
+      {hover && hasMarriage && member.gender === UserGenderEnum.FEMALE && (
         <g>
           {/* Left blue button */}
           <rect
