@@ -8,18 +8,19 @@ import { api } from '~/shared/api';
 // Events
 export const addBoyTrigger = createEvent<FamilyTreeMemberGetResponseType>(); // Mother
 export const addGirlTrigger = createEvent<FamilyTreeMemberGetResponseType>(); // Mother
+export const addSpouseTrigger = createEvent<FamilyTreeMemberGetResponseType>(); // Husband or Wife
 export const created = createEvent();
 
 // Stores
-export const $mother = createStore<FamilyTreeMemberGetResponseType | null>(
+export const $member = createStore<FamilyTreeMemberGetResponseType | null>(
   null,
 );
 
 // Effects
 const addBoyFx = attach({
-  source: $mother,
+  source: $member,
   effect: (value) => {
-    if (!value) throw new Error('Mother is not initialized');
+    if (!value) throw new Error('Member is not initialized');
 
     return api.treeMember.createChild(
       { familyTreeId: value.familyTreeId },
@@ -32,9 +33,9 @@ const addBoyFx = attach({
 });
 
 const addGirlFx = attach({
-  source: $mother,
+  source: $member,
   effect: (value) => {
-    if (!value) throw new Error('Mother is not initialized');
+    if (!value) throw new Error('Member is not initialized');
 
     return api.treeMember.createChild(
       { familyTreeId: value.familyTreeId },
@@ -46,20 +47,39 @@ const addGirlFx = attach({
   },
 });
 
+const addSpouseFx = attach({
+  source: $member,
+  effect: (value) => {
+    if (!value) throw new Error('Member is not initialized');
+
+    return api.treeMember.createSpouse(
+      { familyTreeId: value.familyTreeId },
+      {
+        fromMemberId: value.id,
+      },
+    );
+  },
+});
+
 // Samples
 // Create Member
 sample({
   clock: addBoyTrigger,
-  target: [$mother, addBoyFx],
+  target: [$member, addBoyFx],
 });
 
 sample({
   clock: addGirlTrigger,
-  target: [$mother, addGirlFx],
+  target: [$member, addGirlFx],
+});
+
+sample({
+  clock: addSpouseTrigger,
+  target: [$member, addSpouseFx],
 });
 
 // Ending part
 sample({
-  clock: [addBoyFx.done, addGirlFx.done],
-  target: [created, $mother.reinit],
+  clock: [addBoyFx.done, addGirlFx.done, addSpouseFx.done],
+  target: [created, $member.reinit],
 });

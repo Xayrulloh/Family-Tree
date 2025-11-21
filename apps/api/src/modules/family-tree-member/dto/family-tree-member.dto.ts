@@ -1,6 +1,7 @@
 import {
   FamilyTreeMemberCreateChildRequestSchema,
   FamilyTreeMemberCreateRequestSchema,
+  FamilyTreeMemberCreateSpouseRequestSchema,
   FamilyTreeMemberGetAllParamSchema,
   FamilyTreeMemberGetAllResponseSchema,
   FamilyTreeMemberGetParamSchema,
@@ -16,6 +17,10 @@ class FamilyTreeMemberCreateRequestDto extends createZodDto(
 
 class FamilyTreeMemberCreateChildRequestDto extends createZodDto(
   FamilyTreeMemberCreateChildRequestSchema,
+) {}
+
+class FamilyTreeMemberCreateSpouseRequestDto extends createZodDto(
+  FamilyTreeMemberCreateSpouseRequestSchema,
 ) {}
 
 class FamilyTreeMemberUpdateRequestDto extends createZodDto(
@@ -43,6 +48,7 @@ class FamilyTreeMemberGetAllParamDto extends createZodDto(
 export {
   FamilyTreeMemberCreateRequestDto,
   FamilyTreeMemberCreateChildRequestDto,
+  FamilyTreeMemberCreateSpouseRequestDto,
   FamilyTreeMemberUpdateRequestDto,
   FamilyTreeMemberGetResponseDto,
   FamilyTreeMemberGetAllResponseDto,

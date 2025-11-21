@@ -31,6 +31,7 @@ import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import {
   FamilyTreeMemberCreateChildRequestDto,
   FamilyTreeMemberCreateRequestDto,
+  FamilyTreeMemberCreateSpouseRequestDto,
   type FamilyTreeMemberGetAllParamDto,
   FamilyTreeMemberGetAllResponseDto,
   type FamilyTreeMemberGetParamDto,
@@ -48,7 +49,7 @@ export class FamilyTreeMemberController {
     private readonly FamilyTreeMemberService: FamilyTreeMemberService,
   ) {}
 
-  // member create (node)
+  // add member (node)
   @Post()
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
@@ -68,7 +69,7 @@ export class FamilyTreeMemberController {
     );
   }
 
-  // member create (child)
+  // add member create (child)
   @Post('child')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
@@ -82,6 +83,26 @@ export class FamilyTreeMemberController {
     @Param() param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
     return this.FamilyTreeMemberService.createFamilyTreeMemberChild(
+      req.user.id,
+      param.familyTreeId,
+      body,
+    );
+  }
+
+  // add member create (spouse)
+  @Post('spouse')
+  @UseGuards(JWTAuthGuard)
+  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiCreatedResponse({ type: FamilyTreeMemberGetResponseDto })
+  @ApiBody({ type: FamilyTreeMemberCreateSpouseRequestDto })
+  @ZodSerializerDto(FamilyTreeMemberGetResponseSchema)
+  async createFamilyTreeMemberSpouse(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: FamilyTreeMemberCreateSpouseRequestDto,
+    @Param() param: FamilyTreeMemberGetAllParamDto,
+  ): Promise<FamilyTreeMemberGetResponseDto> {
+    return this.FamilyTreeMemberService.createFamilyTreeMemberSpouse(
       req.user.id,
       param.familyTreeId,
       body,

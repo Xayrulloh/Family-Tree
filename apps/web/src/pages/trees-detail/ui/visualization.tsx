@@ -199,6 +199,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
               onPreviewClick={previewMemberModel.previewMemberTrigger}
               onAddBoyClick={addMemberModel.addBoyTrigger}
               onAddGirlClick={addMemberModel.addGirlTrigger}
+              onAddSpouseClick={addMemberModel.addSpouseTrigger}
             />
           ))}
         </g>

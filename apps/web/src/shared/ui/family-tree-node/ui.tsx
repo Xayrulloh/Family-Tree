@@ -12,6 +12,7 @@ type FamilyTreeNodeProps = {
   onPreviewClick: (member: FamilyTreeMemberGetResponseType) => void;
   onAddBoyClick: (member: FamilyTreeMemberGetResponseType) => void;
   onAddGirlClick: (member: FamilyTreeMemberGetResponseType) => void;
+  onAddSpouseClick: (member: FamilyTreeMemberGetResponseType) => void;
 };
 
 const getGenderColor = (gender: string) => {
@@ -27,6 +28,7 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
   onPreviewClick,
   onAddBoyClick,
   onAddGirlClick,
+  onAddSpouseClick,
 }) => {
   const [hover, setHover] = useState(false);
   const hideTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -129,6 +131,25 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
             onClick={() => onAddGirlClick(member)}
           />
         </g>
+      )}
+      {/* ================================
+        HOVER: SPOUSE BUTTON (only if no marriage)
+        ================================ */}
+      {hover && !hasMarriage && (
+        <rect
+          x={nodeWidth + 6} // right side of node
+          y={nodeHeight / 2 - 10} // vertically centered
+          width={20}
+          height={20}
+          rx={4}
+          fill={member.gender === UserGenderEnum.FEMALE ? '#3b82f6' : '#ec4899'}
+          stroke={
+            member.gender === UserGenderEnum.FEMALE ? '#1e40af' : '#be185d'
+          }
+          strokeWidth="1.5"
+          style={{ cursor: 'pointer' }}
+          onClick={() => onAddSpouseClick(member)}
+        />
       )}
     </g>
   );

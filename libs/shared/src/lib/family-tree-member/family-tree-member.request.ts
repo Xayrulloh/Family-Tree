@@ -19,6 +19,11 @@ const FamilyTreeMemberCreateChildRequestSchema = FamilyTreeMemberSchema.pick({
   }),
 );
 
+const FamilyTreeMemberCreateSpouseRequestSchema =
+  FamilyTreeMemberConnectionCreateRequestSchema.pick({
+    fromMemberId: true,
+  });
+
 const FamilyTreeMemberUpdateRequestSchema =
   FamilyTreeMemberCreateRequestSchema.partial();
 
@@ -40,6 +45,10 @@ type FamilyTreeMemberCreateChildRequestType = z.infer<
   typeof FamilyTreeMemberCreateChildRequestSchema
 >;
 
+type FamilyTreeMemberCreateSpouseRequestType = z.infer<
+  typeof FamilyTreeMemberCreateSpouseRequestSchema
+>;
+
 type FamilyTreeMemberUpdateRequestType = z.infer<
   typeof FamilyTreeMemberUpdateRequestSchema
 >;
@@ -55,11 +64,13 @@ type FamilyTreeMemberGetAllParamType = z.infer<
 export {
   FamilyTreeMemberCreateRequestSchema,
   FamilyTreeMemberCreateChildRequestSchema,
+  FamilyTreeMemberCreateSpouseRequestSchema,
   FamilyTreeMemberUpdateRequestSchema,
   FamilyTreeMemberGetParamSchema,
   FamilyTreeMemberGetAllParamSchema,
   type FamilyTreeMemberCreateRequestType,
   type FamilyTreeMemberCreateChildRequestType,
+  type FamilyTreeMemberCreateSpouseRequestType,
   type FamilyTreeMemberUpdateRequestType,
   type FamilyTreeMemberGetParamType,
   type FamilyTreeMemberGetAllParamType,

@@ -1,6 +1,7 @@
 import type {
   FamilyTreeMemberCreateChildRequestType,
   FamilyTreeMemberCreateRequestType,
+  FamilyTreeMemberCreateSpouseRequestType,
   FamilyTreeMemberGetAllParamType,
   FamilyTreeMemberGetAllResponseType,
   FamilyTreeMemberGetParamType,
@@ -38,6 +39,17 @@ export const treeMember = {
   ) => {
     return base.post<FamilyTreeMemberGetResponseType>(
       `/family-trees/${param.familyTreeId}/members/child`,
+      body,
+      config,
+    );
+  },
+  createSpouse: (
+    param: FamilyTreeMemberGetAllParamType,
+    body: FamilyTreeMemberCreateSpouseRequestType,
+    config?: AxiosRequestConfig,
+  ) => {
+    return base.post<FamilyTreeMemberGetResponseType>(
+      `/family-trees/${param.familyTreeId}/members/spouse`,
       body,
       config,
     );

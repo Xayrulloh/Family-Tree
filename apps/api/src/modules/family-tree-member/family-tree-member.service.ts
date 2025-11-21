@@ -21,6 +21,7 @@ import type { FamilyTreeResponseDto } from '../family-tree/dto/family-tree.dto';
 import type {
   FamilyTreeMemberCreateChildRequestDto,
   FamilyTreeMemberCreateRequestDto,
+  FamilyTreeMemberCreateSpouseRequestDto,
   FamilyTreeMemberGetAllParamDto,
   FamilyTreeMemberGetAllResponseDto,
   FamilyTreeMemberGetParamDto,
@@ -134,6 +135,78 @@ export class FamilyTreeMemberService {
     ]);
 
     return child;
+  }
+
+  // create spouse
+  async createFamilyTreeMemberSpouse(
+    userId: string,
+    familyTreeId: string,
+    body: FamilyTreeMemberCreateSpouseRequestDto,
+  ): Promise<FamilyTreeMemberGetResponseDto> {
+    const familyTree = await this.getFamilyTreeById(familyTreeId);
+
+    if (familyTree.createdBy !== userId) {
+      throw new BadRequestException(
+        `Family tree with id ${familyTreeId} does not belong to user with id ${userId}`,
+      );
+    }
+
+    const partner1 = await this.getFamilyTreeMember({
+      id: body.fromMemberId,
+      familyTreeId,
+    });
+
+    // Spouse logic (make sure member is single)
+    const memberConnections =
+      await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+        where: and(
+          eq(
+            schema.familyTreeMemberConnectionsSchema.familyTreeId,
+            familyTreeId,
+          ),
+          eq(
+            schema.familyTreeMemberConnectionsSchema.type,
+            FamilyTreeMemberConnectionEnum.SPOUSE,
+          ),
+          or(
+            eq(
+              schema.familyTreeMemberConnectionsSchema.fromMemberId,
+              partner1.id,
+            ),
+            eq(
+              schema.familyTreeMemberConnectionsSchema.toMemberId,
+              partner1.id,
+            ),
+          ),
+        ),
+      });
+
+    if (memberConnections) {
+      throw new BadRequestException(
+        `Family tree member with id ${body.fromMemberId} is already married`,
+      );
+    }
+
+    const [spouse] = await this.db
+      .insert(schema.familyTreeMembersSchema)
+      .values({
+        gender:
+          partner1.gender === UserGenderEnum.MALE
+            ? UserGenderEnum.FEMALE
+            : UserGenderEnum.MALE,
+        name: partner1.gender === UserGenderEnum.MALE ? 'Wife' : 'Husband',
+        familyTreeId,
+      })
+      .returning();
+
+    await this.db.insert(schema.familyTreeMemberConnectionsSchema).values({
+      familyTreeId: familyTreeId,
+      fromMemberId: partner1.id,
+      toMemberId: spouse.id,
+      type: FamilyTreeMemberConnectionEnum.SPOUSE,
+    });
+
+    return spouse;
   }
 
   // update member
