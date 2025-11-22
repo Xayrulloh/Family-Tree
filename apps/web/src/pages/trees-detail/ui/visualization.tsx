@@ -310,7 +310,7 @@ const ParentChildConnections: React.FC<{
   });
 
   // Group children by couple
-  const grouped = new Map<string, string[]>();
+  const grouped = new Map<string, Set<string>>();
 
   connections.forEach((conn) => {
     if (conn.type !== FamilyTreeMemberConnectionEnum.PARENT) return;
@@ -322,12 +322,14 @@ const ParentChildConnections: React.FC<{
 
     const key = `${origin.x},${origin.y}`;
 
-    if (!grouped.has(key)) grouped.set(key, []);
+    if (!grouped.has(key)) grouped.set(key, new Set());
 
-    grouped.get(key)?.push(conn.toMemberId);
+    grouped.get(key)?.add(conn.toMemberId);
   });
 
-  grouped.forEach((childIds, key) => {
+  grouped.forEach((childSet, key) => {
+    const childIds = Array.from(childSet);
+
     const [xStr, yStr] = key.split(',');
     const coupleX = parseFloat(xStr);
     const coupleY = parseFloat(yStr);
@@ -342,14 +344,14 @@ const ParentChildConnections: React.FC<{
 
     if (childPositions.length === 1) {
       const child = childPositions[0];
-      const childTop = child.y - NODE_HEIGHT / 2;
+      const childTop = child.y;
 
       result.push(
         <line
           key={`stem-${child.x}-${child.y}`}
           x1={coupleX}
           y1={topY}
-          x2={childTop}
+          x2={coupleX}
           y2={childTop}
           stroke={CONNECTION.PARENT_CHILD.color}
           strokeWidth={CONNECTION.PARENT_CHILD.width}
