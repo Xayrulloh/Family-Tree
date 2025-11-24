@@ -21,7 +21,6 @@ import type { FamilyTreeResponseDto } from '../family-tree/dto/family-tree.dto';
 import type {
   FamilyTreeMemberCreateChildRequestDto,
   FamilyTreeMemberCreateParentsRequestDto,
-  FamilyTreeMemberCreateRequestDto,
   FamilyTreeMemberCreateSpouseRequestDto,
   FamilyTreeMemberGetAllParamDto,
   FamilyTreeMemberGetAllResponseDto,
@@ -42,28 +41,6 @@ export class FamilyTreeMemberService {
   ) {
     this.cloudflareR2Path =
       configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
-  }
-
-  // create member
-  async createFamilyTreeMember(
-    userId: string,
-    familyTreeId: string,
-    body: FamilyTreeMemberCreateRequestDto,
-  ): Promise<FamilyTreeMemberGetResponseDto> {
-    const familyTree = await this.getFamilyTreeById(familyTreeId);
-
-    if (familyTree.createdBy !== userId) {
-      throw new BadRequestException(
-        `Family tree with id ${familyTreeId} does not belong to user with id ${userId}`,
-      );
-    }
-
-    const [familyTreeMember] = await this.db
-      .insert(schema.familyTreeMembersSchema)
-      .values({ ...body, familyTreeId })
-      .returning();
-
-    return familyTreeMember;
   }
 
   // create child

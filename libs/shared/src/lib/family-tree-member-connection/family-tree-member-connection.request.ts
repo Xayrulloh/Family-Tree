@@ -1,15 +1,5 @@
 import z from 'zod';
-import { BaseSchema, FamilyTreeMemberConnectionSchema } from '../schema';
-
-const FamilyTreeMemberConnectionCreateRequestSchema =
-  FamilyTreeMemberConnectionSchema.pick({
-    fromMemberId: true,
-    toMemberId: true,
-    type: true,
-  });
-
-const FamilyTreeMemberConnectionUpdateRequestSchema =
-  FamilyTreeMemberConnectionCreateRequestSchema;
+import { BaseSchema } from '../schema';
 
 const FamilyTreeMemberConnectionGetParamSchema = z
   .object({
@@ -29,14 +19,6 @@ const FamilyTreeMemberConnectionGetByMemberParamSchema =
     }),
   );
 
-type FamilyTreeMemberConnectionCreateRequestType = z.infer<
-  typeof FamilyTreeMemberConnectionCreateRequestSchema
->;
-
-type FamilyTreeMemberConnectionUpdateRequestType = z.infer<
-  typeof FamilyTreeMemberConnectionUpdateRequestSchema
->;
-
 type FamilyTreeMemberConnectionGetParamType = z.infer<
   typeof FamilyTreeMemberConnectionGetParamSchema
 >;
@@ -50,10 +32,6 @@ type FamilyTreeMemberConnectionGetByMemberParamType = z.infer<
 >;
 
 export {
-  FamilyTreeMemberConnectionCreateRequestSchema,
-  type FamilyTreeMemberConnectionCreateRequestType,
-  FamilyTreeMemberConnectionUpdateRequestSchema,
-  type FamilyTreeMemberConnectionUpdateRequestType,
   FamilyTreeMemberConnectionGetParamSchema,
   type FamilyTreeMemberConnectionGetParamType,
   FamilyTreeMemberConnectionGetAllParamSchema,
