@@ -1,6 +1,6 @@
 import { UploadOutlined } from '@ant-design/icons';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Divider, Flex, Input, Modal, Switch, Upload } from 'antd';
+import { Button, Flex, Input, Modal, Upload } from 'antd';
 import type { RcFile } from 'antd/es/upload';
 import { useUnit } from 'effector-react';
 import { useId } from 'react';
@@ -55,28 +55,6 @@ export const CreateEditTreeModal: React.FC = () => {
               </FieldWrapper>
             )}
           />
-
-          {/* === 🔓 Visibility Toggle === */}
-          <Controller
-            control={form.control}
-            name="public"
-            render={({ field }) => (
-              <FieldWrapper
-                label="Visibility"
-                isError={!!form.formState.errors.public?.message}
-                message={form.formState.errors.public?.message}
-              >
-                <Switch
-                  checkedChildren="Public"
-                  unCheckedChildren="Private"
-                  checked={field.value}
-                  onChange={field.onChange}
-                />
-              </FieldWrapper>
-            )}
-          />
-
-          <Divider style={{ margin: 0 }} />
 
           {/* === 📤 Image Upload === */}
           <Flex vertical gap={12}>

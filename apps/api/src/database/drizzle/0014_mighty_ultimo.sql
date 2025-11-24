@@ -1,0 +1,1 @@
+ALTER TABLE "family_trees" DROP COLUMN "public";

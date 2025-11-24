@@ -5,7 +5,6 @@ import {
 } from '@family-tree/shared';
 import { relations } from 'drizzle-orm';
 import {
-  boolean,
   date,
   pgEnum,
   pgTable,
@@ -72,7 +71,6 @@ export const familyTreesSchema = pgTable(
       })
       .notNull(),
     image: text('image'),
-    public: boolean('public').default(false).notNull(),
     ...baseSchema,
   },
   (table) => ({

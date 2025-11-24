@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
-import { and, asc, eq, ilike } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
@@ -40,18 +40,6 @@ export class FamilyTreeService {
     return this.db.query.familyTreesSchema.findMany({
       where: eq(schema.familyTreesSchema.createdBy, userId),
       orderBy: asc(schema.familyTreesSchema.createdAt),
-    });
-  }
-
-  async getFamilyTreesByName(
-    name: string,
-  ): Promise<FamilyTreeArrayResponseDto> {
-    return this.db.query.familyTreesSchema.findMany({
-      where: and(
-        ilike(schema.familyTreesSchema.name, `%${name}%`),
-        eq(schema.familyTreesSchema.public, true),
-      ),
-      limit: 5,
     });
   }
 
@@ -90,7 +78,6 @@ export class FamilyTreeService {
         createdBy: userId,
         name: body.name,
         image: body.image,
-        public: body.public || false,
       })
       .returning();
 
@@ -126,7 +113,6 @@ export class FamilyTreeService {
       .set({
         name: body.name,
         image: body.image,
-        public: body.public || false,
       })
       .where(eq(schema.familyTreesSchema.id, id));
   }
