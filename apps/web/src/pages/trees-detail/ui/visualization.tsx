@@ -190,7 +190,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     <div
       ref={containerRef}
       className="w-full p-4 select-none"
-      style={{ height: 'calc(100vh - 160px)' }}
+      style={{ height: 'calc(103vh - 160px)' }}
     >
       {/** biome-ignore lint/a11y/noSvgWithoutTitle: <There's no need for title> */}
       <svg
