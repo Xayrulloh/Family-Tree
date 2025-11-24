@@ -94,6 +94,7 @@ export class FamilyTreeMemberService {
       .values({
         gender: body.gender,
         name: body.gender === UserGenderEnum.MALE ? 'Boy' : 'Girl',
+        image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
         familyTreeId,
       })
       .returning();
@@ -174,6 +175,7 @@ export class FamilyTreeMemberService {
             ? UserGenderEnum.FEMALE
             : UserGenderEnum.MALE,
         name: partner1.gender === UserGenderEnum.MALE ? 'Wife' : 'Husband',
+        image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
         familyTreeId,
       })
       .returning();
@@ -290,6 +292,7 @@ export class FamilyTreeMemberService {
         .insert(schema.familyTreeMembersSchema)
         .values({
           gender: UserGenderEnum.MALE,
+          image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
           name: 'Father',
           familyTreeId,
         })
@@ -298,6 +301,7 @@ export class FamilyTreeMemberService {
         .insert(schema.familyTreeMembersSchema)
         .values({
           gender: UserGenderEnum.FEMALE,
+          image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
           name: 'Mother',
           familyTreeId,
         })
