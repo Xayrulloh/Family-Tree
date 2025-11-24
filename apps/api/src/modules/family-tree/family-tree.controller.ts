@@ -1,8 +1,6 @@
 import {
   FamilyTreeArrayResponseSchema,
-  FamilyTreeMemberConnectionEnum,
   FamilyTreeResponseSchema,
-  UserGenderEnum,
 } from '@family-tree/shared';
 import {
   Body,
@@ -32,8 +30,6 @@ import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { FamilyTreeMemberService } from '../family-tree-member/family-tree-member.service';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { FamilyTreeMemberConnectionService } from '../family-tree-member-connection/family-tree-member-connection.service';
 import {
   FamilyTreeArrayResponseDto,
   FamilyTreeCreateRequestDto,
@@ -51,7 +47,6 @@ export class FamilyTreeController {
   constructor(
     private readonly familyTreeService: FamilyTreeService,
     private readonly familyTreeMemberService: FamilyTreeMemberService,
-    private readonly familyTreeMemberConnectionService: FamilyTreeMemberConnectionService,
   ) {}
 
   // Find family trees of user
@@ -111,60 +106,12 @@ export class FamilyTreeController {
       req.user.id,
       body,
     );
-    // creating single member (defining gender by user gender male | female) or parents if unknown
-    // creating member of that family (asynchronously but not waiting for it)
-    // 1. create member if => male or female
-    if (req.user.gender !== UserGenderEnum.UNKNOWN) {
-      this.familyTreeMemberService.createFamilyTreeMember(
-        req.user.id,
-        familyTree.id,
-        {
-          name: req.user.name,
-          gender: req.user.gender,
-          image: req.user.image,
-          description: req.user.description,
-          dob: req.user.dob,
-          dod: req.user.dod,
-        },
-      );
-    } else {
-      // 2. create parents if => unknown
-      const husband = await this.familyTreeMemberService.createFamilyTreeMember(
-        req.user.id,
-        familyTree.id,
-        {
-          name: 'John Doe',
-          gender: UserGenderEnum.MALE,
-          image: `https://api.dicebear.com/7.x/notionists/svg?seed=${familyTree.id}`,
-          description: 'Husband',
-          dob: '1990-01-01',
-          dod: null,
-        },
-      );
-      const wife = await this.familyTreeMemberService.createFamilyTreeMember(
-        req.user.id,
-        familyTree.id,
-        {
-          name: 'Jane Doe',
-          gender: UserGenderEnum.FEMALE,
-          image: `https://api.dicebear.com/7.x/notionists/svg?seed=${husband}`,
-          description: 'Wife',
-          dob: '1990-01-01',
-          dod: null,
-        },
-      );
 
-      // 3. connect parents to each other
-      this.familyTreeMemberConnectionService.createFamilyTreeMemberConnection(
-        req.user.id,
-        { familyTreeId: familyTree.id },
-        {
-          fromMemberId: husband.id,
-          toMemberId: wife.id,
-          type: FamilyTreeMemberConnectionEnum.SPOUSE,
-        },
-      );
-    }
+    // initial members
+    await this.familyTreeMemberService.createFamilyTreeMemberInitial(
+      req.user,
+      familyTree.id,
+    );
 
     return familyTree;
   }

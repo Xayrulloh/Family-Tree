@@ -1,6 +1,7 @@
 import {
   FamilyTreeMemberConnectionEnum,
   UserGenderEnum,
+  type UserSchemaType,
 } from '@family-tree/shared';
 import {
   BadRequestException,
@@ -326,6 +327,62 @@ export class FamilyTreeMemberService {
     ]);
 
     return member;
+  }
+
+  // create initial members
+  async createFamilyTreeMemberInitial(
+    user: UserSchemaType,
+    familyTreeId: string,
+  ): Promise<void> {
+    // creating single member (defining gender by user gender male | female) or parents if unknown
+    // 1. create member if => male or female
+    if (user.gender !== UserGenderEnum.UNKNOWN) {
+      await this.db.insert(schema.familyTreeMembersSchema).values({
+        name: user.name,
+        gender: user.gender,
+        image: user.image,
+        description: user.description,
+        dob: user.dob,
+        dod: user.dod,
+        familyTreeId,
+      });
+    } else {
+      // 2. create parents if => unknown
+      const [[husband], [wife]] = await Promise.all([
+        this.db
+          .insert(schema.familyTreeMembersSchema)
+          .values({
+            name: 'John Doe',
+            gender: UserGenderEnum.MALE,
+            image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
+            description: 'Husband',
+            dob: '1990-01-01',
+            dod: null,
+            familyTreeId,
+          })
+          .returning(),
+        this.db
+          .insert(schema.familyTreeMembersSchema)
+          .values({
+            name: 'Jane Doe',
+            gender: UserGenderEnum.FEMALE,
+            image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
+            description: 'Wife',
+            dob: '1990-01-01',
+            dod: null,
+            familyTreeId,
+          })
+          .returning(),
+      ]);
+
+      // 3. connect parents to each other
+      await this.db.insert(schema.familyTreeMemberConnectionsSchema).values({
+        familyTreeId,
+        fromMemberId: husband.id,
+        toMemberId: wife.id,
+        type: FamilyTreeMemberConnectionEnum.SPOUSE,
+      });
+    }
   }
 
   // update member
