@@ -7,7 +7,7 @@ jobs:
   notify-discord:
     runs-on: ubuntu-latest
     if: github.event.deployment_status.state == 'success' || github.event.deployment_status.state == 'failure'
-    
+
     steps:
       - name: Send Discord Notification
         env:
@@ -29,19 +29,7 @@ jobs:
               "title": "${EMOJI} Deployment ${STATUS}",
               "description": "**Project:** ${{ github.event.repository.name }}\n**Environment:** ${{ github.event.deployment.environment }}\n**Branch:** ${{ github.ref_name }}",
               "color": ${COLOR},
-              "fields": [
-                {
-                  "name": "Commit",
-                  "value": "[\`${GITHUB_SHA:0:7}\`](${{ github.event.deployment_status.target_url }})",
-                  "inline": true
-                },
-                {
-                  "name": "Author",
-                  "value": "${{ github.event.deployment.creator.login || github.actor }}",
-                  "inline": true
-                }
-              ],
-              "url": "${{ github.event.deployment_status.target_url }}",
+              "commit": "[\`${GITHUB_SHA:0:7}\`](${{ github.event.deployment_status.target_url }})",
               "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)"
             }]
           }
