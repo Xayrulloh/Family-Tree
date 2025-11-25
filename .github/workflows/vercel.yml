@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Send Discord Notification
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_VERCEL_WEBHOOK }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           if [ "${{ github.event.deployment_status.state }}" == "success" ]; then
             COLOR="3066993"
@@ -37,7 +37,7 @@ jobs:
                 },
                 {
                   "name": "Author",
-                  "value": "${{ github.event.head_commit.author.name }}",
+                  "value": "${{ github.event.deployment.creator.login || github.actor }}",
                   "inline": true
                 }
               ],
