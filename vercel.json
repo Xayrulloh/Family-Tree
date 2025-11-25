@@ -4,5 +4,5 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "outputDirectory": "dist/apps/web",
   "framework": "vite",
-  "ignoreCommand": "npx nx print-affected --base HEAD~1 --target=build | grep 'web' || echo 'no-build'"
+  "ignoreCommand": "npx nx show projects --affected --base HEAD~1 --target=build | grep 'web' || echo 'no-build'"
 }
