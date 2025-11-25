@@ -29,6 +29,7 @@ jobs:
               "title": "${EMOJI} Deployment ${STATUS}",
               "description": "**Project:** ${{ github.event.repository.name }}\n**Environment:** ${{ github.event.deployment.environment }}\n**Branch:** ${{ github.ref_name }}\n**Commit:** [\`${GITHUB_SHA:0:7}\`](${{ github.event.deployment_status.target_url }})",
               "color": ${COLOR},
+              "url": "${{ github.event.deployment_status.target_url }}"
             }]
           }
           EOF
