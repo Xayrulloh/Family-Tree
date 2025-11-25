@@ -27,10 +27,8 @@ jobs:
           {
             "embeds": [{
               "title": "${EMOJI} Deployment ${STATUS}",
-              "description": "**Project:** ${{ github.event.repository.name }}\n**Environment:** ${{ github.event.deployment.environment }}\n**Branch:** ${{ github.ref_name }}",
+              "description": "**Project:** ${{ github.event.repository.name }}\n**Environment:** ${{ github.event.deployment.environment }}\n**Branch:** ${{ github.ref_name }}\n**Commit:** [\`${GITHUB_SHA:0:7}\`](${{ github.event.deployment_status.target_url }})",
               "color": ${COLOR},
-              "commit": "[\`${GITHUB_SHA:0:7}\`](${{ github.event.deployment_status.target_url }})",
-              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)"
             }]
           }
           EOF
