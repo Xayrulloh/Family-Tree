@@ -5,9 +5,6 @@ on:
     types: [opened]
     branches:
       - main
-      - develop
-      - feature/**
-      - fix/**
 
 jobs:
   notify:
