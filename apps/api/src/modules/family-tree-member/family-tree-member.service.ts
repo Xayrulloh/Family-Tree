@@ -18,6 +18,7 @@ import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
+import generateRandomAvatar from '~/helpers/random-avatar.helper';
 import type { FamilyTreeResponseDto } from '../family-tree/dto/family-tree.dto';
 import type {
   FamilyTreeMemberCreateChildRequestDto,
@@ -94,7 +95,7 @@ export class FamilyTreeMemberService {
       .values({
         gender: body.gender,
         name: body.gender === UserGenderEnum.MALE ? 'Boy' : 'Girl',
-        image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
+        image: generateRandomAvatar(body.gender),
         familyTreeId,
       })
       .returning();
@@ -167,15 +168,17 @@ export class FamilyTreeMemberService {
       );
     }
 
+    const partnerGender =
+      partner1.gender === UserGenderEnum.MALE
+        ? UserGenderEnum.FEMALE
+        : UserGenderEnum.MALE;
+
     const [spouse] = await this.db
       .insert(schema.familyTreeMembersSchema)
       .values({
-        gender:
-          partner1.gender === UserGenderEnum.MALE
-            ? UserGenderEnum.FEMALE
-            : UserGenderEnum.MALE,
+        gender: partnerGender,
         name: partner1.gender === UserGenderEnum.MALE ? 'Wife' : 'Husband',
-        image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
+        image: generateRandomAvatar(partnerGender),
         familyTreeId,
       })
       .returning();
@@ -292,7 +295,7 @@ export class FamilyTreeMemberService {
         .insert(schema.familyTreeMembersSchema)
         .values({
           gender: UserGenderEnum.MALE,
-          image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
+          image: generateRandomAvatar(UserGenderEnum.MALE),
           name: 'Father',
           familyTreeId,
         })
@@ -301,7 +304,7 @@ export class FamilyTreeMemberService {
         .insert(schema.familyTreeMembersSchema)
         .values({
           gender: UserGenderEnum.FEMALE,
-          image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
+          image: generateRandomAvatar(UserGenderEnum.FEMALE),
           name: 'Mother',
           familyTreeId,
         })
@@ -358,7 +361,7 @@ export class FamilyTreeMemberService {
           .values({
             name: 'John Doe',
             gender: UserGenderEnum.MALE,
-            image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
+            image: generateRandomAvatar(UserGenderEnum.MALE),
             description: 'Husband',
             dob: '1990-01-01',
             dod: null,
@@ -370,7 +373,7 @@ export class FamilyTreeMemberService {
           .values({
             name: 'Jane Doe',
             gender: UserGenderEnum.FEMALE,
-            image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
+            image: generateRandomAvatar(UserGenderEnum.FEMALE),
             description: 'Wife',
             dob: '1990-01-01',
             dod: null,
