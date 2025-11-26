@@ -10,9 +10,9 @@ import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
+import generateRandomAvatar from '~/helpers/random-avatar.helper';
 import { DICEBEAR_URL } from '~/utils/constants';
 import type { UserUpdateRequestDto } from './dto/user.dto';
-import generateRandomAvatar from '~/helpers/random-avatar.helper';
 
 @Injectable()
 export class UserService {

@@ -18,6 +18,7 @@ import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
+import generateRandomAvatar from '~/helpers/random-avatar.helper';
 import type { FamilyTreeResponseDto } from '../family-tree/dto/family-tree.dto';
 import type {
   FamilyTreeMemberCreateChildRequestDto,
@@ -29,7 +30,6 @@ import type {
   FamilyTreeMemberGetResponseDto,
   FamilyTreeMemberUpdateRequestDto,
 } from './dto/family-tree-member.dto';
-import generateRandomAvatar from '~/helpers/random-avatar.helper';
 
 @Injectable()
 export class FamilyTreeMemberService {
