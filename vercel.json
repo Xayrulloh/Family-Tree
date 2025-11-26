@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "buildCommand": "npx nx build web",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "outputDirectory": "dist/apps/web",
+  "framework": "vite",
+  "ignoreCommand": "npx nx show projects --affected --base=$VERCEL_GIT_PREVIOUS_SHA --head=$VERCEL_GIT_COMMIT_SHA | grep '^web$' >/dev/null || exit 1"
+}
