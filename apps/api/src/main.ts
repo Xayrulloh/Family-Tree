@@ -1,9 +1,10 @@
+import { env } from './config/env/env';
+import './instrument';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { AppModule } from './app.module';
-import { env } from './config/env/env';
 import SwaggerBuilder from './config/swagger/swagger.config';
 import { CLIENT_URL, GLOBAL_PREFIX } from './utils/constants';
 

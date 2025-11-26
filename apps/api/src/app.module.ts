@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { HttpExceptionFilter } from './common/filters/http.filter';
 import { ZodSerializerInterceptorCustom } from './common/interceptors/zod.response.interceptor';
@@ -16,6 +17,7 @@ import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     AuthModule,
     UserModule,
     EnvModule,
@@ -29,6 +31,10 @@ import { UserModule } from './modules/user/user.module';
   ],
   controllers: [],
   providers: [
+    {
+      provide: APP_FILTER,
+      useClass: SentryGlobalFilter,
+    },
     {
       provide: APP_PIPE,
       useClass: ZodValidationPipe,

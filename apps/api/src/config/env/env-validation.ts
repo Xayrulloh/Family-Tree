@@ -3,6 +3,7 @@ import { z } from 'zod';
 const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   PORT: z.string().length(4).transform(Number),
+  NODE_ENV: z.string().min(1),
   GOOGLE_CLIENT_ID: z.string().min(1),
   GOOGLE_CLIENT_SECRET: z.string().min(1),
   GOOGLE_CALLBACK_URL: z.string().url(),
@@ -12,6 +13,7 @@ const envSchema = z.object({
   CLOUDFLARE_ENDPOINT: z.string().url(),
   CLOUDFLARE_ACCESS_KEY_ID: z.string().min(1),
   CLOUDFLARE_SECRET_ACCESS_KEY: z.string().min(1),
+  SENTRY_DSN: z.string().min(1),
 });
 
 type EnvType = z.infer<typeof envSchema>;
