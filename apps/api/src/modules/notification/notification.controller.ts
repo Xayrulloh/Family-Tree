@@ -17,7 +17,7 @@ import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import { NotificationResponseDto } from './dto/notification.dto';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { NotificationService } from './notification.service';
 
 @ApiTags('Notification')

@@ -25,25 +25,23 @@ export const formSchema = z.object({
     .string()
     .nullable()
     .refine((value) => value !== 'null', 'Image is required'),
-  public: z.boolean(),
 });
 
 export const DEFAULT_VALUES: FormValues = {
   name: '',
   image: null as unknown as FormValues['image'],
-  public: false,
 };
 
 // Initialization of Events
-export const createTriggered = createEvent();
-export const editTriggered = createEvent<{ id: string; values: FormValues }>();
+export const createTrigger = createEvent();
+export const editTrigger = createEvent<{ id: string; values: FormValues }>();
 export const formValidated = createEvent();
 export const reset = createEvent();
 export const uploaded = createEvent<RcFile>();
 export const created = createEvent();
 export const edited = createEvent();
 
-// Initialization of Stores
+// Stores
 // Stores whether user creating or editing
 export const $mode = createStore<'create' | 'edit'>('create');
 
@@ -66,9 +64,9 @@ export const form = createForm<FormValues>();
 
 // Events without Clock
 // Triggers when user creating or editing
-$mode.on(createTriggered, () => 'create').on(editTriggered, () => 'edit');
+$mode.on(createTrigger, () => 'create').on(editTrigger, () => 'edit');
 
-// Attaching
+// Effects
 // Uploads image to Cloudflare
 const uploadImageFx = attach({
   source: $file,
@@ -135,23 +133,23 @@ export const $mutating = or(
 // Resolved effects holder
 export const mutated = merge([createTreeFx.done, editTreeFx.done]);
 
-// Events of Samples
+// Samples
 // If user starts creating or editing, open the form
 sample({
-  clock: [editTriggered, createTriggered],
+  clock: [editTrigger, createTrigger],
   target: disclosure.opened,
 });
 
 // If user starts editing copy original tree
 sample({
-  clock: editTriggered,
+  clock: editTrigger,
   fn: ({ values }) => values,
   target: $originalTree,
 });
 
 // If user starts editing, put values to form
 sample({
-  clock: editTriggered,
+  clock: editTrigger,
   target: spread({
     values: form.resetFx,
     id: $id,

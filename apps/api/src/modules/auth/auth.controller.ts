@@ -3,7 +3,7 @@ import type { Response } from 'express';
 import { GoogleOauthGuard } from '~/common/guards/google-oauth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { CLIENT_URL, COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { AuthService } from './auth.service';
 
 @Controller('auth')

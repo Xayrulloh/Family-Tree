@@ -4,11 +4,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
-import { and, asc, eq, ilike, isNull } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
@@ -38,33 +38,14 @@ export class FamilyTreeService {
     userId: string,
   ): Promise<FamilyTreeArrayResponseDto> {
     return this.db.query.familyTreesSchema.findMany({
-      where: and(
-        eq(schema.familyTreesSchema.createdBy, userId),
-        isNull(schema.familyTreesSchema.deletedAt),
-      ),
+      where: eq(schema.familyTreesSchema.createdBy, userId),
       orderBy: asc(schema.familyTreesSchema.createdAt),
-    });
-  }
-
-  async getFamilyTreesByName(
-    name: string,
-  ): Promise<FamilyTreeArrayResponseDto> {
-    return this.db.query.familyTreesSchema.findMany({
-      where: and(
-        ilike(schema.familyTreesSchema.name, `%${name}%`),
-        eq(schema.familyTreesSchema.public, true),
-        isNull(schema.familyTreesSchema.deletedAt),
-      ),
-      limit: 5,
     });
   }
 
   async getFamilyTreeById(id: string): Promise<FamilyTreeResponseDto> {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
-      where: and(
-        eq(schema.familyTreesSchema.id, id),
-        isNull(schema.familyTreesSchema.deletedAt),
-      ),
+      where: eq(schema.familyTreesSchema.id, id),
     });
 
     if (!familyTree) {
@@ -81,7 +62,7 @@ export class FamilyTreeService {
     const isFamilyTreeExist = await this.db.query.familyTreesSchema.findFirst({
       where: and(
         eq(schema.familyTreesSchema.createdBy, userId),
-        ilike(schema.familyTreesSchema.name, `%${body.name}%`),
+        eq(schema.familyTreesSchema.name, body.name),
       ),
     });
 
@@ -91,17 +72,12 @@ export class FamilyTreeService {
       );
     }
 
-    if (body.image && !body.image?.includes(this.cloudflareR2Path)) {
-      throw new BadRequestException('Image is not uploaded');
-    }
-
     const [familyTree] = await this.db
       .insert(schema.familyTreesSchema)
       .values({
         createdBy: userId,
         name: body.name,
         image: body.image,
-        public: body.public || false,
       })
       .returning();
 
@@ -117,7 +93,6 @@ export class FamilyTreeService {
       where: and(
         eq(schema.familyTreesSchema.id, id),
         eq(schema.familyTreesSchema.createdBy, userId),
-        isNull(schema.familyTreesSchema.deletedAt),
       ),
     });
 
@@ -138,7 +113,6 @@ export class FamilyTreeService {
       .set({
         name: body.name,
         image: body.image,
-        public: body.public || false,
       })
       .where(eq(schema.familyTreesSchema.id, id));
   }
@@ -155,17 +129,8 @@ export class FamilyTreeService {
       throw new NotFoundException(`Family tree with id ${id} not found`);
     }
 
-    if (familyTree.deletedAt) {
-      await this.db
-        .delete(schema.familyTreesSchema)
-        .where(eq(schema.familyTreesSchema.id, id));
-    } else {
-      await this.db
-        .update(schema.familyTreesSchema)
-        .set({
-          deletedAt: new Date(),
-        })
-        .where(eq(schema.familyTreesSchema.id, id));
-    }
+    await this.db
+      .delete(schema.familyTreesSchema)
+      .where(eq(schema.familyTreesSchema.id, id));
   }
 }

@@ -1,7 +1,6 @@
 import {
   FamilyTreeArrayResponseSchema,
   FamilyTreeCreateRequestSchema,
-  FamilyTreeNameParamSchema,
   FamilyTreeResponseSchema,
   FamilyTreeUpdateRequestSchema,
   IdQuerySchema,
@@ -18,9 +17,6 @@ class FamilyTreeUpdateRequestDto extends createZodDto(
 ) {}
 
 // param
-
-class FamilyTreeNameParamDto extends createZodDto(FamilyTreeNameParamSchema) {}
-
 class FamilyTreeIdParamDto extends createZodDto(IdQuerySchema) {}
 
 // response
@@ -33,7 +29,6 @@ class FamilyTreeArrayResponseDto extends createZodDto(
 export {
   FamilyTreeCreateRequestDto,
   FamilyTreeUpdateRequestDto,
-  FamilyTreeNameParamDto,
   FamilyTreeIdParamDto,
   FamilyTreeResponseDto,
   FamilyTreeArrayResponseDto,

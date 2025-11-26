@@ -28,21 +28,25 @@ import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
+// biome-ignore lint/style/useImportType: <throws an error if put type>
+import { FamilyTreeMemberService } from '../family-tree-member/family-tree-member.service';
 import {
   FamilyTreeArrayResponseDto,
   FamilyTreeCreateRequestDto,
   type FamilyTreeIdParamDto,
-  type FamilyTreeNameParamDto,
   FamilyTreeResponseDto,
   FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { FamilyTreeService } from './family-tree.service';
 
 @ApiTags('Family Tree')
 @Controller('family-trees')
 export class FamilyTreeController {
-  constructor(private readonly familyTreeService: FamilyTreeService) {}
+  constructor(
+    private readonly familyTreeService: FamilyTreeService,
+    private readonly familyTreeMemberService: FamilyTreeMemberService,
+  ) {}
 
   // Find family trees of user
   @Get()
@@ -55,20 +59,6 @@ export class FamilyTreeController {
     @Req() req: AuthenticatedRequest,
   ): Promise<FamilyTreeArrayResponseDto> {
     return this.familyTreeService.getFamilyTreesOfUser(req.user.id);
-  }
-
-  // Find family trees by name (only public [public = true]) only 10 of them (name length must be at least 3)
-  @Get('publics/:name')
-  @UseGuards(JWTAuthGuard)
-  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiParam({ name: 'name', required: true, type: String })
-  @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ type: FamilyTreeArrayResponseDto })
-  @ZodSerializerDto(FamilyTreeArrayResponseSchema)
-  async getFamilyTreesByName(
-    @Param() param: FamilyTreeNameParamDto,
-  ): Promise<FamilyTreeArrayResponseDto> {
-    return this.familyTreeService.getFamilyTreesByName(param.name);
   }
 
   // Find family tree by id
@@ -102,7 +92,11 @@ export class FamilyTreeController {
       body,
     );
 
-    // creating single member (defining gender by user gender male | female)
+    // initial members
+    await this.familyTreeMemberService.createFamilyTreeMemberInitial(
+      req.user,
+      familyTree.id,
+    );
 
     return familyTree;
   }

@@ -1,34 +1,54 @@
-import z from 'zod';
-import { BaseSchema, MemberSchema } from '../schema';
+import type z from 'zod';
+import {
+  FamilyTreeMemberConnectionSchema,
+  FamilyTreeMemberSchema,
+} from '../schema';
 
 // schemas
-const FamilyTreeMemberCreateRequestSchema = MemberSchema.omit({
+const FamilyTreeMemberCreateChildRequestSchema = FamilyTreeMemberSchema.pick({
+  gender: true,
+}).merge(
+  FamilyTreeMemberConnectionSchema.pick({
+    fromMemberId: true,
+  }),
+);
+
+const FamilyTreeMemberCreateSpouseRequestSchema =
+  FamilyTreeMemberConnectionSchema.pick({
+    fromMemberId: true,
+  });
+
+const FamilyTreeMemberCreateParentsRequestSchema =
+  FamilyTreeMemberCreateSpouseRequestSchema;
+
+const FamilyTreeMemberUpdateRequestSchema = FamilyTreeMemberSchema.omit({
   id: true,
+  familyTreeId: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
-});
+}).partial();
 
-const FamilyTreeMemberUpdateRequestSchema = MemberSchema.partial().omit({
+const FamilyTreeMemberGetParamSchema = FamilyTreeMemberSchema.pick({
   id: true,
-  createdAt: true,
-  updatedAt: true,
-  deletedAt: true,
+  familyTreeId: true,
 });
 
-const FamilyTreeMemberGetParamSchema = z
-  .object({
-    familyTreeId: z.string().uuid().describe('Family tree id'),
-  })
-  .merge(BaseSchema.pick({ id: true }).describe('Family tree node id'));
-
-const FamilyTreeMemberGetAllParamSchema = FamilyTreeMemberGetParamSchema.pick({
+const FamilyTreeMemberGetAllParamSchema = FamilyTreeMemberSchema.pick({
   familyTreeId: true,
 });
 
 // types
-type FamilyTreeMemberCreateRequestType = z.infer<
-  typeof FamilyTreeMemberCreateRequestSchema
+type FamilyTreeMemberCreateChildRequestType = z.infer<
+  typeof FamilyTreeMemberCreateChildRequestSchema
+>;
+
+type FamilyTreeMemberCreateSpouseRequestType = z.infer<
+  typeof FamilyTreeMemberCreateSpouseRequestSchema
+>;
+
+type FamilyTreeMemberCreateParentsRequestType = z.infer<
+  typeof FamilyTreeMemberCreateParentsRequestSchema
 >;
 
 type FamilyTreeMemberUpdateRequestType = z.infer<
@@ -44,11 +64,15 @@ type FamilyTreeMemberGetAllParamType = z.infer<
 >;
 
 export {
-  FamilyTreeMemberCreateRequestSchema,
+  FamilyTreeMemberCreateChildRequestSchema,
+  FamilyTreeMemberCreateSpouseRequestSchema,
+  FamilyTreeMemberCreateParentsRequestSchema,
   FamilyTreeMemberUpdateRequestSchema,
   FamilyTreeMemberGetParamSchema,
   FamilyTreeMemberGetAllParamSchema,
-  type FamilyTreeMemberCreateRequestType,
+  type FamilyTreeMemberCreateChildRequestType,
+  type FamilyTreeMemberCreateSpouseRequestType,
+  type FamilyTreeMemberCreateParentsRequestType,
   type FamilyTreeMemberUpdateRequestType,
   type FamilyTreeMemberGetParamType,
   type FamilyTreeMemberGetAllParamType,

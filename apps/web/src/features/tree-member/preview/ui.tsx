@@ -1,37 +1,36 @@
 import {
   CalendarOutlined,
-  DeleteOutlined,
-  EditOutlined,
   HeartFilled,
   HeartOutlined,
-  LinkOutlined,
   ManOutlined,
   UserOutlined,
   WomanOutlined,
 } from '@ant-design/icons';
-import type { MemberSchemaType } from '@family-tree/shared';
-import { Avatar, Button, Divider, Flex, Modal, Space, Typography } from 'antd';
+import type { FamilyTreeMemberGetResponseType } from '@family-tree/shared';
+import { Avatar, Divider, Flex, Modal, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
+import { useUnit } from 'effector-react';
+import * as model from './model';
 
 const { Title, Paragraph, Text } = Typography;
 
-type MemberDetailDrawerProps = {
-  member: MemberSchemaType | null;
-  open: boolean;
-  onClose: () => void;
-  onEditMember?: (member: MemberSchemaType) => void;
-  onEditConnection?: (member: MemberSchemaType) => void;
-  onDeleteMember?: (member: MemberSchemaType) => void;
+type PreviewMemberModalProps = {
+  renderEditMemberSlot: (
+    member: FamilyTreeMemberGetResponseType,
+  ) => React.ReactNode;
+  renderDeleteMemberSlot: (
+    member: FamilyTreeMemberGetResponseType,
+  ) => React.ReactNode;
 };
 
-export const MemberDetailDrawer: React.FC<MemberDetailDrawerProps> = ({
-  member,
-  open,
-  onClose,
-  onEditMember,
-  onEditConnection,
-  onDeleteMember,
+export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
+  renderEditMemberSlot,
+  renderDeleteMemberSlot,
 }) => {
+  const [isOpen] = useUnit([model.disclosure.$isOpen]);
+
+  const member = useUnit(model.$member);
+
   if (!member) return null;
 
   // Calculate age and status
@@ -66,13 +65,19 @@ export const MemberDetailDrawer: React.FC<MemberDetailDrawerProps> = ({
 
   return (
     <Modal
-      title={null}
-      open={open}
-      onCancel={onClose}
+      open={isOpen}
+      onCancel={() => model.disclosure.closed()}
       width={480}
       centered
       footer={null}
+      destroyOnHidden
     >
+      {/* === Top-right Action Icons === */}
+      <Flex style={{ position: 'absolute', top: 12, right: 50 }} gap={8}>
+        {renderEditMemberSlot(member)}
+        {renderDeleteMemberSlot(member)}
+      </Flex>
+
       {/* Header - Centered */}
       <Flex vertical align="center" gap={15} style={{ marginBottom: 24 }}>
         <Avatar
@@ -162,43 +167,6 @@ export const MemberDetailDrawer: React.FC<MemberDetailDrawerProps> = ({
             </div>
           </>
         )}
-
-        {/* Action Buttons */}
-        <Space
-          direction="vertical"
-          style={{ width: '100%', marginTop: 8 }}
-          size={8}
-        >
-          <Flex gap={12} style={{ width: '100%' }}>
-            <Button
-              type="primary"
-              icon={<EditOutlined />}
-              block
-              size="large"
-              onClick={() => onEditMember?.(member)}
-            >
-              Edit Member
-            </Button>
-            <Button
-              type="primary"
-              danger
-              icon={<DeleteOutlined />}
-              block
-              size="large"
-              onClick={() => onDeleteMember?.(member)}
-            >
-              Delete Member
-            </Button>
-          </Flex>
-          <Button
-            icon={<LinkOutlined />}
-            block
-            size="large"
-            onClick={() => onEditConnection?.(member)}
-          >
-            Edit Connections
-          </Button>
-        </Space>
       </Space>
     </Modal>
   );

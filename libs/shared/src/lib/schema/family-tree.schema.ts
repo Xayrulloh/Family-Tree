@@ -11,10 +11,6 @@ const FamilyTreeSchema = z
       .describe(
         'Image url which comes only from client side but may delete from back on updates',
       ),
-    public: z
-      .boolean()
-      .default(false)
-      .describe('Public or private. Public would be visible to all users'),
   })
   .merge(BaseSchema)
   .describe('Family tree');

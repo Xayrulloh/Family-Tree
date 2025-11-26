@@ -1,4 +1,4 @@
-import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
+import { FileUploadFolderEnum, UserSchema } from '@family-tree/shared';
 import type { RcFile } from 'antd/es/upload';
 import {
   attach,
@@ -9,7 +9,7 @@ import {
 } from 'effector';
 import { isEqual } from 'lodash';
 import { delay, or } from 'patronum';
-import { z } from 'zod';
+import type { z } from 'zod';
 import { userModel } from '~/entities/user';
 import { api } from '~/shared/api';
 import { createForm } from '~/shared/lib/create-form';
@@ -19,20 +19,23 @@ import { infoFx } from '~/shared/lib/message';
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
 
-export const formSchema = z.object({
-  name: z.string().min(3, { message: 'Required field' }),
-  image: z.string().min(10, { message: 'Required field' }),
-  gender: z.enum([
-    UserGenderEnum.MALE,
-    UserGenderEnum.FEMALE,
-    UserGenderEnum.UNKNOWN,
-  ]),
-  dob: z.string().date().nullable(),
+export const formSchema = UserSchema.pick({
+  name: true,
+  image: true,
+  gender: true,
+  dob: true,
 });
 
+export const DEFAULT_VALUES: FormValues = {
+  name: '',
+  image: null as unknown as FormValues['image'],
+  gender: null as unknown as FormValues['gender'],
+  dob: null as unknown as FormValues['dob'],
+};
+
 // Events
-export const editTriggered = createEvent<FormValues>();
-export const randomAvatarTriggered = createEvent();
+export const editTrigger = createEvent<FormValues>();
+export const randomAvatarTrigger = createEvent();
 export const formValidated = createEvent();
 export const reset = createEvent();
 export const uploaded = createEvent<RcFile>();
@@ -95,7 +98,7 @@ export const mutated = editProfileFx.done;
 // Samples
 // Open modal and reset form with values on edit trigger
 sample({
-  clock: editTriggered,
+  clock: editTrigger,
   target: [disclosure.opened, form.resetFx],
 });
 
@@ -177,7 +180,7 @@ sample({
 
 // If user clicks random avatar, trigger random avatar request
 sample({
-  clock: randomAvatarTriggered,
+  clock: randomAvatarTrigger,
   target: randomAvatarFx,
 });
 

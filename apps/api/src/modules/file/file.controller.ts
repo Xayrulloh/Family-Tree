@@ -8,7 +8,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -23,7 +23,7 @@ import { ZodSerializerDto } from 'nestjs-zod';
 import type { EnvType } from '~/config/env/env-validation';
 import generateRandomString from '~/helpers/random-string.helper';
 import type { FileUploadParamDto, FileUploadResponseDto } from './dto/file.dto';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { FileService } from './file.service';
 import 'multer';
 

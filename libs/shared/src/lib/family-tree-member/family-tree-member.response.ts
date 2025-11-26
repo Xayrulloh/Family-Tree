@@ -1,10 +1,8 @@
-import z from 'zod';
-import { MemberSchema } from '../schema';
+import type z from 'zod';
+import { FamilyTreeMemberSchema } from '../schema';
 
 // schemas
-const FamilyTreeMemberGetResponseSchema = z.object({
-  member: MemberSchema.nullable(),
-});
+const FamilyTreeMemberGetResponseSchema = FamilyTreeMemberSchema;
 
 const FamilyTreeMemberGetAllResponseSchema =
   FamilyTreeMemberGetResponseSchema.array();
