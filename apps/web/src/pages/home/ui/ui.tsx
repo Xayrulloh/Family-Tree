@@ -18,7 +18,7 @@ const HomePage: React.FC = () => {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Hero Image Background */}
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-15"
+          className="absolute inset-0 bg-cover bg-center opacity-20"
           style={{
             backgroundImage: "url('/hero-family-tree.png')",
             backgroundPosition: 'center center',
@@ -35,21 +35,21 @@ const HomePage: React.FC = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-5xl mx-auto text-center">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg mb-8 animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg mb-5 animate-fade-in">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               <span className="text-sm font-medium text-gray-700">
                 Trusted by 10,000+ families worldwide
               </span>
             </div>
 
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold mb-8 leading-tight animate-fade-in-up">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold mb-5 leading-tight animate-fade-in-up">
               Your Family's
               <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mt-2">
                 Legacy Begins Here
               </span>
             </h1>
 
-            <p className="text-xl sm:text-2xl md:text-3xl text-gray-600 mb-12 max-w-3xl mx-auto font-light animate-fade-in-up animation-delay-200">
+            <p className="text-xl sm:text-2xl md:text-3xl text-gray-700 mb-8 max-w-3xl mx-auto font-light animate-fade-in-up animation-delay-200">
               Create stunning family trees, preserve cherished memories, and
               discover your roots with our beautiful, intuitive platform.
             </p>
@@ -67,7 +67,7 @@ const HomePage: React.FC = () => {
             </div>
 
             {/* Trust Indicators */}
-            <div className="mt-16 flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500 animate-fade-in-up animation-delay-600">
+            <div className="mt-13 flex flex-wrap justify-center items-center gap-8 text-sm text-gray-600 animate-fade-in-up animation-delay-600">
               <div className="flex items-center gap-2">
                 <CheckCircleOutlined className="text-green-500 text-lg" />
                 <span>No credit card required</span>
