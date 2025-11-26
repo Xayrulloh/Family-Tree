@@ -1,4 +1,8 @@
-import { FamilyTreeMemberConnectionEnum } from '@family-tree/shared';
+import {
+  FamilyTreeMemberConnectionEnum,
+  UserGenderEnum,
+  type UserSchemaType,
+} from '@family-tree/shared';
 import {
   BadRequestException,
   Inject,
@@ -7,7 +11,7 @@ import {
 } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, or } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
@@ -16,7 +20,9 @@ import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
 import type { FamilyTreeResponseDto } from '../family-tree/dto/family-tree.dto';
 import type {
-  FamilyTreeMemberCreateRequestDto,
+  FamilyTreeMemberCreateChildRequestDto,
+  FamilyTreeMemberCreateParentsRequestDto,
+  FamilyTreeMemberCreateSpouseRequestDto,
   FamilyTreeMemberGetAllParamDto,
   FamilyTreeMemberGetAllResponseDto,
   FamilyTreeMemberGetParamDto,
@@ -38,11 +44,11 @@ export class FamilyTreeMemberService {
       configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
   }
 
-  // create member
-  async createFamilyTreeMember(
+  // create child
+  async createFamilyTreeMemberChild(
     userId: string,
     familyTreeId: string,
-    body: FamilyTreeMemberCreateRequestDto,
+    body: FamilyTreeMemberCreateChildRequestDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
     const familyTree = await this.getFamilyTreeById(familyTreeId);
 
@@ -52,12 +58,335 @@ export class FamilyTreeMemberService {
       );
     }
 
-    const [familyTreeMember] = await this.db
+    // Parent logic
+    const parents =
+      await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+        where: and(
+          eq(
+            schema.familyTreeMemberConnectionsSchema.familyTreeId,
+            familyTreeId,
+          ),
+          eq(
+            schema.familyTreeMemberConnectionsSchema.type,
+            FamilyTreeMemberConnectionEnum.SPOUSE,
+          ),
+          or(
+            eq(
+              schema.familyTreeMemberConnectionsSchema.fromMemberId,
+              body.fromMemberId,
+            ),
+            eq(
+              schema.familyTreeMemberConnectionsSchema.toMemberId,
+              body.fromMemberId,
+            ),
+          ),
+        ),
+      });
+
+    if (!parents) {
+      throw new BadRequestException(
+        `Family tree member with id ${body.fromMemberId} has no spouse`,
+      );
+    }
+
+    const [child] = await this.db
       .insert(schema.familyTreeMembersSchema)
-      .values({ ...body, familyTreeId })
+      .values({
+        gender: body.gender,
+        name: body.gender === UserGenderEnum.MALE ? 'Boy' : 'Girl',
+        image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
+        familyTreeId,
+      })
       .returning();
 
-    return familyTreeMember;
+    await Promise.all([
+      await this.db.insert(schema.familyTreeMemberConnectionsSchema).values({
+        familyTreeId: familyTreeId,
+        fromMemberId: parents?.fromMemberId,
+        toMemberId: child.id,
+        type: FamilyTreeMemberConnectionEnum.PARENT,
+      }),
+      await this.db.insert(schema.familyTreeMemberConnectionsSchema).values({
+        familyTreeId: familyTreeId,
+        fromMemberId: parents?.toMemberId,
+        toMemberId: child.id,
+        type: FamilyTreeMemberConnectionEnum.PARENT,
+      }),
+    ]);
+
+    return child;
+  }
+
+  // create spouse
+  async createFamilyTreeMemberSpouse(
+    userId: string,
+    familyTreeId: string,
+    body: FamilyTreeMemberCreateSpouseRequestDto,
+  ): Promise<FamilyTreeMemberGetResponseDto> {
+    const familyTree = await this.getFamilyTreeById(familyTreeId);
+
+    if (familyTree.createdBy !== userId) {
+      throw new BadRequestException(
+        `Family tree with id ${familyTreeId} does not belong to user with id ${userId}`,
+      );
+    }
+
+    const partner1 = await this.getFamilyTreeMember({
+      id: body.fromMemberId,
+      familyTreeId,
+    });
+
+    // Spouse logic (make sure member is single)
+    const memberConnections =
+      await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+        where: and(
+          eq(
+            schema.familyTreeMemberConnectionsSchema.familyTreeId,
+            familyTreeId,
+          ),
+          eq(
+            schema.familyTreeMemberConnectionsSchema.type,
+            FamilyTreeMemberConnectionEnum.SPOUSE,
+          ),
+          or(
+            eq(
+              schema.familyTreeMemberConnectionsSchema.fromMemberId,
+              partner1.id,
+            ),
+            eq(
+              schema.familyTreeMemberConnectionsSchema.toMemberId,
+              partner1.id,
+            ),
+          ),
+        ),
+      });
+
+    if (memberConnections) {
+      throw new BadRequestException(
+        `Family tree member with id ${body.fromMemberId} is already married`,
+      );
+    }
+
+    const [spouse] = await this.db
+      .insert(schema.familyTreeMembersSchema)
+      .values({
+        gender:
+          partner1.gender === UserGenderEnum.MALE
+            ? UserGenderEnum.FEMALE
+            : UserGenderEnum.MALE,
+        name: partner1.gender === UserGenderEnum.MALE ? 'Wife' : 'Husband',
+        image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
+        familyTreeId,
+      })
+      .returning();
+
+    await this.db.insert(schema.familyTreeMemberConnectionsSchema).values({
+      familyTreeId: familyTreeId,
+      fromMemberId: partner1.id,
+      toMemberId: spouse.id,
+      type: FamilyTreeMemberConnectionEnum.SPOUSE,
+    });
+
+    return spouse;
+  }
+
+  // create parents
+  async createFamilyTreeMemberParents(
+    userId: string,
+    familyTreeId: string,
+    body: FamilyTreeMemberCreateParentsRequestDto,
+  ): Promise<FamilyTreeMemberGetResponseDto> {
+    const familyTree = await this.getFamilyTreeById(familyTreeId);
+
+    if (familyTree.createdBy !== userId) {
+      throw new BadRequestException(
+        `Family tree with id ${familyTreeId} does not belong to user with id ${userId}`,
+      );
+    }
+
+    const member = await this.getFamilyTreeMember({
+      id: body.fromMemberId,
+      familyTreeId,
+    });
+
+    // Parents logic (make sure member has no parents)
+    // Current member parents
+    const memberParents =
+      await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+        where: and(
+          eq(
+            schema.familyTreeMemberConnectionsSchema.familyTreeId,
+            familyTreeId,
+          ),
+          eq(
+            schema.familyTreeMemberConnectionsSchema.type,
+            FamilyTreeMemberConnectionEnum.PARENT,
+          ),
+          eq(schema.familyTreeMemberConnectionsSchema.toMemberId, member.id),
+        ),
+      });
+
+    if (memberParents) {
+      throw new BadRequestException(
+        `Family tree member with id ${body.fromMemberId} has already parents`,
+      );
+    }
+
+    // if member has spouse we should also check spouse parents
+    const spouse =
+      await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+        where: and(
+          eq(
+            schema.familyTreeMemberConnectionsSchema.familyTreeId,
+            familyTreeId,
+          ),
+          eq(
+            schema.familyTreeMemberConnectionsSchema.type,
+            FamilyTreeMemberConnectionEnum.SPOUSE,
+          ),
+          or(
+            eq(
+              schema.familyTreeMemberConnectionsSchema.fromMemberId,
+              member.id,
+            ),
+            eq(schema.familyTreeMemberConnectionsSchema.toMemberId, member.id),
+          ),
+        ),
+      });
+
+    if (spouse) {
+      const spouseParents =
+        await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+          where: and(
+            eq(
+              schema.familyTreeMemberConnectionsSchema.familyTreeId,
+              familyTreeId,
+            ),
+            eq(
+              schema.familyTreeMemberConnectionsSchema.type,
+              FamilyTreeMemberConnectionEnum.PARENT,
+            ),
+            or(
+              eq(
+                schema.familyTreeMemberConnectionsSchema.toMemberId,
+                spouse.toMemberId,
+              ),
+              eq(
+                schema.familyTreeMemberConnectionsSchema.toMemberId,
+                spouse.fromMemberId,
+              ),
+            ),
+          ),
+        });
+
+      if (spouseParents) {
+        throw new BadRequestException(
+          `Family tree member spouse with id ${spouse.toMemberId} has already parents`,
+        );
+      }
+    }
+
+    // creating parents
+    const [[father], [mother]] = await Promise.all([
+      this.db
+        .insert(schema.familyTreeMembersSchema)
+        .values({
+          gender: UserGenderEnum.MALE,
+          image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
+          name: 'Father',
+          familyTreeId,
+        })
+        .returning(),
+      this.db
+        .insert(schema.familyTreeMembersSchema)
+        .values({
+          gender: UserGenderEnum.FEMALE,
+          image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
+          name: 'Mother',
+          familyTreeId,
+        })
+        .returning(),
+    ]);
+
+    // creating parent connection
+    await this.db.insert(schema.familyTreeMemberConnectionsSchema).values([
+      {
+        familyTreeId: familyTreeId,
+        fromMemberId: father.id,
+        toMemberId: member.id,
+        type: FamilyTreeMemberConnectionEnum.PARENT,
+      },
+      {
+        familyTreeId: familyTreeId,
+        fromMemberId: mother.id,
+        toMemberId: member.id,
+        type: FamilyTreeMemberConnectionEnum.PARENT,
+      },
+      {
+        familyTreeId: familyTreeId,
+        fromMemberId: father.id,
+        toMemberId: mother.id,
+        type: FamilyTreeMemberConnectionEnum.SPOUSE,
+      },
+    ]);
+
+    return member;
+  }
+
+  // create initial members
+  async createFamilyTreeMemberInitial(
+    user: UserSchemaType,
+    familyTreeId: string,
+  ): Promise<void> {
+    // creating single member (defining gender by user gender male | female) or parents if unknown
+    // 1. create member if => male or female
+    if (user.gender !== UserGenderEnum.UNKNOWN) {
+      await this.db.insert(schema.familyTreeMembersSchema).values({
+        name: user.name,
+        gender: user.gender,
+        image: user.image,
+        description: user.description,
+        dob: user.dob,
+        dod: user.dod,
+        familyTreeId,
+      });
+    } else {
+      // 2. create parents if => unknown
+      const [[husband], [wife]] = await Promise.all([
+        this.db
+          .insert(schema.familyTreeMembersSchema)
+          .values({
+            name: 'John Doe',
+            gender: UserGenderEnum.MALE,
+            image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
+            description: 'Husband',
+            dob: '1990-01-01',
+            dod: null,
+            familyTreeId,
+          })
+          .returning(),
+        this.db
+          .insert(schema.familyTreeMembersSchema)
+          .values({
+            name: 'Jane Doe',
+            gender: UserGenderEnum.FEMALE,
+            image: `https://api.dicebear.com/7.x/notionists/svg?seed=${Math.floor(Math.random() * 1000)}`,
+            description: 'Wife',
+            dob: '1990-01-01',
+            dod: null,
+            familyTreeId,
+          })
+          .returning(),
+      ]);
+
+      // 3. connect parents to each other
+      await this.db.insert(schema.familyTreeMemberConnectionsSchema).values({
+        familyTreeId,
+        fromMemberId: husband.id,
+        toMemberId: wife.id,
+        type: FamilyTreeMemberConnectionEnum.SPOUSE,
+      });
+    }
   }
 
   // update member
@@ -121,6 +450,21 @@ export class FamilyTreeMemberService {
     if (descendants.length) {
       throw new BadRequestException(
         `Family tree member with id ${param.id} has descendants`,
+      );
+    }
+
+    // check he is not the last member
+    const familyTreeMembers =
+      await this.db.query.familyTreeMembersSchema.findMany({
+        where: and(
+          eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
+        ),
+        limit: 5,
+      });
+
+    if (familyTreeMembers.length === 1) {
+      throw new BadRequestException(
+        `Member with id ${param.id} is the last member of the family tree`,
       );
     }
 

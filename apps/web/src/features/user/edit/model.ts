@@ -26,9 +26,16 @@ export const formSchema = UserSchema.pick({
   dob: true,
 });
 
+export const DEFAULT_VALUES: FormValues = {
+  name: '',
+  image: null as unknown as FormValues['image'],
+  gender: null as unknown as FormValues['gender'],
+  dob: null as unknown as FormValues['dob'],
+};
+
 // Events
-export const editTriggered = createEvent<FormValues>();
-export const randomAvatarTriggered = createEvent();
+export const editTrigger = createEvent<FormValues>();
+export const randomAvatarTrigger = createEvent();
 export const formValidated = createEvent();
 export const reset = createEvent();
 export const uploaded = createEvent<RcFile>();
@@ -91,7 +98,7 @@ export const mutated = editProfileFx.done;
 // Samples
 // Open modal and reset form with values on edit trigger
 sample({
-  clock: editTriggered,
+  clock: editTrigger,
   target: [disclosure.opened, form.resetFx],
 });
 
@@ -173,7 +180,7 @@ sample({
 
 // If user clicks random avatar, trigger random avatar request
 sample({
-  clock: randomAvatarTriggered,
+  clock: randomAvatarTrigger,
   target: randomAvatarFx,
 });
 

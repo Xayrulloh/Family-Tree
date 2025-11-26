@@ -1,13 +1,16 @@
+import type { FamilyTreeMemberGetResponseType } from '@family-tree/shared';
 import { attach, createEvent, createStore, sample } from 'effector';
 import { api } from '~/shared/api';
 import { createDisclosure } from '~/shared/lib/disclosure';
 
 // Initialization of Events
-export const deleteTrigger = createEvent<{ id: string }>();
+export const deleteTrigger = createEvent<FamilyTreeMemberGetResponseType>();
 export const deleted = createEvent();
 
 // Stores created tree id
-export const $id = createStore<string | null>(null);
+export const $member = createStore<FamilyTreeMemberGetResponseType | null>(
+  null,
+);
 
 // Initialization of Closures
 // Notifies about opening and closing of the form
@@ -16,13 +19,16 @@ export const disclosure = createDisclosure();
 // Attaching
 // Deletes tree
 const deleteTreeFx = attach({
-  source: $id,
-  effect: (id) => {
-    if (!id) {
-      throw new Error('Local: no id');
+  source: $member,
+  effect: (member) => {
+    if (!member) {
+      throw new Error('Local: no member');
     }
 
-    return api.tree.delete(id);
+    return api.treeMember.delete({
+      familyTreeId: member.familyTreeId,
+      id: member.id,
+    });
   },
 });
 
@@ -43,14 +49,13 @@ sample({
 // If user starts deleting, put id to $id
 sample({
   clock: deleteTrigger,
-  fn: (response) => response.id,
-  target: $id,
+  target: $member,
 });
 
 // If user starts deleting, send it to deleteTreeFx
 sample({
   clock: deleted,
-  source: $id,
+  source: $member,
   target: deleteTreeFx,
 });
 
@@ -64,5 +69,5 @@ sample({
 // If user closes form, reset form
 sample({
   clock: disclosure.closed,
-  target: [$id.reinit],
+  target: [$member.reinit],
 });

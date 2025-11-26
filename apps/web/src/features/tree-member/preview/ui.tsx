@@ -6,35 +6,32 @@ import {
   UserOutlined,
   WomanOutlined,
 } from '@ant-design/icons';
-import { zodResolver } from '@hookform/resolvers/zod';
+import type { FamilyTreeMemberGetResponseType } from '@family-tree/shared';
 import { Avatar, Divider, Flex, Modal, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { useUnit } from 'effector-react';
-import { useForm } from 'react-hook-form';
 import * as model from './model';
 
 const { Title, Paragraph, Text } = Typography;
 
 type PreviewMemberModalProps = {
-  editMemberSlot?: React.ReactNode;
-  deleteMemberSlot?: React.ReactNode;
-  editConnectionSlot?: React.ReactNode;
+  renderEditMemberSlot: (
+    member: FamilyTreeMemberGetResponseType,
+  ) => React.ReactNode;
+  renderDeleteMemberSlot: (
+    member: FamilyTreeMemberGetResponseType,
+  ) => React.ReactNode;
 };
 
 export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
-  editMemberSlot,
-  deleteMemberSlot,
-  editConnectionSlot,
+  renderEditMemberSlot,
+  renderDeleteMemberSlot,
 }) => {
   const [isOpen] = useUnit([model.disclosure.$isOpen]);
 
-  const form = useForm({
-    resolver: zodResolver(model.formSchema),
-  });
+  const member = useUnit(model.$member);
 
-  model.form.useBindFormWithModel({ form });
-
-  const member = form.getValues();
+  if (!member) return null;
 
   // Calculate age and status
   const calculateAgeInfo = () => {
@@ -75,6 +72,12 @@ export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
       footer={null}
       destroyOnHidden
     >
+      {/* === Top-right Action Icons === */}
+      <Flex style={{ position: 'absolute', top: 12, right: 50 }} gap={8}>
+        {renderEditMemberSlot(member)}
+        {renderDeleteMemberSlot(member)}
+      </Flex>
+
       {/* Header - Centered */}
       <Flex vertical align="center" gap={15} style={{ marginBottom: 24 }}>
         <Avatar
@@ -164,19 +167,6 @@ export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
             </div>
           </>
         )}
-
-        {/* Action Buttons */}
-        <Space
-          direction="vertical"
-          style={{ width: '100%', marginTop: 8 }}
-          size={8}
-        >
-          <Flex gap={12} style={{ width: '100%' }}>
-            {editMemberSlot}
-            {deleteMemberSlot}
-          </Flex>
-          {editConnectionSlot}
-        </Space>
       </Space>
     </Modal>
   );

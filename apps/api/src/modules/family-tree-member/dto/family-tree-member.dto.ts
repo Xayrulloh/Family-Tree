@@ -1,5 +1,7 @@
 import {
-  FamilyTreeMemberCreateRequestSchema,
+  FamilyTreeMemberCreateChildRequestSchema,
+  FamilyTreeMemberCreateParentsRequestSchema,
+  FamilyTreeMemberCreateSpouseRequestSchema,
   FamilyTreeMemberGetAllParamSchema,
   FamilyTreeMemberGetAllResponseSchema,
   FamilyTreeMemberGetParamSchema,
@@ -9,8 +11,16 @@ import {
 import { createZodDto } from 'nestjs-zod';
 
 // request
-class FamilyTreeMemberCreateRequestDto extends createZodDto(
-  FamilyTreeMemberCreateRequestSchema,
+class FamilyTreeMemberCreateChildRequestDto extends createZodDto(
+  FamilyTreeMemberCreateChildRequestSchema,
+) {}
+
+class FamilyTreeMemberCreateSpouseRequestDto extends createZodDto(
+  FamilyTreeMemberCreateSpouseRequestSchema,
+) {}
+
+class FamilyTreeMemberCreateParentsRequestDto extends createZodDto(
+  FamilyTreeMemberCreateParentsRequestSchema,
 ) {}
 
 class FamilyTreeMemberUpdateRequestDto extends createZodDto(
@@ -36,7 +46,9 @@ class FamilyTreeMemberGetAllParamDto extends createZodDto(
 ) {}
 
 export {
-  FamilyTreeMemberCreateRequestDto,
+  FamilyTreeMemberCreateChildRequestDto,
+  FamilyTreeMemberCreateSpouseRequestDto,
+  FamilyTreeMemberCreateParentsRequestDto,
   FamilyTreeMemberUpdateRequestDto,
   FamilyTreeMemberGetResponseDto,
   FamilyTreeMemberGetAllResponseDto,

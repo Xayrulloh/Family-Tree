@@ -119,13 +119,13 @@ export const chainModuleLoaded = <Params extends RouteParams>({
   const loadFx = createEffect(load);
 
   const $isLoaded = createStore(false).on(loaded, () => true);
-  const $isRouteOpeningTriggered = triggerRouteOpening
+  const $isRouteOpeningTrigger = triggerRouteOpening
     ? createStore(false).on(triggerRouteOpening, () => true)
     : createStore(true);
 
   const startLoading = sample({
     clock: [triggerOpening, opened],
-    filter: and($isRouteOpeningTriggered, route.$isOpened),
+    filter: and($isRouteOpeningTrigger, route.$isOpened),
   });
 
   condition({

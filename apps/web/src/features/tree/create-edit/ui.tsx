@@ -21,6 +21,7 @@ export const CreateEditTreeModal: React.FC = () => {
   });
 
   model.form.useBindFormWithModel({ form });
+
   const formId = useId();
 
   const img = form.getValues().image;

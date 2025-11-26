@@ -1,10 +1,14 @@
 import type {
-  FamilyTreeMemberConnectionSchemaType,
-  FamilyTreeMemberSchemaType,
+  FamilyTreeMemberConnectionGetAllResponseType,
+  FamilyTreeMemberGetAllResponseType,
 } from '@family-tree/shared';
 import { attach, createStore, sample } from 'effector';
 import { or } from 'patronum';
 import { userModel } from '~/entities/user';
+import { addMemberModel } from '~/features/tree-member/add';
+import { deleteMemberModel } from '~/features/tree-member/delete';
+import { editMemberModel } from '~/features/tree-member/edit';
+import { previewMemberModel } from '~/features/tree-member/preview';
 import { api } from '~/shared/api';
 import type { LazyPageFactoryParams } from '~/shared/lib/lazy-page';
 
@@ -12,10 +16,10 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   const authorizedRoute = userModel.chainAuthorized({ route });
 
   // Stores
-  const $members = createStore<
-    Omit<FamilyTreeMemberSchemaType, 'familyTreeId'>[]
-  >([]);
-  const $connections = createStore<FamilyTreeMemberConnectionSchemaType[]>([]);
+  const $members = createStore<FamilyTreeMemberGetAllResponseType>([]);
+  const $connections =
+    createStore<FamilyTreeMemberConnectionGetAllResponseType>([]);
+
   const $id = authorizedRoute.$params.map((params) => params.id ?? null);
 
   // Effects
@@ -31,7 +35,6 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   });
 
   // Samples
-
   // Trigger fetches when familyTreeId is set
   sample({
     clock: authorizedRoute.opened,
@@ -49,6 +52,28 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
     clock: fetchConnectionsFx.doneData,
     fn: (response) => response.data,
     target: $connections,
+  });
+
+  // Reset preview on member edit
+  sample({
+    clock: editMemberModel.editTrigger,
+    target: previewMemberModel.reset,
+  });
+
+  // Reset preview on member delete active
+  sample({
+    clock: deleteMemberModel.deleteTrigger,
+    target: previewMemberModel.reset,
+  });
+
+  // Rerender after member deleted
+  sample({
+    clock: [
+      editMemberModel.mutated,
+      deleteMemberModel.mutated,
+      addMemberModel.created,
+    ],
+    target: [fetchMembersFx, fetchConnectionsFx],
   });
 
   return {

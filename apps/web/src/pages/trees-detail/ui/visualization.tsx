@@ -1,13 +1,17 @@
-import type { FamilyTreeMemberConnectionSchemaType } from '@family-tree/shared';
+import {
+  FamilyTreeMemberConnectionEnum,
+  type FamilyTreeMemberConnectionGetAllResponseType,
+  type FamilyTreeMemberConnectionSchemaType,
+} from '@family-tree/shared';
 import { theme } from 'antd';
 import { useUnit } from 'effector-react';
-import { memo, useMemo, useState } from 'react';
+import { memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
 import {
   calculatePositions,
   getCouples,
   type Position,
-  transformConnectionsData,
 } from '~/shared/lib/layout-engine';
 import { FamilyTreeNode } from '~/shared/ui/family-tree-node';
 import type { Props } from './ui';
@@ -26,15 +30,49 @@ export const Visualization: React.FC<Props> = ({ model }) => {
   const [connections, members] = useUnit([model.$connections, model.$members]);
   const { token } = theme.useToken();
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(1200);
+
+  useLayoutEffect(() => {
+    const update = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth);
+      }
+    };
+    update();
+
+    window.addEventListener('resize', update);
+
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
   const positions = useMemo(
-    () => calculatePositions(members, connections),
+    () => calculatePositions(members, connections, containerWidth),
     [members, connections],
   );
 
-  const couples = useMemo(
-    () => getCouples(transformConnectionsData(connections)),
-    [connections],
-  );
+  const couples = useMemo(() => getCouples(connections), [connections]);
+  const marriageMap = useMemo(() => {
+    const map = new Map<string, string>();
+
+    couples.forEach(({ fromMemberId, toMemberId }) => {
+      map.set(fromMemberId, toMemberId);
+      map.set(toMemberId, fromMemberId);
+    });
+
+    return map;
+  }, [couples]);
+  const parentsSet = useMemo(() => {
+    const set = new Set<string>();
+
+    connections.forEach(({ toMemberId, type }) => {
+      if (type === FamilyTreeMemberConnectionEnum.PARENT) {
+        set.add(toMemberId);
+      }
+    });
+
+    return set;
+  }, [connections]);
 
   /* ===============================
    * Center tree in the viewport
@@ -149,7 +187,12 @@ export const Visualization: React.FC<Props> = ({ model }) => {
    * SVG RENDERING
    * =============================== */
   return (
-    <div className="w-full h-full p-4 select-none">
+    <div
+      ref={containerRef}
+      className="w-full p-4 select-none"
+      style={{ height: 'calc(103vh - 160px)' }}
+    >
+      {/** biome-ignore lint/a11y/noSvgWithoutTitle: <There's no need for title> */}
       <svg
         width="100%"
         height="100%"
@@ -166,7 +209,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
         onMouseLeave={handleMouseLeave}
         onWheel={handleWheel}
       >
-        <title>Family Tree</title>
+        {/* <title>Family Tree</title> */}
         <g>
           <CoupleConnections couples={couples} positions={positions} />
         </g>
@@ -184,7 +227,18 @@ export const Visualization: React.FC<Props> = ({ model }) => {
               member={m}
               // biome-ignore lint/style/noNonNullAssertion: <I hope it's always gets the position)>
               position={positions.get(m.id)!}
-              onMemberClick={previewMemberModel.previewMemberTriggered}
+              hasMarriage={marriageMap.has(m.id)}
+              isParent={
+                !(
+                  !parentsSet.has(m.id) &&
+                  !parentsSet.has(marriageMap.get(m.id) || '')
+                )
+              }
+              onPreviewClick={previewMemberModel.previewMemberTrigger}
+              onAddBoyClick={addMemberModel.addBoyTrigger}
+              onAddGirlClick={addMemberModel.addGirlTrigger}
+              onAddSpouseClick={addMemberModel.addSpouseTrigger}
+              onAddParentClick={addMemberModel.addParentsTrigger}
             />
           ))}
         </g>
@@ -195,17 +249,14 @@ export const Visualization: React.FC<Props> = ({ model }) => {
 
 //#region CoupleConnections
 const CoupleConnections: React.FC<{
-  couples: {
-    partner1Id: string;
-    partner2Id: string;
-  }[];
+  couples: FamilyTreeMemberConnectionGetAllResponseType;
   positions: Map<string, Position>;
 }> = memo(({ couples, positions }) => {
   const RECT_WIDTH = NODE_WIDTH / 2;
 
   return couples.map((couple) => {
-    const p1 = positions.get(couple.partner1Id);
-    const p2 = positions.get(couple.partner2Id);
+    const p1 = positions.get(couple.fromMemberId);
+    const p2 = positions.get(couple.toMemberId);
 
     if (!p1 || !p2) return null;
 
@@ -217,7 +268,7 @@ const CoupleConnections: React.FC<{
 
     return (
       <line
-        key={`spouse-${couple.partner1Id}-${couple.partner2Id}`}
+        key={`spouse-${couple.fromMemberId}-${couple.toMemberId}`}
         x1={x1}
         y1={midY}
         x2={x2}
@@ -232,10 +283,7 @@ const CoupleConnections: React.FC<{
 
 //#region ParentChildConnections
 const ParentChildConnections: React.FC<{
-  couples: {
-    partner1Id: string;
-    partner2Id: string;
-  }[];
+  couples: FamilyTreeMemberConnectionGetAllResponseType;
   positions: Map<string, Position>;
   connections: FamilyTreeMemberConnectionSchemaType[];
 }> = memo(({ couples, positions, connections }) => {
@@ -245,27 +293,27 @@ const ParentChildConnections: React.FC<{
   const coupleCenters = new Map<string, { x: number; y: number }>();
 
   couples.forEach((couple) => {
-    const p1 = positions.get(couple.partner1Id);
-    const p2 = positions.get(couple.partner2Id);
+    const p1 = positions.get(couple.fromMemberId);
+    const p2 = positions.get(couple.toMemberId);
 
     if (!p1 || !p2) return;
 
-    coupleCenters.set(couple.partner1Id, {
+    coupleCenters.set(couple.fromMemberId, {
       x: (p1.x + p2.x) / 2,
       y: (p1.y + p2.y) / 2,
     });
 
-    coupleCenters.set(couple.partner2Id, {
+    coupleCenters.set(couple.toMemberId, {
       x: (p1.x + p2.x) / 2,
       y: (p1.y + p2.y) / 2,
     });
   });
 
   // Group children by couple
-  const grouped = new Map<string, string[]>();
+  const grouped = new Map<string, Set<string>>();
 
   connections.forEach((conn) => {
-    if (conn.type !== 'PARENT') return;
+    if (conn.type !== FamilyTreeMemberConnectionEnum.PARENT) return;
 
     const origin =
       coupleCenters.get(conn.fromMemberId) ?? positions.get(conn.fromMemberId);
@@ -274,12 +322,14 @@ const ParentChildConnections: React.FC<{
 
     const key = `${origin.x},${origin.y}`;
 
-    if (!grouped.has(key)) grouped.set(key, []);
+    if (!grouped.has(key)) grouped.set(key, new Set());
 
-    grouped.get(key)?.push(conn.toMemberId);
+    grouped.get(key)?.add(conn.toMemberId);
   });
 
-  grouped.forEach((childIds, key) => {
+  grouped.forEach((childSet, key) => {
+    const childIds = Array.from(childSet);
+
     const [xStr, yStr] = key.split(',');
     const coupleX = parseFloat(xStr);
     const coupleY = parseFloat(yStr);
@@ -294,14 +344,14 @@ const ParentChildConnections: React.FC<{
 
     if (childPositions.length === 1) {
       const child = childPositions[0];
-      const childTop = child.y - NODE_HEIGHT / 2;
+      const childTop = child.y;
 
       result.push(
         <line
           key={`stem-${child.x}-${child.y}`}
           x1={coupleX}
           y1={topY}
-          x2={childTop}
+          x2={coupleX}
           y2={childTop}
           stroke={CONNECTION.PARENT_CHILD.color}
           strokeWidth={CONNECTION.PARENT_CHILD.width}

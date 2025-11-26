@@ -1,17 +1,33 @@
 import type z from 'zod';
-import { FamilyTreeMemberSchema } from '../schema';
+import {
+  FamilyTreeMemberConnectionSchema,
+  FamilyTreeMemberSchema,
+} from '../schema';
 
 // schemas
-const FamilyTreeMemberCreateRequestSchema = FamilyTreeMemberSchema.omit({
+const FamilyTreeMemberCreateChildRequestSchema = FamilyTreeMemberSchema.pick({
+  gender: true,
+}).merge(
+  FamilyTreeMemberConnectionSchema.pick({
+    fromMemberId: true,
+  }),
+);
+
+const FamilyTreeMemberCreateSpouseRequestSchema =
+  FamilyTreeMemberConnectionSchema.pick({
+    fromMemberId: true,
+  });
+
+const FamilyTreeMemberCreateParentsRequestSchema =
+  FamilyTreeMemberCreateSpouseRequestSchema;
+
+const FamilyTreeMemberUpdateRequestSchema = FamilyTreeMemberSchema.omit({
   id: true,
   familyTreeId: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
-});
-
-const FamilyTreeMemberUpdateRequestSchema =
-  FamilyTreeMemberCreateRequestSchema.partial();
+}).partial();
 
 const FamilyTreeMemberGetParamSchema = FamilyTreeMemberSchema.pick({
   id: true,
@@ -23,8 +39,16 @@ const FamilyTreeMemberGetAllParamSchema = FamilyTreeMemberSchema.pick({
 });
 
 // types
-type FamilyTreeMemberCreateRequestType = z.infer<
-  typeof FamilyTreeMemberCreateRequestSchema
+type FamilyTreeMemberCreateChildRequestType = z.infer<
+  typeof FamilyTreeMemberCreateChildRequestSchema
+>;
+
+type FamilyTreeMemberCreateSpouseRequestType = z.infer<
+  typeof FamilyTreeMemberCreateSpouseRequestSchema
+>;
+
+type FamilyTreeMemberCreateParentsRequestType = z.infer<
+  typeof FamilyTreeMemberCreateParentsRequestSchema
 >;
 
 type FamilyTreeMemberUpdateRequestType = z.infer<
@@ -40,11 +64,15 @@ type FamilyTreeMemberGetAllParamType = z.infer<
 >;
 
 export {
-  FamilyTreeMemberCreateRequestSchema,
+  FamilyTreeMemberCreateChildRequestSchema,
+  FamilyTreeMemberCreateSpouseRequestSchema,
+  FamilyTreeMemberCreateParentsRequestSchema,
   FamilyTreeMemberUpdateRequestSchema,
   FamilyTreeMemberGetParamSchema,
   FamilyTreeMemberGetAllParamSchema,
-  type FamilyTreeMemberCreateRequestType,
+  type FamilyTreeMemberCreateChildRequestType,
+  type FamilyTreeMemberCreateSpouseRequestType,
+  type FamilyTreeMemberCreateParentsRequestType,
   type FamilyTreeMemberUpdateRequestType,
   type FamilyTreeMemberGetParamType,
   type FamilyTreeMemberGetAllParamType,

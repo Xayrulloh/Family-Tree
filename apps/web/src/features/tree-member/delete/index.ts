@@ -1,7 +1,7 @@
 import { deleteTrigger, mutated } from './model';
 
-export { DeleteTreeModal } from './ui';
-export const deleteTreeModel = {
+export { DeleteMemberModal } from './ui';
+export const deleteMemberModel = {
   deleteTrigger,
   mutated,
 };

@@ -1,15 +1,6 @@
 import { UploadOutlined } from '@ant-design/icons';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Button,
-  DatePicker,
-  Divider,
-  Flex,
-  Input,
-  Modal,
-  Select,
-  Upload,
-} from 'antd';
+import { Button, DatePicker, Divider, Flex, Input, Modal, Upload } from 'antd';
 import type { RcFile } from 'antd/es/upload';
 import dayjs from 'dayjs';
 import { useUnit } from 'effector-react';
@@ -26,66 +17,46 @@ export const EditMemberModal: React.FC = () => {
 
   const form = useForm({
     resolver: zodResolver(model.formSchema),
+    defaultValues: model.DEFAULT_VALUES,
   });
 
   model.form.useBindFormWithModel({ form });
 
   const formId = useId();
-  const img = form.getValues().image;
+  const member = form.getValues();
 
   return (
     <Modal
       open={isOpen}
-      title="Edit Profile"
+      title="Edit Member"
       onCancel={() => model.disclosure.closed()}
+      okText="Save Changes"
       okButtonProps={{ htmlType: 'submit', form: formId, loading: mutating }}
       width={480}
+      centered
       destroyOnHidden
     >
       <form
         onSubmit={form.handleSubmit(() => model.formValidated())}
         id={formId}
       >
-        <Flex vertical gap={16}>
-          {/* === 👤 Name === */}
+        <Flex vertical gap={8}>
+          {/* === NAME === */}
           <Controller
             control={form.control}
             name="name"
             render={({ field }) => (
               <FieldWrapper
-                label="Name"
+                label="Full Name"
                 isError={!!form.formState.errors.name?.message}
                 message={form.formState.errors.name?.message?.toString()}
               >
-                <Input {...field} placeholder="Enter your name" />
+                <Input {...field} placeholder="Enter full name" />
               </FieldWrapper>
             )}
           />
 
-          {/* === 🧬 Gender === */}
-          <Controller
-            control={form.control}
-            name="gender"
-            render={({ field }) => (
-              <FieldWrapper
-                label="Gender"
-                isError={!!form.formState.errors.gender?.message}
-                message={form.formState.errors.gender?.message?.toString()}
-              >
-                <Select
-                  {...field}
-                  options={Object.values(['MALE', 'FEMALE']).map((gender) => ({
-                    label: gender,
-                    value: gender,
-                  }))}
-                  placeholder="Select gender"
-                  allowClear
-                />
-              </FieldWrapper>
-            )}
-          />
-
-          {/* === 🎂 Birthdate === */}
+          {/* === BIRTHDATE === */}
           <Controller
             control={form.control}
             name="dob"
@@ -96,36 +67,51 @@ export const EditMemberModal: React.FC = () => {
                 message={form.formState.errors.dob?.message?.toString()}
               >
                 <DatePicker
-                  {...field}
                   style={{ width: '100%' }}
                   format="YYYY-MM-DD"
-                  allowClear
                   placeholder="Select birthdate"
                   value={field.value ? dayjs(field.value) : null}
-                  onChange={(_date, dateString) => {
-                    field.onChange(dateString || null);
-                  }}
+                  onChange={(_date, dateString) => field.onChange(dateString)}
                 />
               </FieldWrapper>
             )}
           />
 
-          <Divider style={{ margin: 0 }} />
+          {/* === DEATH DATE IF EXISTS === */}
+          <Controller
+            control={form.control}
+            name="dod"
+            render={({ field }) => (
+              <FieldWrapper
+                label="Death Date (optional)"
+                isError={!!form.formState.errors.dod?.message}
+                message={form.formState.errors.dod?.message?.toString()}
+              >
+                <DatePicker
+                  style={{ width: '100%' }}
+                  format="YYYY-MM-DD"
+                  placeholder="Select death date"
+                  value={field.value ? dayjs(field.value) : null}
+                  onChange={(_date, dateString) => field.onChange(dateString)}
+                />
+              </FieldWrapper>
+            )}
+          />
 
-          {/* === 🖼️ Image Preview and Upload === */}
+          <Divider style={{ margin: '4px 0' }} />
+
+          {/* === IMAGE UPLOAD === */}
           <Flex vertical gap={12}>
-            {img && (
+            {member.image && (
               <img
-                src={img}
+                src={member.image}
                 alt="Profile preview"
-                height={160}
+                height={150}
                 style={{
-                  maxHeight: 160,
+                  maxHeight: 150,
                   maxWidth: '100%',
-                  objectFit: 'cover',
+                  objectFit: 'fill',
                   borderRadius: 6,
-                  display: 'block',
-                  margin: '0 auto',
                 }}
               />
             )}
@@ -141,6 +127,26 @@ export const EditMemberModal: React.FC = () => {
               <Button icon={<UploadOutlined />}>Upload Profile Image</Button>
             </Upload>
           </Flex>
+
+          {/* === DESCRIPTION === */}
+          <Controller
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FieldWrapper
+                label="About"
+                isError={!!form.formState.errors.description?.message}
+                message={form.formState.errors.description?.message?.toString()}
+              >
+                <Input.TextArea
+                  value={field.value ?? ''}
+                  onChange={(e) => field.onChange(e.target.value)}
+                  rows={4}
+                  placeholder="Write something about this family member..."
+                />
+              </FieldWrapper>
+            )}
+          />
         </Flex>
       </form>
     </Modal>

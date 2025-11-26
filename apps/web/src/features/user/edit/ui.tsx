@@ -26,6 +26,7 @@ export const EditProfileModal: React.FC = () => {
 
   const form = useForm({
     resolver: zodResolver(model.formSchema),
+    defaultValues: model.DEFAULT_VALUES,
   });
 
   model.form.useBindFormWithModel({ form });

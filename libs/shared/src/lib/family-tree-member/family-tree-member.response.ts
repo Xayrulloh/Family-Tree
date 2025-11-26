@@ -2,9 +2,7 @@ import type z from 'zod';
 import { FamilyTreeMemberSchema } from '../schema';
 
 // schemas
-const FamilyTreeMemberGetResponseSchema = FamilyTreeMemberSchema.omit({
-  familyTreeId: true,
-});
+const FamilyTreeMemberGetResponseSchema = FamilyTreeMemberSchema;
 
 const FamilyTreeMemberGetAllResponseSchema =
   FamilyTreeMemberGetResponseSchema.array();

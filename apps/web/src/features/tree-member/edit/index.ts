@@ -1,7 +1,7 @@
-import { editTriggered, mutated } from './model';
+import { editTrigger, mutated } from './model';
 
 export { EditMemberModal } from './ui';
 export const editMemberModel = {
-  editTriggered,
+  editTrigger,
   mutated,
 };

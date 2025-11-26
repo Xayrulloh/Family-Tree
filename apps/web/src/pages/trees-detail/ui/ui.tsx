@@ -1,7 +1,11 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import { useUnit } from 'effector-react';
 import type React from 'react';
+import {
+  DeleteMemberModal,
+  deleteMemberModel,
+} from '~/features/tree-member/delete';
 import { EditMemberModal, editMemberModel } from '~/features/tree-member/edit';
 import { PreviewMemberModal } from '~/features/tree-member/preview';
 import type { LazyPageProps } from '~/shared/lib/lazy-page';
@@ -22,41 +26,24 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
     <>
       <Visualization model={model} />
       <PreviewMemberModal
-        editMemberSlot={
+        renderEditMemberSlot={(member) => (
           <Button
-            type="primary"
-            icon={<EditOutlined />}
-            block
-            size="large"
-            onClick={() => editMemberModel} // should trigger event
-          >
-            Edit Member
-          </Button>
-        }
-        deleteMemberSlot={
+            type="text"
+            icon={<EditOutlined style={{ fontSize: 18 }} />}
+            onClick={() => editMemberModel.editTrigger(member)}
+          />
+        )}
+        renderDeleteMemberSlot={(member) => (
           <Button
-            type="primary"
+            type="text"
             danger
-            icon={<DeleteOutlined />}
-            block
-            size="large"
-            // onClick={() => onDeleteMember?.(member)} // should trigger event
-          >
-            Delete Member
-          </Button>
-        }
-        editConnectionSlot={
-          <Button
-            icon={<PlusOutlined />}
-            block
-            size="large"
-            // onClick={() => onEditConnection?.(member)} // should trigger event
-          >
-            Add Connections
-          </Button>
-        }
+            icon={<DeleteOutlined style={{ fontSize: 18 }} />}
+            onClick={() => deleteMemberModel.deleteTrigger(member)}
+          />
+        )}
       />
       <EditMemberModal />
+      <DeleteMemberModal />
     </>
   );
 };
