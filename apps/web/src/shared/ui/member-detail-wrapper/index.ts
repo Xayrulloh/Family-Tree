@@ -1,1 +1,0 @@
-export { MemberDetailDrawer } from './ui';

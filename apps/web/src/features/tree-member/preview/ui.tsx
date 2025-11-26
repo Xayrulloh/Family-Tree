@@ -1,38 +1,40 @@
 import {
   CalendarOutlined,
-  DeleteOutlined,
-  EditOutlined,
   HeartFilled,
   HeartOutlined,
-  LinkOutlined,
   ManOutlined,
   UserOutlined,
   WomanOutlined,
 } from '@ant-design/icons';
-import type { MemberSchemaType } from '@family-tree/shared';
-import { Avatar, Button, Divider, Flex, Modal, Space, Typography } from 'antd';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Avatar, Divider, Flex, Modal, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
+import { useUnit } from 'effector-react';
+import { useForm } from 'react-hook-form';
+import * as model from './model';
 
 const { Title, Paragraph, Text } = Typography;
 
-type MemberDetailDrawerProps = {
-  member: MemberSchemaType | null;
-  open: boolean;
-  onClose: () => void;
-  onEditMember?: (member: MemberSchemaType) => void;
-  onEditConnection?: (member: MemberSchemaType) => void;
-  onDeleteMember?: (member: MemberSchemaType) => void;
+type PreviewMemberModalProps = {
+  editMemberSlot?: React.ReactNode;
+  deleteMemberSlot?: React.ReactNode;
+  editConnectionSlot?: React.ReactNode;
 };
 
-export const MemberDetailDrawer: React.FC<MemberDetailDrawerProps> = ({
-  member,
-  open,
-  onClose,
-  onEditMember,
-  onEditConnection,
-  onDeleteMember,
+export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
+  editMemberSlot,
+  deleteMemberSlot,
+  editConnectionSlot,
 }) => {
-  if (!member) return null;
+  const [isOpen] = useUnit([model.disclosure.$isOpen]);
+
+  const form = useForm({
+    resolver: zodResolver(model.formSchema),
+  });
+
+  model.form.useBindFormWithModel({ form });
+
+  const member = form.getValues();
 
   // Calculate age and status
   const calculateAgeInfo = () => {
@@ -66,12 +68,12 @@ export const MemberDetailDrawer: React.FC<MemberDetailDrawerProps> = ({
 
   return (
     <Modal
-      title={null}
-      open={open}
-      onCancel={onClose}
+      open={isOpen}
+      onCancel={() => model.disclosure.closed()}
       width={480}
       centered
       footer={null}
+      destroyOnHidden
     >
       {/* Header - Centered */}
       <Flex vertical align="center" gap={15} style={{ marginBottom: 24 }}>
@@ -170,34 +172,10 @@ export const MemberDetailDrawer: React.FC<MemberDetailDrawerProps> = ({
           size={8}
         >
           <Flex gap={12} style={{ width: '100%' }}>
-            <Button
-              type="primary"
-              icon={<EditOutlined />}
-              block
-              size="large"
-              onClick={() => onEditMember?.(member)}
-            >
-              Edit Member
-            </Button>
-            <Button
-              type="primary"
-              danger
-              icon={<DeleteOutlined />}
-              block
-              size="large"
-              onClick={() => onDeleteMember?.(member)}
-            >
-              Delete Member
-            </Button>
+            {editMemberSlot}
+            {deleteMemberSlot}
           </Flex>
-          <Button
-            icon={<LinkOutlined />}
-            block
-            size="large"
-            onClick={() => onEditConnection?.(member)}
-          >
-            Edit Connections
-          </Button>
+          {editConnectionSlot}
         </Space>
       </Space>
     </Modal>

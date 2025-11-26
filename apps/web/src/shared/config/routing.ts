@@ -9,7 +9,7 @@ export const routes = {
   notFound: createRoute(),
   registration: createRoute(),
   trees: createRoute(),
-  treesDetail: createRoute<{ familyTreeId: string }>(),
+  treesDetail: createRoute<{ id: string }>(),
 };
 
 export const routesMap = [
@@ -26,7 +26,7 @@ export const routesMap = [
     route: routes.trees,
   },
   {
-    path: '/family-trees/:familyTreeId',
+    path: '/family-trees/:id',
     route: routes.treesDetail,
   },
 ];

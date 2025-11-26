@@ -43,7 +43,7 @@ export const uploaded = createEvent<RcFile>();
 export const created = createEvent();
 export const edited = createEvent();
 
-// Initialization of Stores
+// Stores
 // Stores whether user creating or editing
 export const $mode = createStore<'create' | 'edit'>('create');
 
@@ -68,7 +68,7 @@ export const form = createForm<FormValues>();
 // Triggers when user creating or editing
 $mode.on(createTriggered, () => 'create').on(editTriggered, () => 'edit');
 
-// Attaching
+// Effects
 // Uploads image to Cloudflare
 const uploadImageFx = attach({
   source: $file,
@@ -135,7 +135,7 @@ export const $mutating = or(
 // Resolved effects holder
 export const mutated = merge([createTreeFx.done, editTreeFx.done]);
 
-// Events of Samples
+// Samples
 // If user starts creating or editing, open the form
 sample({
   clock: [editTriggered, createTriggered],

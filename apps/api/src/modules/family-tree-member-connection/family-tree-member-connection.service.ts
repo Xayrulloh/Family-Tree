@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
@@ -27,18 +27,18 @@ export class FamilyTreeMemberConnectionService {
   // create connection
   async createFamilyTreeMemberConnection(
     userId: string,
-    { familyTreeId }: FamilyTreeMemberConnectionGetAllParamDto,
+    param: FamilyTreeMemberConnectionGetAllParamDto,
     body: FamilyTreeMemberConnectionCreateRequestDto,
   ): Promise<FamilyTreeMemberConnectionGetAllResponseDto> {
     const { familyTree } = await this.getFamilyTreeMembers(
       body.fromMemberId,
       body.toMemberId,
-      familyTreeId,
+      param.familyTreeId,
     );
 
     if (familyTree.createdBy !== userId) {
       throw new BadRequestException(
-        `Family tree with id ${familyTreeId} does not belong to user with id ${userId}`,
+        `Family tree with id ${param.familyTreeId} does not belong to user with id ${userId}`,
       );
     }
 
@@ -47,7 +47,7 @@ export class FamilyTreeMemberConnectionService {
     const connection = await this.db
       .insert(schema.familyTreeMemberConnectionsSchema)
       .values({
-        familyTreeId,
+        familyTreeId: param.familyTreeId,
         ...body,
       })
       .returning();
@@ -87,10 +87,7 @@ export class FamilyTreeMemberConnectionService {
     param: FamilyTreeMemberConnectionGetParamDto,
   ) {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
-      where: and(
-        eq(schema.familyTreesSchema.id, param.familyTreeId),
-        isNull(schema.familyTreesSchema.deletedAt),
-      ),
+      where: eq(schema.familyTreesSchema.id, param.familyTreeId),
     });
 
     if (!familyTree) {
@@ -150,29 +147,18 @@ export class FamilyTreeMemberConnectionService {
       await Promise.all([
         this.db.query.familyTreeMembersSchema.findFirst({
           where: and(
-            eq(schema.familyTreeMembersSchema.memberId, fromMemberId),
+            eq(schema.familyTreeMembersSchema.id, fromMemberId),
             eq(schema.familyTreeMembersSchema.familyTreeId, familyTreeId),
-            isNull(schema.familyTreeMembersSchema.deletedAt),
           ),
-          with: {
-            member: true,
-          },
         }),
         this.db.query.familyTreeMembersSchema.findFirst({
           where: and(
-            eq(schema.familyTreeMembersSchema.memberId, toMemberId),
+            eq(schema.familyTreeMembersSchema.id, toMemberId),
             eq(schema.familyTreeMembersSchema.familyTreeId, familyTreeId),
-            isNull(schema.familyTreeMembersSchema.deletedAt),
           ),
-          with: {
-            member: true,
-          },
         }),
         this.db.query.familyTreesSchema.findFirst({
-          where: and(
-            eq(schema.familyTreesSchema.id, familyTreeId),
-            isNull(schema.familyTreesSchema.deletedAt),
-          ),
+          where: eq(schema.familyTreesSchema.id, familyTreeId),
         }),
       ]);
 
@@ -182,21 +168,21 @@ export class FamilyTreeMemberConnectionService {
       );
     }
 
-    if (!fromFamilyTreeMember?.member) {
+    if (!fromFamilyTreeMember) {
       throw new NotFoundException(
-        `Member "from member" with id ${fromMemberId} not found`,
+        `Family Tree Member "from member" with id ${fromMemberId} not found`,
       );
     }
 
-    if (!toFamilyTreeMember?.member) {
+    if (!toFamilyTreeMember) {
       throw new NotFoundException(
-        `Member "to member" with id ${toMemberId} not found`,
+        `Family Tree Member "to member" with id ${toMemberId} not found`,
       );
     }
 
     return {
-      fromMember: fromFamilyTreeMember.member,
-      toMember: toFamilyTreeMember.member,
+      fromMember: fromFamilyTreeMember,
+      toMember: toFamilyTreeMember,
       familyTree,
     };
   }

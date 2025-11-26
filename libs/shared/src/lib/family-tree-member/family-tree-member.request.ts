@@ -1,28 +1,24 @@
-import z from 'zod';
-import { BaseSchema, MemberSchema } from '../schema';
+import type z from 'zod';
+import { FamilyTreeMemberSchema } from '../schema';
 
 // schemas
-const FamilyTreeMemberCreateRequestSchema = MemberSchema.omit({
+const FamilyTreeMemberCreateRequestSchema = FamilyTreeMemberSchema.omit({
   id: true,
+  familyTreeId: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
 });
 
-const FamilyTreeMemberUpdateRequestSchema = MemberSchema.partial().omit({
+const FamilyTreeMemberUpdateRequestSchema =
+  FamilyTreeMemberCreateRequestSchema.partial();
+
+const FamilyTreeMemberGetParamSchema = FamilyTreeMemberSchema.pick({
   id: true,
-  createdAt: true,
-  updatedAt: true,
-  deletedAt: true,
+  familyTreeId: true,
 });
 
-const FamilyTreeMemberGetParamSchema = z
-  .object({
-    familyTreeId: z.string().uuid().describe('Family tree id'),
-  })
-  .merge(BaseSchema.pick({ id: true }).describe('Family tree node id'));
-
-const FamilyTreeMemberGetAllParamSchema = FamilyTreeMemberGetParamSchema.pick({
+const FamilyTreeMemberGetAllParamSchema = FamilyTreeMemberSchema.pick({
   familyTreeId: true,
 });
 

@@ -18,7 +18,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { FieldWrapper } from '~/shared/ui/field-wrapper';
 import * as model from './model';
 
-export const EditProfileModal: React.FC = () => {
+export const EditMemberModal: React.FC = () => {
   const [isOpen, mutating] = useUnit([
     model.disclosure.$isOpen,
     model.$mutating,

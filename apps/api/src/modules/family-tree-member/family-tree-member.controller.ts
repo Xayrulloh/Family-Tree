@@ -36,7 +36,7 @@ import {
   FamilyTreeMemberGetResponseDto,
   FamilyTreeMemberUpdateRequestDto,
 } from './dto/family-tree-member.dto';
-// biome-ignore lint/style/useImportType: <no need>
+// biome-ignore lint/style/useImportType: <throws an error if put type>
 import { FamilyTreeMemberService } from './family-tree-member.service';
 
 @ApiTags('Family Tree Member')

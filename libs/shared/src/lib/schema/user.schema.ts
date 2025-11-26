@@ -10,10 +10,14 @@ enum UserGenderEnum {
 const UserSchema = z
   .object({
     email: z.string().email().describe('Registered google email account'),
-    name: z.string().min(3).describe('Default google account name'),
+    name: z
+      .string()
+      .min(3, { message: 'Name must be at least 3 characters' })
+      .describe('Default google account name'),
     username: z.string().describe('Unique username from google'),
     image: z
       .string()
+      .min(10, { message: 'Image must be at least 10 characters' })
       .nullable()
       .describe(
         'Image url which comes only from client side but may delete from back on updates',

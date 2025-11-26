@@ -1,0 +1,2 @@
+ALTER TABLE "members" ADD COLUMN "family_tree_id" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "members" ADD CONSTRAINT "members_family_tree_id_family_trees_id_fk" FOREIGN KEY ("family_tree_id") REFERENCES "public"."family_trees"("id") ON DELETE cascade ON UPDATE no action;

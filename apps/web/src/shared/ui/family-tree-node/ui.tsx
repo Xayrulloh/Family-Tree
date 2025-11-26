@@ -4,7 +4,7 @@ import type React from 'react';
 type FamilyTreeNodeProps = {
   member: MemberSchemaType;
   position: { x: number; y: number };
-  onMemberClick?: (member: MemberSchemaType) => void;
+  onMemberClick: (member: MemberSchemaType) => void;
 };
 
 const getGenderColor = (gender: string) => {
@@ -64,7 +64,7 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
         rx="6"
         fill="transparent"
         style={{ cursor: 'pointer' }}
-        onClick={() => onMemberClick?.(member)}
+        onClick={() => onMemberClick(member)}
         onMouseEnter={(e) => {
           const rect = e.currentTarget;
           rect.style.fill = 'rgba(0,0,0,0.05)';

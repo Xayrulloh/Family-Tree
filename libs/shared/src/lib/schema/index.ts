@@ -3,6 +3,5 @@ export * from './family-tree.schema';
 export * from './family-tree-member.schema';
 export * from './family-tree-member-connection.schema';
 export * from './fcm-token.schema';
-export * from './member.schema';
 export * from './notification.schema';
 export * from './user.schema';

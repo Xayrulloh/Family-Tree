@@ -3,6 +3,7 @@ import { z } from 'zod';
 enum FileUploadFolderEnum {
   AVATAR = 'avatar',
   TREE = 'tree',
+  TREE_MEMBER = 'tree-member',
 }
 
 const FileUploadParamSchema = z.object({

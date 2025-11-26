@@ -1,12 +1,9 @@
-import { FileUploadFolderEnum, UserSchema } from '@family-tree/shared';
-import type { RcFile } from 'antd/es/upload';
 import {
-  attach,
-  createEffect,
-  createEvent,
-  createStore,
-  sample,
-} from 'effector';
+  FamilyTreeMemberSchema,
+  FileUploadFolderEnum,
+} from '@family-tree/shared';
+import type { RcFile } from 'antd/es/upload';
+import { attach, createEvent, createStore, sample } from 'effector';
 import { isEqual } from 'lodash';
 import { delay, or } from 'patronum';
 import type { z } from 'zod';
@@ -19,22 +16,17 @@ import { infoFx } from '~/shared/lib/message';
 // Schema and Types
 export type FormValues = z.infer<typeof formSchema>;
 
-export const formSchema = UserSchema.pick({
-  name: true,
-  image: true,
-  gender: true,
-  dob: true,
-});
+export const formSchema = FamilyTreeMemberSchema.omit({ familyTreeId: true });
 
 // Events
 export const editTriggered = createEvent<FormValues>();
-export const randomAvatarTriggered = createEvent();
 export const formValidated = createEvent();
 export const reset = createEvent();
 export const uploaded = createEvent<RcFile>();
 
 // Stores
 export const $file = createStore<RcFile | null>(null);
+export const $originalMember = createStore<FormValues | null>(null);
 
 // Disclosures
 export const disclosure = createDisclosure();
@@ -53,7 +45,7 @@ const uploadImageFx = attach({
 
     formData.append('file', file);
 
-    return api.file.upload(FileUploadFolderEnum.AVATAR, formData);
+    return api.file.upload(FileUploadFolderEnum.TREE_MEMBER, formData);
   },
 });
 
@@ -81,9 +73,6 @@ const setPathToFormFx = attach({
   },
 });
 
-// Sends request to random avatar endpoint
-const randomAvatarFx = createEffect(() => api.user.randomAvatar());
-
 // Derived State
 export const $mutating = or(uploadImageFx.pending, editProfileFx.pending);
 export const mutated = editProfileFx.done;
@@ -92,7 +81,7 @@ export const mutated = editProfileFx.done;
 // Open modal and reset form with values on edit trigger
 sample({
   clock: editTriggered,
-  target: [disclosure.opened, form.resetFx],
+  target: [disclosure.opened, form.resetFx, $originalMember],
 });
 
 // Send uploaded file to preview and store
@@ -113,7 +102,7 @@ sample({
 sample({
   clock: formValidated,
   source: {
-    original: userModel.$user,
+    original: $originalMember,
     edited: form.$formValues,
   },
   filter: ({ original, edited }) => {
@@ -122,10 +111,12 @@ sample({
       edited.image.startsWith('https') &&
       isEqual(
         {
-          dob: original?.dob,
-          gender: original?.gender,
           name: original?.name,
           image: original?.image,
+          gender: original?.gender,
+          dob: original?.dob,
+          dod: original?.dod,
+          description: original?.description,
         },
         edited,
       )
@@ -169,16 +160,4 @@ sample({
 sample({
   clock: disclosure.closed,
   target: [$file.reinit],
-});
-
-// If user clicks random avatar, trigger random avatar request
-sample({
-  clock: randomAvatarTriggered,
-  target: randomAvatarFx,
-});
-
-// After random avatar request completes, call sessionFx
-sample({
-  clock: randomAvatarFx.doneData,
-  target: userModel.sessionFx,
 });
