@@ -97,7 +97,7 @@
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "^3.2.4",
     "autoprefixer": "10.4.21",
-    "concurrently": "^9.2.0",
+    "concurrently": "^9.2.1",
     "drizzle-kit": "^0.31.4",
     "jest": "^30.0.5",
     "jest-environment-node": "^30.0.5",
