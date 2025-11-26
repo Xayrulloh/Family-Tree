@@ -34,7 +34,6 @@ import {
   FamilyTreeArrayResponseDto,
   FamilyTreeCreateRequestDto,
   type FamilyTreeIdParamDto,
-  type FamilyTreeNameParamDto,
   FamilyTreeResponseDto,
   FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
@@ -60,20 +59,6 @@ export class FamilyTreeController {
     @Req() req: AuthenticatedRequest,
   ): Promise<FamilyTreeArrayResponseDto> {
     return this.familyTreeService.getFamilyTreesOfUser(req.user.id);
-  }
-
-  // Find family trees by name (only public [public = true]) only 10 of them (name length must be at least 3)
-  @Get('publics/:name')
-  @UseGuards(JWTAuthGuard)
-  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiParam({ name: 'name', required: true, type: String })
-  @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ type: FamilyTreeArrayResponseDto })
-  @ZodSerializerDto(FamilyTreeArrayResponseSchema)
-  async getFamilyTreesByName(
-    @Param() param: FamilyTreeNameParamDto,
-  ): Promise<FamilyTreeArrayResponseDto> {
-    return this.familyTreeService.getFamilyTreesByName(param.name);
   }
 
   // Find family tree by id

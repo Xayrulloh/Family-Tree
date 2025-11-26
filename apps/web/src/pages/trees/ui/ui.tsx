@@ -2,8 +2,6 @@ import {
   DeleteOutlined,
   EditOutlined,
   EllipsisOutlined,
-  GlobalOutlined,
-  LockOutlined,
 } from '@ant-design/icons';
 import type { FamilyTreeSchemaType } from '@family-tree/shared';
 import {
@@ -15,7 +13,6 @@ import {
   Image,
   type MenuProps,
   Row,
-  Space,
   Typography,
   theme,
 } from 'antd';
@@ -54,7 +51,6 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
           values: {
             image: tree.image,
             name: tree.name,
-            public: tree.public,
           },
         });
       },
@@ -85,7 +81,6 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
         }}
         style={{
           height: '100%',
-          minHeight: 220,
           position: 'relative',
           borderRadius: 12,
           overflow: 'hidden',
@@ -151,7 +146,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
             icon={<EllipsisOutlined />}
             size="small"
             onClick={(e) => {
-              e.preventDefault(); // ← Prevent navigation when clicking dropdown
+              e.preventDefault();
               e.stopPropagation();
             }}
             style={{
@@ -180,13 +175,6 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
         >
           {tree.name}
         </Typography.Title>
-
-        <Space size="small">
-          {tree.public ? <GlobalOutlined /> : <LockOutlined />}
-          <Typography.Text type="secondary">
-            {tree.public ? 'Public' : 'Private'}
-          </Typography.Text>
-        </Space>
       </Card>
     </Link>
   );
@@ -216,7 +204,6 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
               onClick={() => createEditTreeModel.createTrigger()}
               style={{
                 height: '100%',
-                minHeight: 220,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',

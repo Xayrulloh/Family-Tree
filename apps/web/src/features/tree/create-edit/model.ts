@@ -25,13 +25,11 @@ export const formSchema = z.object({
     .string()
     .nullable()
     .refine((value) => value !== 'null', 'Image is required'),
-  public: z.boolean(),
 });
 
 export const DEFAULT_VALUES: FormValues = {
   name: '',
   image: null as unknown as FormValues['image'],
-  public: false,
 };
 
 // Initialization of Events
