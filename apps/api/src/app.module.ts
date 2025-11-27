@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { HttpExceptionFilter } from './common/filters/http.filter';
@@ -18,6 +19,14 @@ import { UserModule } from './modules/user/user.module';
 @Module({
   imports: [
     SentryModule.forRoot(),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 1000,
+          limit: 3,
+        },
+      ],
+    }),
     AuthModule,
     UserModule,
     EnvModule,
@@ -34,6 +43,10 @@ import { UserModule } from './modules/user/user.module';
     {
       provide: APP_FILTER,
       useClass: SentryGlobalFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
     {
       provide: APP_PIPE,
