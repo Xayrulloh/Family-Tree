@@ -5,6 +5,7 @@ import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { HttpExceptionFilter } from './common/filters/http.filter';
 import { ZodSerializerInterceptorCustom } from './common/interceptors/zod.response.interceptor';
+import { RedisCacheModule } from './config/cache/cache.module';
 import { CookiesModule } from './config/cookies/cookies.module';
 import { EnvModule } from './config/env/env.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -27,6 +28,7 @@ import { UserModule } from './modules/user/user.module';
         },
       ],
     }),
+    RedisCacheModule,
     AuthModule,
     UserModule,
     EnvModule,

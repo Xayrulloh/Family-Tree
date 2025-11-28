@@ -7,11 +7,14 @@ services:
     restart: unless-stopped
     networks:
       - backend
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
 
 networks:
   backend:
     driver: bridge
 
 volumes:
-  family_tree_postgres_data:
+  redis_data:
     driver: local

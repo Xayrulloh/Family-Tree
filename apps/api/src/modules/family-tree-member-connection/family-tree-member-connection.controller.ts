@@ -15,6 +15,8 @@ import {
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
+// biome-ignore lint/style/useImportType: <throws an error if put type>
+import { CacheService } from '~/config/cache/cache.service';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import {
   type FamilyTreeMemberConnectionGetAllParamDto,
@@ -30,6 +32,7 @@ import { FamilyTreeMemberConnectionService } from './family-tree-member-connecti
 export class FamilyTreeMemberConnectionController {
   constructor(
     private readonly familyTreeMemberConnectionService: FamilyTreeMemberConnectionService,
+    private readonly cacheService: CacheService,
   ) {}
 
   // get all connections of tree
@@ -42,9 +45,26 @@ export class FamilyTreeMemberConnectionController {
   async getAllFamilyTreeMemberConnections(
     @Param() param: FamilyTreeMemberConnectionGetAllParamDto,
   ): Promise<FamilyTreeMemberConnectionGetAllResponseDto> {
-    return this.familyTreeMemberConnectionService.getAllFamilyTreeMemberConnections(
-      param,
+    const cachedFamilyTreeMemberConnections =
+      await this.cacheService.get<FamilyTreeMemberConnectionGetAllResponseDto>(
+        `family-trees:${param.familyTreeId}:members:connections`,
+      );
+
+    if (cachedFamilyTreeMemberConnections) {
+      return cachedFamilyTreeMemberConnections;
+    }
+
+    const familyTreeMemberConnections =
+      await this.familyTreeMemberConnectionService.getAllFamilyTreeMemberConnections(
+        param,
+      );
+
+    this.cacheService.set(
+      `family-trees:${param.familyTreeId}:members:connections`,
+      familyTreeMemberConnections,
     );
+
+    return familyTreeMemberConnections;
   }
 
   // get connection of member in tree
@@ -55,11 +75,28 @@ export class FamilyTreeMemberConnectionController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: FamilyTreeMemberConnectionGetAllResponseDto })
   @ZodSerializerDto(FamilyTreeMemberConnectionGetAllResponseSchema)
-  async getFamilyTreeMemberConnection(
+  async getFamilyTreeMemberConnections(
     @Param() param: FamilyTreeMemberConnectionGetByMemberParamDto,
   ): Promise<FamilyTreeMemberConnectionGetAllResponseDto> {
-    return this.familyTreeMemberConnectionService.getFamilyTreeMemberConnection(
-      param,
+    const cachedFamilyTreeMemberConnections =
+      await this.cacheService.get<FamilyTreeMemberConnectionGetAllResponseDto>(
+        `family-trees:${param.familyTreeId}:members:${param.memberUserId}:connections`,
+      );
+
+    if (cachedFamilyTreeMemberConnections) {
+      return cachedFamilyTreeMemberConnections;
+    }
+
+    const familyTreeMemberConnections =
+      await this.familyTreeMemberConnectionService.getFamilyTreeMemberConnections(
+        param,
+      );
+
+    this.cacheService.set(
+      `family-trees:${param.familyTreeId}:members:${param.memberUserId}:connections`,
+      familyTreeMemberConnections,
     );
+
+    return familyTreeMemberConnections;
   }
 }

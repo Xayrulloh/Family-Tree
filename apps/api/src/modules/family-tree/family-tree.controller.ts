@@ -26,6 +26,8 @@ import {
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
+// biome-ignore lint/style/useImportType: <throws an error if put type>
+import { CacheService } from '~/config/cache/cache.service';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
@@ -46,6 +48,7 @@ export class FamilyTreeController {
   constructor(
     private readonly familyTreeService: FamilyTreeService,
     private readonly familyTreeMemberService: FamilyTreeMemberService,
+    private readonly cacheService: CacheService,
   ) {}
 
   // Find family trees of user
@@ -58,7 +61,22 @@ export class FamilyTreeController {
   async getFamilyTreesOfUser(
     @Req() req: AuthenticatedRequest,
   ): Promise<FamilyTreeArrayResponseDto> {
-    return this.familyTreeService.getFamilyTreesOfUser(req.user.id);
+    const cachedUserFamilyTrees =
+      await this.cacheService.get<FamilyTreeArrayResponseDto>(
+        `users:${req.user.id}:family-trees`,
+      );
+
+    if (cachedUserFamilyTrees) {
+      return cachedUserFamilyTrees;
+    }
+
+    const trees = await this.familyTreeService.getFamilyTreesOfUser(
+      req.user.id,
+    );
+
+    this.cacheService.set(`users:${req.user.id}:family-trees`, trees);
+
+    return trees;
   }
 
   // Find family tree by id
@@ -72,7 +90,19 @@ export class FamilyTreeController {
   async getFamilyTreeById(
     @Param() param: FamilyTreeIdParamDto,
   ): Promise<FamilyTreeResponseDto> {
-    return this.familyTreeService.getFamilyTreeById(param.id);
+    const cachedFamilyTree = await this.cacheService.get<FamilyTreeResponseDto>(
+      `family-trees:${param.id}`,
+    );
+
+    if (cachedFamilyTree) {
+      return cachedFamilyTree;
+    }
+
+    const familyTree = await this.familyTreeService.getFamilyTreeById(param.id);
+
+    this.cacheService.set(`family-trees:${param.id}`, familyTree);
+
+    return familyTree;
   }
 
   // Create family tree for user
@@ -98,6 +128,8 @@ export class FamilyTreeController {
       familyTree.id,
     );
 
+    await this.cacheService.del(`users:${req.user.id}:family-trees`);
+
     return familyTree;
   }
 
@@ -114,6 +146,13 @@ export class FamilyTreeController {
     @Param() param: FamilyTreeIdParamDto,
     @Body() body: FamilyTreeUpdateRequestDto,
   ): Promise<void> {
+    await this.cacheService.delMultiple([
+      `family-trees:${param.id}`,
+      `family-trees:${param.id}:members`,
+      `family-trees:${param.id}:members:connections`,
+      `users:${req.user.id}:family-trees`,
+    ]);
+
     return this.familyTreeService.updateFamilyTree(req.user.id, param.id, body);
   }
 
@@ -128,6 +167,13 @@ export class FamilyTreeController {
     @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeIdParamDto,
   ): Promise<void> {
+    await this.cacheService.delMultiple([
+      `family-trees:${param.id}`,
+      `family-trees:${param.id}:members`,
+      `family-trees:${param.id}:members:connections`,
+      `users:${req.user.id}:family-trees`,
+    ]);
+
     return this.familyTreeService.deleteFamilyTree(req.user.id, param.id);
   }
 }

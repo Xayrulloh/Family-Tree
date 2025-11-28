@@ -14,6 +14,8 @@ const envSchema = z.object({
   CLOUDFLARE_ACCESS_KEY_ID: z.string().min(1),
   CLOUDFLARE_SECRET_ACCESS_KEY: z.string().min(1),
   SENTRY_DSN: z.string().min(1),
+  REDIS_URL: z.string().url(),
+  REDIS_TTL: z.string().min(4).transform(Number),
 });
 
 type EnvType = z.infer<typeof envSchema>;

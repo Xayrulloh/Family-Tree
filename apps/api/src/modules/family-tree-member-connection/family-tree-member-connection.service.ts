@@ -29,7 +29,7 @@ export class FamilyTreeMemberConnectionService {
   }
 
   // get member connections
-  async getFamilyTreeMemberConnection(
+  async getFamilyTreeMemberConnections(
     param: FamilyTreeMemberConnectionGetByMemberParamDto,
   ): Promise<FamilyTreeMemberConnectionGetAllResponseDto> {
     return this.db.query.familyTreeMemberConnectionsSchema.findMany({

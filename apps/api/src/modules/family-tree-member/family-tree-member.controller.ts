@@ -26,6 +26,8 @@ import {
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
+// biome-ignore lint/style/useImportType: <throws an error if put type>
+import { CacheService } from '~/config/cache/cache.service';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import {
@@ -47,6 +49,7 @@ import { FamilyTreeMemberService } from './family-tree-member.service';
 export class FamilyTreeMemberController {
   constructor(
     private readonly FamilyTreeMemberService: FamilyTreeMemberService,
+    private readonly cacheService: CacheService,
   ) {}
 
   // add member create (child)
@@ -62,6 +65,11 @@ export class FamilyTreeMemberController {
     @Body() body: FamilyTreeMemberCreateChildRequestDto,
     @Param() param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
+    await this.cacheService.delMultiple([
+      `family-trees:${param.familyTreeId}:members`,
+      `family-trees:${param.familyTreeId}:members:connections`,
+    ]);
+
     return this.FamilyTreeMemberService.createFamilyTreeMemberChild(
       req.user.id,
       param.familyTreeId,
@@ -82,6 +90,11 @@ export class FamilyTreeMemberController {
     @Body() body: FamilyTreeMemberCreateSpouseRequestDto,
     @Param() param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
+    await this.cacheService.delMultiple([
+      `family-trees:${param.familyTreeId}:members`,
+      `family-trees:${param.familyTreeId}:members:connections`,
+    ]);
+
     return this.FamilyTreeMemberService.createFamilyTreeMemberSpouse(
       req.user.id,
       param.familyTreeId,
@@ -102,6 +115,11 @@ export class FamilyTreeMemberController {
     @Body() body: FamilyTreeMemberCreateParentsRequestDto,
     @Param() param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
+    await this.cacheService.delMultiple([
+      `family-trees:${param.familyTreeId}:members`,
+      `family-trees:${param.familyTreeId}:members:connections`,
+    ]);
+
     return this.FamilyTreeMemberService.createFamilyTreeMemberParents(
       req.user.id,
       param.familyTreeId,
@@ -122,6 +140,11 @@ export class FamilyTreeMemberController {
     @Param() param: FamilyTreeMemberGetParamDto,
     @Body() body: FamilyTreeMemberUpdateRequestDto,
   ): Promise<void> {
+    await this.cacheService.delMultiple([
+      `family-trees:${param.familyTreeId}:members`,
+      `family-trees:${param.familyTreeId}:members:connections`,
+    ]);
+
     return this.FamilyTreeMemberService.updateFamilyTreeMember(
       req.user.id,
       param,
@@ -140,6 +163,11 @@ export class FamilyTreeMemberController {
     @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeMemberGetParamDto,
   ): Promise<void> {
+    await this.cacheService.delMultiple([
+      `family-trees:${param.familyTreeId}:members`,
+      `family-trees:${param.familyTreeId}:members:connections`,
+    ]);
+
     return this.FamilyTreeMemberService.deleteFamilyTreeMember(
       req.user.id,
       param,
@@ -156,7 +184,24 @@ export class FamilyTreeMemberController {
   async getAllFamilyTreeMembers(
     @Param() param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetAllResponseDto> {
-    return this.FamilyTreeMemberService.getAllFamilyTreeMembers(param);
+    const cachedFamilyTreeMembers =
+      await this.cacheService.get<FamilyTreeMemberGetAllResponseDto>(
+        `family-trees:${param.familyTreeId}:members`,
+      );
+
+    if (cachedFamilyTreeMembers) {
+      return cachedFamilyTreeMembers;
+    }
+
+    const familyTreeMembers =
+      await this.FamilyTreeMemberService.getAllFamilyTreeMembers(param);
+
+    this.cacheService.set(
+      `family-trees:${param.familyTreeId}:members`,
+      familyTreeMembers,
+    );
+
+    return familyTreeMembers;
   }
 
   // get node by id and tree
@@ -170,6 +215,23 @@ export class FamilyTreeMemberController {
   async getFamilyTreeMember(
     @Param() param: FamilyTreeMemberGetParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
-    return this.FamilyTreeMemberService.getFamilyTreeMember(param);
+    const cachedFamilyTreeMember =
+      await this.cacheService.get<FamilyTreeMemberGetResponseDto>(
+        `family-trees:${param.familyTreeId}:members:${param.id}`,
+      );
+
+    if (cachedFamilyTreeMember) {
+      return cachedFamilyTreeMember;
+    }
+
+    const familyTreeMember =
+      await this.FamilyTreeMemberService.getFamilyTreeMember(param);
+
+    this.cacheService.set(
+      `family-trees:${param.familyTreeId}:members:${param.id}`,
+      familyTreeMember,
+    );
+
+    return familyTreeMember;
   }
 }

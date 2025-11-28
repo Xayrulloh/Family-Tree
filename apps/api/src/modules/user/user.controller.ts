@@ -21,6 +21,8 @@ import {
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
+// biome-ignore lint/style/useImportType: <throws an error if put type>
+import { CacheService } from '~/config/cache/cache.service';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import {
@@ -34,7 +36,10 @@ import { UserService } from './user.service';
 @ApiTags('User')
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly cacheService: CacheService,
+  ) {}
 
   // Find user themselves
   @Get('me')
@@ -46,7 +51,19 @@ export class UserController {
   async getUserThemselves(
     @Req() req: AuthenticatedRequest,
   ): Promise<UserResponseDto> {
-    return this.userService.getUserThemselves(req.user.id);
+    const cachedUser = await this.cacheService.get<UserResponseDto>(
+      `users:${req.user.id}`,
+    );
+
+    if (cachedUser) {
+      return cachedUser;
+    }
+
+    const user = await this.userService.getUserThemselves(req.user.id);
+
+    this.cacheService.set(`users:${req.user.id}`, user);
+
+    return user;
   }
 
   // Find exactly one user by its id
@@ -58,7 +75,19 @@ export class UserController {
   @ApiOkResponse({ type: UserResponseDto })
   @ZodSerializerDto(UserResponseSchema)
   async getUserById(@Param() param: UserIdParamDto): Promise<UserResponseDto> {
-    return this.userService.getUserById(param.id);
+    const cachedUser = await this.cacheService.get<UserResponseDto>(
+      `users:${param.id}`,
+    );
+
+    if (cachedUser) {
+      return cachedUser;
+    }
+
+    const user = await this.userService.getUserById(param.id);
+
+    this.cacheService.set(`users:${param.id}`, user);
+
+    return user;
   }
 
   // Update user themselves info
@@ -72,7 +101,9 @@ export class UserController {
     @Req() req: AuthenticatedRequest,
     @Body() body: UserUpdateRequestDto,
   ): Promise<void> {
-    return this.userService.updateUser(req.user.id, body);
+    await this.userService.updateUser(req.user.id, body);
+
+    await this.cacheService.del(`users:${req.user.id}`);
   }
 
   // Random image for user
@@ -85,6 +116,11 @@ export class UserController {
   async updateUserAvatar(
     @Req() req: AuthenticatedRequest,
   ): Promise<UserResponseDto> {
-    return this.userService.updateUserAvatar(req.user.id);
+    const user = await this.userService.updateUserAvatar(req.user.id);
+
+    await this.cacheService.del(`users:${req.user.id}`);
+    this.cacheService.set(`users:${req.user.id}`, user);
+
+    return user;
   }
 }
