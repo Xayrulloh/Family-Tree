@@ -10,7 +10,6 @@ import {
   Col,
   Dropdown,
   Flex,
-  Image,
   type MenuProps,
   Row,
   Typography,
@@ -108,7 +107,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
             }}
           >
             {tree.image ? (
-              <Image
+              <img
                 src={tree.image}
                 alt={tree.name}
                 style={{
@@ -118,7 +117,6 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
                   objectPosition: 'center',
                   transition: 'transform 0.3s',
                 }}
-                preview={false}
               />
             ) : (
               <span
