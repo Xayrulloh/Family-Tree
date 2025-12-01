@@ -5,7 +5,14 @@ import {
 } from '@family-tree/shared';
 import { theme } from 'antd';
 import { useUnit } from 'effector-react';
-import { memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  memo,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
 import {
@@ -31,6 +38,8 @@ export const Visualization: React.FC<Props> = ({ model }) => {
   const { token } = theme.useToken();
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+
   const [containerWidth, setContainerWidth] = useState(1200);
 
   useLayoutEffect(() => {
@@ -118,16 +127,22 @@ export const Visualization: React.FC<Props> = ({ model }) => {
   };
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!isDragging || !lastPoint) return;
+    if (!isDragging || !lastPoint || !svgRef.current) return;
 
     const dx = e.clientX - lastPoint.x;
     const dy = e.clientY - lastPoint.y;
 
-    // Move opposite to drag direction
+    // Calculate the ratio between viewBox coordinates and screen pixels
+    const rect = svgRef.current.getBoundingClientRect();
+    const scaleX = viewBox.width / rect.width;
+    const scaleY = viewBox.height / rect.height;
+
+    // Move opposite to drag direction, scaled by current zoom level
+    // Y-axis has a 1.3x multiplier for slightly faster vertical movement
     setViewBox((prev) => ({
       ...prev,
-      x: prev.x - dx,
-      y: prev.y - dy,
+      x: prev.x - dx * scaleX,
+      y: prev.y - dy * scaleY * 1.18,
     }));
 
     setLastPoint({ x: e.clientX, y: e.clientY });
@@ -143,49 +158,48 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     setLastPoint(null);
   };
 
-  /* ===============================
-   * Wheel zoom
-   * =============================== */
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
 
-  const handleWheel = (e: React.WheelEvent<SVGSVGElement>) => {
-    e.preventDefault(); // prevent page scroll
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault(); // Now works!
 
-    const scaleFactor = 1.1; // zoom speed
-    const svg = e.currentTarget;
-    const { width, height, x, y } = viewBox;
-    const rect = svg.getBoundingClientRect();
+      const scaleFactor = 1.1;
+      const { width, height, x, y } = viewBox;
+      const rect = svg.getBoundingClientRect();
 
-    // Mouse position in SVG coords
-    const mouseX = ((e.clientX - rect.left) / rect.width) * width + x;
-    const mouseY = ((e.clientY - rect.top) / rect.height) * height + y;
+      const mouseX = ((e.clientX - rect.left) / rect.width) * width + x;
+      const mouseY = ((e.clientY - rect.top) / rect.height) * height + y;
 
-    // Zoom in if deltaY < 0, else out
-    const zoomIn = e.deltaY < 0;
-    const newWidth = zoomIn ? width / scaleFactor : width * scaleFactor;
-    const newHeight = zoomIn ? height / scaleFactor : height * scaleFactor;
+      const zoomIn = e.deltaY < 0;
+      const newWidth = zoomIn ? width / scaleFactor : width * scaleFactor;
+      const newHeight = zoomIn ? height / scaleFactor : height * scaleFactor;
 
-    // Clamp zoom between min and max
-    const minZoom = 0.5; // 2x zoom in
-    const maxZoom = 3; // 3x zoom out
-    const currentScale = newWidth / 1200; // compare to initial width
+      const minZoom = 0.5;
+      const maxZoom = 3;
+      const currentScale = newWidth / 1200;
 
-    if (currentScale < minZoom || currentScale > maxZoom) return;
+      if (currentScale < minZoom || currentScale > maxZoom) return;
 
-    // Adjust x/y so that zoom centers around cursor
-    const newX = mouseX - ((mouseX - x) * newWidth) / width;
-    const newY = mouseY - ((mouseY - y) * newHeight) / height;
+      const newX = mouseX - ((mouseX - x) * newWidth) / width;
+      const newY = mouseY - ((mouseY - y) * newHeight) / height;
 
-    setViewBox({
-      x: newX,
-      y: newY,
-      width: newWidth,
-      height: newHeight,
-    });
-  };
+      setViewBox({
+        x: newX,
+        y: newY,
+        width: newWidth,
+        height: newHeight,
+      });
+    };
 
-  /* ===============================
-   * SVG RENDERING
-   * =============================== */
+    svg.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      svg.removeEventListener('wheel', handleWheel);
+    };
+  }, [viewBox]);
+
   return (
     <div
       ref={containerRef}
@@ -207,7 +221,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
-        onWheel={handleWheel}
+        ref={svgRef}
       >
         {/* <title>Family Tree</title> */}
         <g>

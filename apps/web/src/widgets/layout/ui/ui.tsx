@@ -7,7 +7,7 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
   const { token } = theme.useToken();
 
   return (
-    <AntLayout style={{ minHeight: '100dvh', background: token.colorBgBase }}>
+    <AntLayout style={{ height: '100dvh', background: token.colorBgBase }}>
       <AntLayout style={{ background: token.colorBgBase }}>
         {/* Header part */}
         <Header
