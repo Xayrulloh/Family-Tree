@@ -1,15 +1,38 @@
 services:
-  redis:
-    image: redis:7-alpine
-    container_name: redis
+  api:
+    container_name: family-tree-api-${ENV:-production}
+    image: ${DOCKER_IMAGE:-ghcr.io/Xayrulloh/family-tree-api:latest}
+    restart: unless-stopped
     ports:
-      - '6379:6379'
+      - "${API_PORT:-3000}:${API_PORT:-3000}"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${API_PORT:-3000}
+      - HOST=0.0.0.0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    env_file:
+      - .env
+    networks:
+      - backend
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    container_name: family-tree-redis-${ENV:-production}
+    image: redis:7-alpine
     restart: unless-stopped
     networks:
       - backend
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
 networks:
   backend:
