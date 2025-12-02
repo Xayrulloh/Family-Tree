@@ -84,14 +84,13 @@ jobs:
           project-slug: ${{ secrets.INFISICAL_PROJECT_ID }}
           env-slug: prod
           export-type: file
-          file-output-path: deploy/.env
+          file-output-path: ${{ github.workspace }}/deploy/.env
           include-imports: true
           recursive: true
 
       - name: Add runtime vars
         run: |
-          # FIX: Removed the leading './'
-          echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> deploy/.env
+          echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> ${{ github.workspace }}/deploy/.env
 
       - name: Upload deployment files
         uses: appleboy/scp-action@v0.1.7
