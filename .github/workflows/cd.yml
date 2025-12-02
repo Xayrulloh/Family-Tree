@@ -99,21 +99,21 @@ jobs:
           echo "Current directory contents:"
           ls -la .env
 
-      - name: Fix permissions on server
+      - name: Clean up old .env on server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
-          script_stop: true
           script: |
-            #!/bin/bash
+            /bin/bash -c "
             set -e
-            cd {{ env.DEPLOY_PATH }}
-
-            echo "Removing old .env file if it exists..."
+            cd ${{ env.DEPLOY_PATH }}
+            
+            echo 'Removing old .env file if it exists...'
             sudo rm -f .env || true
-            echo "Ready for new .env file"
+            echo 'Ready for new .env file'
+            "
 
       - name: Upload deployment files
         uses: appleboy/scp-action@v0.1.7
@@ -127,35 +127,33 @@ jobs:
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          IMAGE_TAG: ${{ env.IMAGE_TAG }}
-          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
-          envs: IMAGE_TAG,DEPLOY_PATH
           script: |
+            /bin/bash -c "
             set -e
 
             # Change to deploy directory
-            cd $DEPLOY_PATH
+            cd ${{ env.DEPLOY_PATH }}
 
-            echo "Verifying .env file..."
+            echo 'Verifying .env file...'
             ls -la .env
-            echo "First few lines of .env:"
+            echo 'First few lines of .env:'
             head -n 5 .env
 
-            echo "Logging into GHCR..."
-            echo "${{ secrets.GHP_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo 'Logging into GHCR...'
+            echo '${{ secrets.GHP_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            echo "Pulling latest image..."
+            echo 'Pulling latest image...'
             docker compose pull
 
-            echo "Restarting containers..."
+            echo 'Restarting containers...'
             docker compose up -d --remove-orphans
 
-            echo "Cleaning unused images..."
+            echo 'Cleaning unused images...'
             docker image prune -f
 
-            echo "Deployment complete 🎉"
+            echo 'Deployment complete 🎉'
+            "
