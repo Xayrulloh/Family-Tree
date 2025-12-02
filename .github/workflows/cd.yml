@@ -105,23 +105,15 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
+          script_stop: true
           script: |
+            #!/bin/bash
             set -e
-            cd ${{ env.DEPLOY_PATH }}
-            
-            echo "Checking current permissions..."
-            ls -la .env || echo ".env doesn't exist yet, that's fine"
-            
-            echo "Fixing permissions if .env exists..."
-            if [ -f ".env" ]; then
-              echo "Current owner: $(stat -c '%U:%G' .env)"
-              echo "Current permissions: $(stat -c '%a' .env)"
-              sudo chown ${{ secrets.USER }}:${{ secrets.USER }} .env
-              sudo chmod 644 .env
-              echo "Permissions fixed!"
-            else
-              echo ".env doesn't exist, will be created by SCP"
-            fi
+            cd {{ env.DEPLOY_PATH }}
+
+            echo "Removing old .env file if it exists..."
+            sudo rm -f .env || true
+            echo "Ready for new .env file"
 
       - name: Upload deployment files
         uses: appleboy/scp-action@v0.1.7
