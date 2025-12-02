@@ -93,37 +93,39 @@ jobs:
           echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> deploy/.env
 
       - name: Prepare .env file for upload
+        id: prepare-env
         run: |
-          # Copy the .env file to root for easier SCP
+          # Copy the .env file to root
           cp deploy/.env .env
+          chmod 644 .env
           echo "Current directory contents:"
           ls -la .env
 
-      - name: Clean up old .env on server
+          # Encode .env file to base64 for safe transfer
+          ENV_BASE64=$(base64 -w 0 .env 2>/dev/null || base64 .env)
+          echo "env_base64=$ENV_BASE64" >> $GITHUB_OUTPUT
+
+      - name: Upload .env file to server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
+          envs: ENV_BASE64
           script: |
-            bash -c "
             set -e
             cd ${{ env.DEPLOY_PATH }}
-            
+
             echo 'Removing old .env file if it exists...'
             sudo rm -f .env || true
-            echo 'Ready for new .env file'
-            "
 
-      - name: Upload deployment files
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.KEY }}
-          source: ".env"
-          target: ${{ env.DEPLOY_PATH }}
-          overwrite: true
+            echo 'Creating new .env file...'
+            echo "$ENV_BASE64" | base64 -d > .env
+
+            echo '.env file uploaded successfully'
+            ls -la .env
+        env:
+          ENV_BASE64: ${{ steps.prepare-env.outputs.env_base64 }}
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.0.3
