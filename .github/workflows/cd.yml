@@ -106,7 +106,7 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
           script: |
-            /bin/bash -c "
+            bash -c "
             set -e
             cd ${{ env.DEPLOY_PATH }}
             
@@ -132,7 +132,7 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
           script: |
-            /bin/bash -c "
+            bash -c "
             set -e
 
             # Change to deploy directory
