@@ -70,13 +70,10 @@ jobs:
     needs: build
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Create deploy directory
-        run: mkdir -p deploy
+        run: mkdir -p deploy 
 
-      - name: Fetch Infisical secrets (write to deploy/.env)
+      - name: Fetch Infisical secrets
         uses: Infisical/secrets-action@v1.0.7
         with:
           client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
@@ -84,16 +81,9 @@ jobs:
           project-slug: ${{ secrets.INFISICAL_PROJECT_ID }}
           env-slug: prod
           export-type: file
-          file-output-path: deploy/.env
+          file-output-path: ${{ github.workspace }}/deploy/.env
           include-imports: true
           recursive: true
-
-      - name: Prepare .env (add DOCKER_IMAGE and other runtime vars)
-        run: |
-          # Avoid printing secrets in logs
-          echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> deploy/.env
-          # optionally add other non-secret runtime values:
-          echo "DEPLOY_PATH=${{ env.DEPLOY_PATH }}" >> deploy/.env
 
       - name: Copy deployment files to server
         uses: appleboy/scp-action@v0.1.7
