@@ -1,40 +1,41 @@
 services:
-  db:
-    image: postgres:14-alpine
-    container_name: postgres
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - '${POSTGRES_PORT}:5432'
-    volumes:
-      - family_tree_postgres_data:/var/lib/postgresql/data
-      - ./init-db:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+  api:
+    container_name: family-tree-api
+    image: ${DOCKER_IMAGE:-ghcr.io/Xayrulloh/family-tree-api:latest}
     restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - HOST=0.0.0.0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    env_file:
+      - .env
     networks:
       - backend
+    depends_on:
+      redis:
+        condition: service_healthy
 
   redis:
+    container_name: family-tree-redis
     image: redis:7-alpine
-    container_name: redis
-    ports:
-      - '6379:6379'
     restart: unless-stopped
     networks:
       - backend
+    volumes:
+      - family_redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
 networks:
   backend:
     driver: bridge
 
 volumes:
-  family_tree_postgres_data:
+  family_redis_data:
     driver: local

@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
-import { and, eq, or } from 'drizzle-orm';
+import { and, asc, eq, or } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
@@ -484,6 +484,7 @@ export class FamilyTreeMemberService {
       where: and(
         eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
       ),
+      orderBy: asc(schema.familyTreeMembersSchema.createdAt),
     });
   }
 
