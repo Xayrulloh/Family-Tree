@@ -90,7 +90,7 @@ jobs:
 
       - name: Add runtime vars
         run: |
-          echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> "/deploy/.env"
+          echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> /deploy/.env
 
       - name: Upload deployment files
         uses: appleboy/scp-action@v0.1.7
