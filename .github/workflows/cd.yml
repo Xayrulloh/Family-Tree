@@ -84,7 +84,7 @@ jobs:
           project-slug: ${{ secrets.INFISICAL_PROJECT_ID }}
           env-slug: prod
           export-type: file
-          file-output-path: "deploy/.env"
+          file-output-path: "/deploy/.env"
           include-imports: true
           recursive: true
 
