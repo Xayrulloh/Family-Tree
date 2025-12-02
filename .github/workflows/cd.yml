@@ -88,9 +88,24 @@ jobs:
           include-imports: true
           recursive: true
 
+      - name: Verify .env file exists
+        run: |
+          echo "Checking if .env file exists..."
+          ls -la deploy/
+          if [ -f "deploy/.env" ]; then
+            echo ".env file exists"
+            echo "Content of .env:"
+            head -n 5 deploy/.env
+          else
+            echo "ERROR: .env file does not exist!"
+            exit 1
+          fi
+
       - name: Add runtime vars
         run: |
-          echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> /deploy/.env
+          echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> deploy/.env
+          echo "Added DOCKER_IMAGE variable"
+          tail -n 5 deploy/.env
 
       - name: Upload deployment files
         uses: appleboy/scp-action@v0.1.7
