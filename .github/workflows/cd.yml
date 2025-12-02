@@ -44,20 +44,17 @@ jobs:
       - name: Build API
         run: pnpm exec nx build api --prod
 
-      # Login to GHCR
       - uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GHP_TOKEN }}
 
-      # Generate Docker metadata (labels, annotations)
       - id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      # Build & Push
       - uses: docker/setup-buildx-action@v3
 
       - name: Build and push Docker image
@@ -72,7 +69,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Provenance
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
         with:
@@ -88,7 +84,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Pull secrets from Infisical
       - name: Load Secrets from Infisical
         uses: Infisical/secrets-action@v1.0.7
         with:
@@ -99,19 +94,16 @@ jobs:
           export-type: file
           file-location: deploy/prod.env
 
-      # Add DOCKER_IMAGE to env file
       - name: Add Docker image tag
         run: |
           echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> deploy/prod.env
 
-      # Prepare files
       - name: Prepare deployment bundle
         run: |
           mkdir -p deploy
           cp apps/api/docker-compose.yml deploy/docker-compose.yml
           mv deploy/prod.env deploy/.env
 
-      # Upload deployment bundle
       - name: Upload to Server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -123,7 +115,6 @@ jobs:
           strip_components: 1
           overwrite: true
 
-      # Run Docker commands on remote host
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         env:
