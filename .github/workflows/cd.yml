@@ -3,12 +3,6 @@ name: Production Deployment
 on:
   push:
     branches: ["main"]
-    paths:
-      - "apps/api/**"
-      - "libs/shared/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/cd.yml"
 
 env:
   REGISTRY: ghcr.io
@@ -17,10 +11,8 @@ env:
   DEPLOY_PATH: /opt/family-tree/production
 
 jobs:
-  build-and-push:
-    name: Build & Push Image
+  build:
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
       packages: write
@@ -28,35 +20,33 @@ jobs:
       id-token: write
 
     steps:
-      # Checkout
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # Setup Node & pnpm
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          cache: pnpm
-
-      # Install & Build API
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Build API
-        run: pnpm exec nx build api --prod
-
-      - uses: docker/login-action@v3
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GHP_TOKEN }}
 
-      - id: meta
+      - name: Extract metadata
+        id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      - uses: docker/setup-buildx-action@v3
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install PNPM
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Build API
+        run: npx nx build api --prod
 
       - name: Build and push Docker image
         id: push
@@ -67,47 +57,32 @@ jobs:
           push: true
           tags: ${{ env.IMAGE_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ghcr.io/xayrulloh/family-tree-api
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
   deploy:
-    name: Deploy to Server
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs: build
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Fetch Infisical Secrets
+      - name: Fetch Infisical secrets
         uses: Infisical/secrets-action@v1.0.7
         with:
           client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
-          env-slug: "prod"
           project-slug: ${{ secrets.INFISICAL_PROJECT_ID }}
-          export-type: "file"
-          file-output-path: "deploy/.env"
+          env-slug: prod
+          export-type: file
+          file-output-path: deploy/.env
           include-imports: true
           recursive: true
 
-      - name: Add Docker image tag
-        run: |
-          echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> deploy/prod.env
-
-      - name: Prepare deployment bundle
-        run: |
-          mkdir -p deploy
-          cp apps/api/docker-compose.yml deploy/docker-compose.yml
-          mv deploy/prod.env deploy/.env
-
-      - name: Upload to Server
+      - name: Copy deployment files to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
@@ -118,32 +93,30 @@ jobs:
           strip_components: 1
           overwrite: true
 
-      - name: Deploy via SSH
+      - name: Restart service remotely
         uses: appleboy/ssh-action@v1.0.3
         env:
-          REGISTRY: ${{ env.REGISTRY }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
           DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
-          envs: REGISTRY,DEPLOY_PATH
+          envs: IMAGE_TAG,DEPLOY_PATH
           script: |
             set -e
             cd $DEPLOY_PATH
 
-            echo "Logging into registry..."
-            echo "${{ secrets.GHP_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
-            
+            echo "Logging into GHCR..."
+            echo "${{ secrets.GHP_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
             echo "Pulling latest image..."
             docker compose pull
 
-            echo "Restarting services..."
+            echo "Restarting containers..."
             docker compose up -d --remove-orphans
 
             echo "Cleaning unused images..."
             docker image prune -f
 
-            docker logout $REGISTRY
-
-            echo "🚀 Deployment successful!"
+            echo "Deployment complete 🎉"
