@@ -113,17 +113,19 @@ jobs:
           key: ${{ secrets.KEY }}
           envs: ENV_BASE64
           script: |
+            bash -c '
             set -e
             cd ${{ env.DEPLOY_PATH }}
 
-            echo 'Removing old .env file if it exists...'
+            echo "Removing old .env file if it exists..."
             sudo rm -f .env || true
 
-            echo 'Creating new .env file...'
-            echo "$ENV_BASE64" | base64 -d > .env
+            echo "Creating new .env file..."
+            echo "$ENV_BASE64" | base64 -d | sudo tee .env > /dev/null
 
-            echo '.env file uploaded successfully'
+            echo ".env file uploaded successfully"
             ls -la .env
+            '
         env:
           ENV_BASE64: ${{ steps.prepare-env.outputs.env_base64 }}
 
