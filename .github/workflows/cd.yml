@@ -1,6 +1,5 @@
 name: Production Deployment
 
-# Triggers on push to the 'main' branch, only if files in the API or shared libraries change
 on:
   push:
     branches: ["main"]
@@ -12,10 +11,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # FIX: Ensures the image name is lowercase for Docker registry consistency
-  IMAGE_NAME: ${{ github.repository | lower }}-api 
-  # Best Practice: Use SHA for immutable tagging
-  IMAGE_TAG: sha-${{ github.sha }}
+  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_TAG: ghcr.io/xayrulloh/family-tree-api:stable
   DEPLOY_PATH: /opt/family-tree/production
 
 jobs:
@@ -48,7 +45,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
-      - name: Build API (Creates 'dist' directory required by Dockerfile)
+      - name: Build API (Creates 'dist' directory)
         run: npx nx build api --prod
 
       # 2. Docker Registry Login
@@ -59,36 +56,36 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHP_TOKEN }}
 
-      # 3. Tagging and Metadata Extraction
+      # 3. Extract metadata (still useful for automatic labels/annotations)
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
+          # Use the repository name for image metadata
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest
-            type=sha,format=long
-
+          
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       # 4. Build and Push Image
       - name: Build and push Docker image
-        id: push # Required for the attestation step below
+        id: push
         uses: docker/build-push-action@v6
         with:
           context: .
           file: apps/api/Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          # KEY CHANGE: Using the static IMAGE_TAG directly
+          tags: ${{ env.IMAGE_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # 5. Security Attestation (Supply Chain Security)
+      # 5. Security Attestation
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
         with:
+          # Use the original IMAGE_NAME variable (without the static tag) for the subject name
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}} 
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
@@ -100,12 +97,12 @@ jobs:
   # ------------------------------------------------------------------
   deploy:
     runs-on: ubuntu-latest
-    needs: build-and-push # Ensures deployment only happens after a successful build
+    needs: build-and-push
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 1. Fetch Secrets from Infisical (into GitHub Runner's environment)
+      # 1. Fetch Secrets from Infisical
       - name: Fetch Infisical Secrets
         uses: Infisical/secrets-action@v1.0.7
         with:
@@ -115,18 +112,14 @@ jobs:
           project-slug: ${{ secrets.INFISICAL_PROJECT_ID }}
           export-type: 'env'
 
-      # 2. Prepare deployment files (.env and docker-compose.yml)
+      # 2. Prepare deployment files
       - name: Prepare deployment files
         run: |
           mkdir -p deploy
-          
-          # Dump all fetched Infisical secrets and GitHub environment vars (like REGISTRY, IMAGE_TAG)
-          # into the .env file that docker-compose needs.
           printenv > deploy/.env
           echo "" >> deploy/.env
-          echo "DOCKER_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" >> deploy/.env
-          
-          # Copy the Compose file to the deployment folder
+          # KEY CHANGE: DOCKER_IMAGE is now the full static path/tag
+          echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> deploy/.env
           cp apps/api/docker-compose.yml deploy/docker-compose.yml
 
       # 3. Copy files to server
@@ -153,23 +146,19 @@ jobs:
           key: ${{ secrets.KEY }}
           envs: REGISTRY,DEPLOY_PATH
           script: |
-            # Exit immediately if any command fails
             set -e
             cd $DEPLOY_PATH
 
             echo "🚀 Logging into registry and pulling new image..."
-            # Use the GHP_TOKEN for Docker login on the remote host
             echo "${{ secrets.GHP_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
             
-            # Pulls the exact SHA image defined in the .env file
+            # Docker compose pulls the static tag defined in .env
             docker compose pull
 
             echo "🔄 Restarting containers..."
-            # Stop, remove, and recreate services. Uses --remove-orphans to clean up unlisted services.
             docker compose up -d --remove-orphans
 
             echo "🧹 Cleaning up old Docker images..."
-            # Cleans up unused images to free up disk space
             docker image prune -f
             docker logout $REGISTRY
             
