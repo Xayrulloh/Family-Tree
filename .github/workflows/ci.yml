@@ -32,7 +32,7 @@ jobs:
         uses: nrwl/nx-set-shas@v4
 
       - name: Install deps
-        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+        run: pnpm install
 
       - name: Run Checks/Lint/Build
         run: npx nx affected -t lint build

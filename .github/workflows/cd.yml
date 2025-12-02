@@ -44,7 +44,7 @@ jobs:
 
       # 2. Build the Application (Generates dist/apps/api)
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+        run: pnpm install
 
       - name: Build API
         run: npx nx build api --prod
