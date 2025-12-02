@@ -70,6 +70,9 @@ jobs:
     needs: build
 
     steps:
+      - name: Create deploy directory
+        run: mkdir -p deploy
+
       - name: Fetch Infisical secrets
         uses: Infisical/secrets-action@v1.0.7
         with:
