@@ -92,42 +92,54 @@ jobs:
         run: |
           echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> deploy/.env
 
-      - name: Prepare .env file for upload
-        id: prepare-env
+      - name: Prepare files for upload
+        id: prepare-files
         run: |
-          # Copy the .env file to root
+          # Copy the .env file to deploy directory
           cp deploy/.env .env
           chmod 644 .env
-          echo "Current directory contents:"
-          ls -la .env
 
-          # Encode .env file to base64 for safe transfer
+          # Copy docker-compose.yml to deploy directory
+          cp apps/api/docker-compose.yml docker-compose.yml
+          chmod 644 docker-compose.yml
+
+          echo "Files to upload:"
+          ls -la .env docker-compose.yml
+
+          # Encode files to base64 for safe transfer
           ENV_BASE64=$(base64 -w 0 .env 2>/dev/null || base64 .env)
-          echo "env_base64=$ENV_BASE64" >> $GITHUB_OUTPUT
+          COMPOSE_BASE64=$(base64 -w 0 docker-compose.yml 2>/dev/null || base64 docker-compose.yml)
 
-      - name: Upload .env file to server
+          echo "env_base64=$ENV_BASE64" >> $GITHUB_OUTPUT
+          echo "compose_base64=$COMPOSE_BASE64" >> $GITHUB_OUTPUT
+
+      - name: Upload deployment files to server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
-          envs: ENV_BASE64
+          envs: ENV_BASE64,COMPOSE_BASE64
           script: |
             bash -c '
             set -e
             cd ${{ env.DEPLOY_PATH }}
 
-            echo "Removing old .env file if it exists..."
-            sudo rm -f .env || true
+            echo "Removing old files if they exist..."
+            sudo rm -f .env docker-compose.yml || true
 
-            echo "Creating new .env file..."
+            echo "Creating .env file..."
             echo "$ENV_BASE64" | base64 -d | sudo tee .env > /dev/null
 
-            echo ".env file uploaded successfully"
-            ls -la .env
+            echo "Creating docker-compose.yml file..."
+            echo "$COMPOSE_BASE64" | base64 -d | sudo tee docker-compose.yml > /dev/null
+
+            echo "Files uploaded successfully:"
+            ls -la .env docker-compose.yml
             '
         env:
-          ENV_BASE64: ${{ steps.prepare-env.outputs.env_base64 }}
+          ENV_BASE64: ${{ steps.prepare-files.outputs.env_base64 }}
+          COMPOSE_BASE64: ${{ steps.prepare-files.outputs.compose_base64 }}
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.0.3
