@@ -84,7 +84,7 @@ jobs:
           project-slug: ${{ secrets.INFISICAL_PROJECT_ID }}
           env-slug: prod
           export-type: file
-          file-output-path: "/deploy/.env"
+          file-output-path: "deploy/.env"
           include-imports: true
           recursive: true
 
@@ -92,13 +92,20 @@ jobs:
         run: |
           echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> deploy/.env
 
+      - name: Prepare .env file for upload
+        run: |
+          # Copy the .env file to root for easier SCP
+          cp deploy/.env .env
+          echo "Current directory contents:"
+          ls -la .env
+
       - name: Upload deployment files
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
-          source: "deploy/.env"
+          source: ".env"
           target: ${{ env.DEPLOY_PATH }}
           overwrite: true
 
@@ -118,16 +125,10 @@ jobs:
             # Change to deploy directory
             cd $DEPLOY_PATH
 
-            # Check and fix permissions
-            echo "Checking permissions..."
-            ls -la .env || echo ".env file doesn't exist"
-
-            # Fix permissions if .env exists
-            if [ -f ".env" ]; then
-              echo "Fixing permissions on .env file..."
-              sudo chown $USER:$USER .env
-              sudo chmod 644 .env
-            fi
+            echo "Verifying .env file..."
+            ls -la .env
+            echo "First few lines of .env:"
+            head -n 5 .env
 
             echo "Logging into GHCR..."
             echo "${{ secrets.GHP_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
