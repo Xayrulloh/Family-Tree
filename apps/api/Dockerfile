@@ -10,10 +10,12 @@ RUN addgroup --system api && \
 COPY dist/apps/api/package*.json ./
 COPY dist/apps/api/ ./
 
+RUN corepack enable
+
 RUN chown -R api:api .
 
 USER api
 
-RUN corepack enable && pnpm install --prod
+RUN pnpm install --prod
 
 CMD [ "node", "main.js" ]

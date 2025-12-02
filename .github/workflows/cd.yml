@@ -32,7 +32,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 1. Setup Environment
       - name: Install pnpm
         uses: pnpm/action-setup@v4
       
@@ -42,14 +41,12 @@ jobs:
           node-version: lts/*
           cache: "pnpm"
 
-      # 2. Build the Application (Generates dist/apps/api)
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
       - name: Build API
         run: npx nx build api --prod
 
-      # 3. Docker Setup
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -69,7 +66,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 4. Build and Push Image
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -78,11 +74,9 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # No build-args needed anymore as per your new Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # 5. Security Attestation (Best Practice)
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
         with:
@@ -100,7 +94,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 1. Fetch Secrets (Injects into environment)
       - name: Fetch Infisical Secrets
         uses: Infisical/secrets-action@v1.0.7
         with:
@@ -110,32 +103,25 @@ jobs:
           project-slug: ${{ secrets.INFISICAL_PROJECT_ID }}
           export-type: 'env'
 
-      # 2. Prepare files for SCP
       - name: Prepare deployment files
         run: |
           mkdir -p deploy
-          
-          # Create .env file with secrets AND the image tag
           printenv > deploy/.env
           echo "" >> deploy/.env
           echo "DOCKER_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" >> deploy/.env
-          
-          # Copy the Compose file
           cp apps/api/docker-compose.yml deploy/docker-compose.yml
 
-      # 3. Copy files to server
       - name: Copy files to Server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERN }}
+          username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
           source: "deploy/*"
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
           overwrite: true
 
-      # 4. SSH Command to run Docker
       - name: Execute Remote Deployment
         uses: appleboy/ssh-action@v1.0.3
         env:
@@ -153,11 +139,9 @@ jobs:
             echo "🚀 Pulling new image..."
             echo "${{ secrets.GHP_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
             
-            # Pull the image defined in the .env file we just copied
             docker compose pull
 
             echo "🔄 Restarting containers..."
-            # This handles stopping old containers and starting new ones
             docker compose up -d --remove-orphans
 
             echo "🧹 Cleaning up..."
