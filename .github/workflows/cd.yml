@@ -70,8 +70,11 @@ jobs:
     needs: build
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Create deploy directory
-        run: mkdir -p deploy 
+        run: mkdir -p ./deploy
 
       - name: Fetch Infisical secrets
         uses: Infisical/secrets-action@v1.0.7
@@ -81,22 +84,26 @@ jobs:
           project-slug: ${{ secrets.INFISICAL_PROJECT_ID }}
           env-slug: prod
           export-type: file
-          file-output-path: ${{ github.workspace }}/deploy/.env
+          file-output-path: ./deploy/.env
           include-imports: true
           recursive: true
 
-      - name: Copy deployment files to server
+      - name: Add runtime vars
+        run: |
+          echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> ./deploy/.env
+
+      - name: Upload deployment files
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
-          source: "deploy/*"
+          source: "./deploy/*"
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
           overwrite: true
 
-      - name: Restart service remotely
+      - name: Deploy on server
         uses: appleboy/ssh-action@v1.0.3
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
