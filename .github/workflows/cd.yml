@@ -8,6 +8,7 @@ on:
       - "libs/shared/**"
       - "package.json"
       - "pnpm-lock.yaml"
+      - ".github/workflows/cd.yml"
 
 env:
   REGISTRY: ghcr.io
