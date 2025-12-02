@@ -1,8 +1,5 @@
 FROM docker.io/node:lts-alpine
 
-ARG NODE_ENV=production
-
-ENV NODE_ENV=${NODE_ENV}
 ENV HOST=0.0.0.0
 
 WORKDIR /app

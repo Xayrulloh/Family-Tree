@@ -1,0 +1,167 @@
+name: Production Deployment
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - 'apps/api/**'
+      - 'libs/shared/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-api
+  IMAGE_TAG: sha-${{ github.sha }}
+  DEPLOY_PATH: /opt/family-tree/production
+
+jobs:
+  # ------------------------------------------------------------------
+  # JOB 1: Build App -> Build Docker -> Push to Registry
+  # ------------------------------------------------------------------
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 1. Setup Environment
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "pnpm"
+
+      # 2. Build the Application (Generates dist/apps/api)
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+
+      - name: Build API
+        run: npx nx build api --prod
+
+      # 3. Docker Setup
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHP_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=long
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 4. Build and Push Image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # No build-args needed anymore as per your new Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # 5. Security Attestation (Best Practice)
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+  # ------------------------------------------------------------------
+  # JOB 2: Deploy to Server
+  # ------------------------------------------------------------------
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 1. Fetch Secrets (Injects into environment)
+      - name: Fetch Infisical Secrets
+        uses: Infisical/secrets-action@v1.0.7
+        with:
+          client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
+          client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          env-slug: 'prod'
+          project-slug: ${{ secrets.INFISICAL_PROJECT_ID }}
+          export-type: 'env'
+
+      # 2. Prepare files for SCP
+      - name: Prepare deployment files
+        run: |
+          mkdir -p deploy
+          
+          # Create .env file with secrets AND the image tag
+          printenv > deploy/.env
+          echo "" >> deploy/.env
+          echo "DOCKER_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" >> deploy/.env
+          
+          # Copy the Compose file
+          cp apps/api/docker-compose.yml deploy/docker-compose.yml
+
+      # 3. Copy files to server
+      - name: Copy files to Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERN }}
+          key: ${{ secrets.KEY }}
+          source: "deploy/*"
+          target: ${{ env.DEPLOY_PATH }}
+          strip_components: 1
+          overwrite: true
+
+      # 4. SSH Command to run Docker
+      - name: Execute Remote Deployment
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          REGISTRY: ${{ env.REGISTRY }}
+          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.KEY }}
+          envs: REGISTRY,DEPLOY_PATH
+          script: |
+            set -e
+            cd $DEPLOY_PATH
+
+            echo "🚀 Pulling new image..."
+            echo "${{ secrets.GHP_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
+            
+            # Pull the image defined in the .env file we just copied
+            docker compose pull
+
+            echo "🔄 Restarting containers..."
+            # This handles stopping old containers and starting new ones
+            docker compose up -d --remove-orphans
+
+            echo "🧹 Cleaning up..."
+            docker image prune -f
+            docker logout $REGISTRY
+            
+            echo "✅ Deployed Successfully!"

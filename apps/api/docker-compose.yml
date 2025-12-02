@@ -1,13 +1,11 @@
 services:
   api:
-    container_name: family-tree-api-${ENV:-production}
+    container_name: family-tree-api
     image: ${DOCKER_IMAGE:-ghcr.io/Xayrulloh/family-tree-api:latest}
     restart: unless-stopped
     ports:
-      - "${API_PORT:-3000}:${API_PORT:-3000}"
+      - "3000:3000"
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
-      - PORT=${API_PORT:-3000}
       - HOST=0.0.0.0
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -20,13 +18,13 @@ services:
         condition: service_healthy
 
   redis:
-    container_name: family-tree-redis-${ENV:-production}
+    container_name: family-tree-redis
     image: redis:7-alpine
     restart: unless-stopped
     networks:
       - backend
     volumes:
-      - redis_data:/data
+      - family_redis_data:/data
     command: redis-server --appendonly yes
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -39,5 +37,5 @@ networks:
     driver: bridge
 
 volumes:
-  redis_data:
+  family_redis_data:
     driver: local
