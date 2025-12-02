@@ -88,14 +88,12 @@ jobs:
       - name: Fetch Infisical Secrets
         uses: Infisical/secrets-action@v1.0.7
         with:
-          method: universal-auth
           client-id: ${{ secrets.INFISICAL_CLIENT_ID }}
           client-secret: ${{ secrets.INFISICAL_CLIENT_SECRET }}
           env-slug: "prod"
           project-slug: ${{ secrets.INFISICAL_PROJECT_ID }}
           export-type: "file"
           file-output-path: "deploy/.env"
-          secret-path: "/"
           include-imports: true
           recursive: true
 
