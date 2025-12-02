@@ -98,9 +98,8 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
-          source: "deploy/*"
+          source: "deploy/.env"
           target: ${{ env.DEPLOY_PATH }}
-          strip_components: 1
           overwrite: true
 
       - name: Deploy on server
@@ -115,7 +114,20 @@ jobs:
           envs: IMAGE_TAG,DEPLOY_PATH
           script: |
             set -e
+
+            # Change to deploy directory
             cd $DEPLOY_PATH
+
+            # Check and fix permissions
+            echo "Checking permissions..."
+            ls -la .env || echo ".env file doesn't exist"
+
+            # Fix permissions if .env exists
+            if [ -f ".env" ]; then
+              echo "Fixing permissions on .env file..."
+              sudo chown $USER:$USER .env
+              sudo chmod 644 .env
+            fi
 
             echo "Logging into GHCR..."
             echo "${{ secrets.GHP_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
