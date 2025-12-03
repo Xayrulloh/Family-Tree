@@ -4,5 +4,6 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "outputDirectory": "dist/apps/web",
   "framework": "vite",
-  "ignoreCommand": "echo \"$VERCEL_GIT_COMMIT_REF\" | grep -q '^dependabot/' && exit 1 || exit 0"
+  "ignoreCommand": "echo \"$VERCEL_GIT_COMMIT_REF\" | grep -q '^dependabot/' && exit 1 || exit 0",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
