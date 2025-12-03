@@ -1,4 +1,5 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { GoogleOauthGuard } from '~/common/guards/google-oauth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
@@ -6,6 +7,7 @@ import { CLIENT_URL, COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { AuthService } from './auth.service';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -33,8 +35,8 @@ export class AuthController {
     res.cookie(COOKIES_ACCESS_TOKEN_KEY, token, {
       maxAge: 2592000000, // 30 days
       httpOnly: true,
-      // sameSite: 'strict',
       sameSite: 'none',
+      domain: CLIENT_URL,
       secure: true,
     });
 
@@ -46,8 +48,8 @@ export class AuthController {
   async logout(@Req() _req: Request, @Res() res: Response): Promise<void> {
     res.clearCookie(COOKIES_ACCESS_TOKEN_KEY, {
       httpOnly: true,
-      // sameSite: 'strict',
       sameSite: 'none',
+      domain: CLIENT_URL,
       secure: true,
       path: '/',
     });
