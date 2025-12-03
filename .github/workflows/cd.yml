@@ -93,14 +93,17 @@ jobs:
           echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> deploy/.env
           cp apps/api/docker-compose.yml deploy/docker-compose.yml
 
-      - name: Clean up old files
+      - name: Setup deployment permissions
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
           script: |
-            sudo rm -f ${{ env.DEPLOY_PATH }}/.env ${{ env.DEPLOY_PATH }}/docker-compose.yml
+            # Ensure deployment directory exists
+            sudo mkdir -p ${{ env.DEPLOY_PATH }}
+            # Change ownership to the current user so scp can write to it
+            sudo chown -R $USER:$USER ${{ env.DEPLOY_PATH }}
 
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
