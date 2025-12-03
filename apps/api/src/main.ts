@@ -30,7 +30,7 @@ async function bootstrap() {
   // swagger
   SwaggerBuilder.make(app);
 
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/${GLOBAL_PREFIX}`,
