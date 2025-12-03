@@ -154,11 +154,6 @@ jobs:
             # Change to deploy directory
             cd ${{ env.DEPLOY_PATH }}
 
-            echo 'Verifying .env file...'
-            ls -la .env
-            echo 'First few lines of .env:'
-            head -n 5 .env
-
             echo 'Logging into GHCR...'
             echo '${{ secrets.GHP_TOKEN }}' | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
