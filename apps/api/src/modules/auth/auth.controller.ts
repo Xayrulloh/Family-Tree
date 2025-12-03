@@ -36,7 +36,6 @@ export class AuthController {
       maxAge: 2592000000, // 30 days
       httpOnly: true,
       sameSite: 'none',
-      domain: CLIENT_URL,
       secure: true,
     });
 
@@ -49,9 +48,7 @@ export class AuthController {
     res.clearCookie(COOKIES_ACCESS_TOKEN_KEY, {
       httpOnly: true,
       sameSite: 'none',
-      domain: CLIENT_URL,
       secure: true,
-      path: '/',
     });
 
     res.status(200).send();
