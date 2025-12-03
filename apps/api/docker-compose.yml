@@ -4,7 +4,7 @@ services:
     image: ${DOCKER_IMAGE:-ghcr.io/Xayrulloh/family-tree-api:latest}
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3000:8080"
     environment:
       - HOST=0.0.0.0
       - NODE_ENV=production
