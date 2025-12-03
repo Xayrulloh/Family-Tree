@@ -93,6 +93,15 @@ jobs:
           echo "DOCKER_IMAGE=${{ env.IMAGE_TAG }}" >> deploy/.env
           cp apps/api/docker-compose.yml deploy/docker-compose.yml
 
+      - name: Clean up old files
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.KEY }}
+          script: |
+            sudo rm -f ${{ env.DEPLOY_PATH }}/.env ${{ env.DEPLOY_PATH }}/docker-compose.yml
+
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
         with:
