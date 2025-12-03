@@ -3,17 +3,15 @@ services:
     container_name: family-tree-api
     image: ${DOCKER_IMAGE:-ghcr.io/Xayrulloh/family-tree-api:latest}
     restart: unless-stopped
-    ports:
-      - "3000:8080"
+    network_mode: host
     environment:
       - HOST=0.0.0.0
       - NODE_ENV=production
-      - REDIS_URL=redis://redis:6379
+      - PORT=3000
+      - REDIS_URL=redis://localhost:6379
       - REDIS_TTL=3600000
     env_file:
       - .env
-    networks:
-      - backend
     depends_on:
       redis:
         condition: service_healthy
@@ -22,8 +20,6 @@ services:
     container_name: family-tree-redis
     image: redis:7-alpine
     restart: unless-stopped
-    networks:
-      - backend
     volumes:
       - family_redis_data:/data
     command: redis-server --appendonly yes
@@ -32,10 +28,6 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
-
-networks:
-  backend:
-    driver: bridge
 
 volumes:
   family_redis_data:
