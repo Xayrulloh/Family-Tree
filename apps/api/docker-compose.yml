@@ -7,8 +7,9 @@ services:
       - "3000:3000"
     environment:
       - HOST=0.0.0.0
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+      - REDIS_TTL=3600000
     env_file:
       - .env
     networks:
