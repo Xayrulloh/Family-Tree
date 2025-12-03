@@ -3,7 +3,8 @@ services:
     container_name: family-tree-api
     image: ${DOCKER_IMAGE:-ghcr.io/Xayrulloh/family-tree-api:latest}
     restart: unless-stopped
-    network_mode: host
+    ports:
+       - "3000:3000"
     environment:
       - HOST=0.0.0.0
       - NODE_ENV=production
