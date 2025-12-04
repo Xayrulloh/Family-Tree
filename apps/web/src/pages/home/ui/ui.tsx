@@ -20,7 +20,8 @@ const HomePage: React.FC = () => {
         <div
           className="absolute inset-0 bg-cover bg-center opacity-20"
           style={{
-            backgroundImage: "url('/hero-family-tree.png')",
+            backgroundImage:
+              "url('https://storage.famtree.uz/assets/hero-family-tree.png')",
             backgroundPosition: 'center center',
           }}
         />
@@ -181,6 +182,21 @@ const HomePage: React.FC = () => {
 
       {/* How It Works */}
       <section className="py-32 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
+        {/* Background Video */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover opacity-30"
+        >
+          <source
+            src="https://storage.famtree.uz/assets/family-tree.webm"
+            type="video/webm"
+          />
+        </video>
+
         <div className="absolute inset-0">
           <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/30 rounded-full blur-3xl" />
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl" />
@@ -261,25 +277,22 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-32 relative overflow-hidden">
-        {/* Animated gradient mesh background */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700" />
-          <div className="absolute inset-0 opacity-30">
-            <div className="absolute top-0 left-0 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
-            <div className="absolute top-0 right-0 w-96 h-96 bg-yellow-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
-            <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000" />
-          </div>
+      <section className="py-32 relative overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50">
+        {/* Soft animated background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-200/40 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-200/40 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-200/40 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000" />
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="max-w-4xl mx-auto text-center text-white">
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-8 leading-tight">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-8 leading-tight bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
               Ready to Preserve Your
               <span className="block mt-2">Family's Legacy?</span>
             </h2>
 
-            <p className="text-xl sm:text-2xl mb-12 opacity-90 max-w-2xl mx-auto">
+            <p className="text-xl sm:text-2xl mb-12 text-gray-700 max-w-2xl mx-auto">
               Join thousands of families who are already creating beautiful
               family trees and preserving memories.
             </p>
@@ -289,13 +302,13 @@ const HomePage: React.FC = () => {
                 type="primary"
                 size="large"
                 icon={<ArrowRightOutlined />}
-                className="!text-lg !px-12 !py-8 !h-auto !rounded-full !bg-white !text-blue-600 !border-0 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 font-bold"
+                className="!text-lg !px-12 !py-8 !h-auto !rounded-full !bg-gradient-to-r !from-blue-600 !to-indigo-600 !border-0 !text-white shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 font-bold"
                 onClick={() => routes.registration.open()}
               >
                 Start Your Free Tree
               </Button>
 
-              <p className="text-sm opacity-75">
+              <p className="text-sm text-gray-600">
                 No credit card required • Free forever
               </p>
             </div>
@@ -307,11 +320,14 @@ const HomePage: React.FC = () => {
                 { number: '50,000+', label: 'Trees Created' },
                 { number: '1M+', label: 'Memories Preserved' },
               ].map((stat) => (
-                <div key={stat.number} className="text-center">
-                  <div className="text-4xl sm:text-5xl font-bold mb-2">
+                <div
+                  key={stat.number}
+                  className="text-center bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg"
+                >
+                  <div className="text-4xl sm:text-5xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     {stat.number}
                   </div>
-                  <div className="text-lg opacity-75">{stat.label}</div>
+                  <div className="text-lg text-gray-700">{stat.label}</div>
                 </div>
               ))}
             </div>
