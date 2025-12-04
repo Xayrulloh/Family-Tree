@@ -24,7 +24,7 @@ import { UserModule } from './modules/user/user.module';
       throttlers: [
         {
           ttl: 1000,
-          limit: 3,
+          limit: 5,
         },
       ],
     }),
