@@ -87,7 +87,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
           transition: 'all 0.2s ease',
           display: 'flex',
           flexDirection: 'column',
-          cursor: 'pointer', // Already have hoverable, but explicit
+          cursor: 'pointer',
         }}
         cover={
           <div
@@ -109,6 +109,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
             {tree.image ? (
               <img
                 src={tree.image}
+                loading="eager"
                 alt={tree.name}
                 style={{
                   height: '100%',
