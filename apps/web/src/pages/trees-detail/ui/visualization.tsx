@@ -358,19 +358,68 @@ const ParentChildConnections: React.FC<{
 
     if (childPositions.length === 1) {
       const child = childPositions[0];
+      const childId = childIds[0];
       const childTop = child.y;
 
-      result.push(
-        <line
-          key={`stem-${child.x}-${child.y}`}
-          x1={coupleX}
-          y1={topY}
-          x2={coupleX}
-          y2={childTop}
-          stroke={CONNECTION.PARENT_CHILD.color}
-          strokeWidth={CONNECTION.PARENT_CHILD.width}
-        />,
+      const childHasSpouse = couples.some(
+        (couple) =>
+          couple.fromMemberId === childId || couple.toMemberId === childId,
       );
+
+      if (childHasSpouse) {
+        const intermediateY = childTop - NODE_HEIGHT / 2 - 8;
+
+        result.push(
+          <line
+            key={`stem-vertical-${coupleX}-${topY}`}
+            x1={coupleX}
+            y1={topY}
+            x2={coupleX}
+            y2={intermediateY}
+            stroke={CONNECTION.PARENT_CHILD.color}
+            strokeWidth={CONNECTION.PARENT_CHILD.width}
+          />,
+        );
+
+        // Horizontal line from parent X to child X
+        result.push(
+          <line
+            key={`stem-horizontal-${coupleX}-${child.x}`}
+            x1={coupleX}
+            y1={intermediateY}
+            x2={child.x}
+            y2={intermediateY}
+            stroke={CONNECTION.PARENT_CHILD.color}
+            strokeWidth={CONNECTION.PARENT_CHILD.width}
+          />,
+        );
+
+        // Vertical line from intermediate Y down to child
+        result.push(
+          <line
+            key={`stem-child-${child.x}-${intermediateY}`}
+            x1={child.x}
+            y1={intermediateY}
+            x2={child.x}
+            y2={childTop - 20}
+            stroke={CONNECTION.PARENT_CHILD.color}
+            strokeWidth={CONNECTION.PARENT_CHILD.width}
+          />,
+        );
+      } else {
+        // Straight line for single child without spouse
+        result.push(
+          <line
+            key={`stem-${child.x}-${child.y}`}
+            x1={coupleX}
+            y1={topY}
+            x2={coupleX}
+            y2={childTop}
+            stroke={CONNECTION.PARENT_CHILD.color}
+            strokeWidth={CONNECTION.PARENT_CHILD.width}
+          />,
+        );
+      }
     } else {
       const childTops = childPositions.map((c) => c.y - NODE_HEIGHT / 2);
       const branchY = Math.min(...childTops) - 8;
