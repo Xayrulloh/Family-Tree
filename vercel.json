@@ -4,5 +4,11 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "outputDirectory": "dist/apps/web",
   "framework": "vite",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "ignoreCommand": "bash -c 'if [[ \"$VERCEL_GIT_COMMIT_AUTHOR_LOGIN\" == \"dependabot[bot]\" ]] || [[ \"$VERCEL_GIT_COMMIT_AUTHOR_LOGIN\" == \"dependabot\" ]]; then echo \"Skipping Dependabot\"; exit 0; else exit 1; fi'"
 }
