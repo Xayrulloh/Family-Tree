@@ -163,7 +163,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     if (!svg) return;
 
     const handleWheel = (e: WheelEvent) => {
-      e.preventDefault(); // Now works!
+      e.preventDefault();
 
       const scaleFactor = 1.1;
       const { width, height, x, y } = viewBox;
@@ -365,7 +365,7 @@ const ParentChildConnections: React.FC<{
 
         result.push(
           <line
-            key={`stem-vertical-${coupleX}-${topY}`}
+            key={`stem-vertical-${childId}-${coupleX}-${topY}`}
             x1={coupleX}
             y1={topY}
             x2={coupleX}
@@ -381,7 +381,7 @@ const ParentChildConnections: React.FC<{
 
         result.push(
           <line
-            key={`stem-horizontal-${coupleX}-${child.x}`}
+            key={`stem-horizontal-${childId}-${coupleX}-${child.x}`}
             x1={coupleX + x2Offset}
             y1={intermediateY}
             x2={child.x + x1Offset}
@@ -394,7 +394,7 @@ const ParentChildConnections: React.FC<{
         // Vertical line from intermediate Y down to child
         result.push(
           <line
-            key={`stem-child-${child.x}-${intermediateY}`}
+            key={`stem-child-${childId}-${child.x}-${intermediateY}`}
             x1={child.x}
             y1={intermediateY}
             x2={child.x}
