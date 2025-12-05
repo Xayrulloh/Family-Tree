@@ -23,8 +23,8 @@ import { UserModule } from './modules/user/user.module';
     ThrottlerModule.forRoot({
       throttlers: [
         {
-          ttl: 1000,
-          limit: 5,
+          ttl: 10000,
+          limit: 30,
         },
       ],
     }),
