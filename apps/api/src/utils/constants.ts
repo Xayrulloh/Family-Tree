@@ -4,5 +4,3 @@ export const GLOBAL_PREFIX = 'api';
 export const DICEBEAR_URL = 'https://api.dicebear.com';
 export const CLIENT_URL = 'https://famtree.uz';
 export const COOKIE_DOMAIN = '.famtree.uz';
-// export const CLIENT_URL = 'http://localhost:4200';
-// export const COOKIE_DOMAIN = 'localhost';
