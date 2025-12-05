@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { ConfigService } from '@nestjs/config';
-import { and, asc, eq, or } from 'drizzle-orm';
+import { and, asc, eq, inArray, or } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
@@ -456,7 +456,7 @@ export class FamilyTreeMemberService {
       );
     }
 
-    // check he is not the last member
+    // check member is not the last member
     const familyTreeMembers =
       await this.db.query.familyTreeMembersSchema.findMany({
         where: and(
@@ -471,9 +471,51 @@ export class FamilyTreeMemberService {
       );
     }
 
-    await this.db
-      .delete(schema.familyTreeMembersSchema)
-      .where(eq(schema.familyTreeMembersSchema.id, param.id));
+    // check member has parents
+    const parents =
+      await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+        where: and(
+          eq(schema.familyTreeMemberConnectionsSchema.toMemberId, param.id),
+          eq(
+            schema.familyTreeMemberConnectionsSchema.type,
+            FamilyTreeMemberConnectionEnum.PARENT,
+          ),
+        ),
+      });
+
+    if (parents) {
+      // if has parents delete member with spouse
+      const partner =
+        await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+          where: and(
+            or(
+              eq(
+                schema.familyTreeMemberConnectionsSchema.fromMemberId,
+                param.id,
+              ),
+              eq(schema.familyTreeMemberConnectionsSchema.toMemberId, param.id),
+            ),
+            eq(
+              schema.familyTreeMemberConnectionsSchema.type,
+              FamilyTreeMemberConnectionEnum.SPOUSE,
+            ),
+          ),
+        });
+
+      await this.db
+        .delete(schema.familyTreeMembersSchema)
+        .where(
+          inArray(schema.familyTreeMembersSchema.id, [
+            partner?.toMemberId || param.id,
+            partner?.fromMemberId || param.id,
+          ]),
+        );
+    } else {
+      // otherwise just delete
+      await this.db
+        .delete(schema.familyTreeMembersSchema)
+        .where(eq(schema.familyTreeMembersSchema.id, param.id));
+    }
   }
 
   // get all members
