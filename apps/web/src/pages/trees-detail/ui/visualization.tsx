@@ -176,12 +176,6 @@ export const Visualization: React.FC<Props> = ({ model }) => {
       const newWidth = zoomIn ? width / scaleFactor : width * scaleFactor;
       const newHeight = zoomIn ? height / scaleFactor : height * scaleFactor;
 
-      const minZoom = 0.5;
-      const maxZoom = 3;
-      const currentScale = newWidth / 1200;
-
-      if (currentScale < minZoom || currentScale > maxZoom) return;
-
       const newX = mouseX - ((mouseX - x) * newWidth) / width;
       const newY = mouseY - ((mouseY - y) * newHeight) / height;
 
