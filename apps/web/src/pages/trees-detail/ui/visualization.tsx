@@ -348,7 +348,7 @@ const ParentChildConnections: React.FC<{
 
     if (childPositions.length === 0) return;
 
-    const topY = coupleY + 1;
+    const topY = coupleY + 1.5;
 
     if (childPositions.length === 1) {
       const child = childPositions[0];
@@ -376,12 +376,15 @@ const ParentChildConnections: React.FC<{
         );
 
         // Horizontal line from parent X to child X
+        const x1Offset = child.x > coupleX ? 1 : -1;
+        const x2Offset = child.x > coupleX ? -1 : 1;
+
         result.push(
           <line
             key={`stem-horizontal-${coupleX}-${child.x}`}
-            x1={coupleX}
+            x1={coupleX + x2Offset}
             y1={intermediateY}
-            x2={child.x}
+            x2={child.x + x1Offset}
             y2={intermediateY}
             stroke={CONNECTION.PARENT_CHILD.color}
             strokeWidth={CONNECTION.PARENT_CHILD.width}
@@ -417,8 +420,8 @@ const ParentChildConnections: React.FC<{
     } else {
       const childTops = childPositions.map((c) => c.y - NODE_HEIGHT / 2);
       const branchY = Math.min(...childTops) - 8;
-      const leftX = Math.min(...childPositions.map((c) => c.x));
-      const rightX = Math.max(...childPositions.map((c) => c.x));
+      const leftX = Math.min(...childPositions.map((c) => c.x)) - 1;
+      const rightX = Math.max(...childPositions.map((c) => c.x)) + 1;
 
       // vertical stem
       result.push(
