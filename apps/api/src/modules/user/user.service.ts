@@ -1,13 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { UserGenderEnum, type UserResponseType } from '@family-tree/shared';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { ConfigService } from '@nestjs/config';
 import { eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
-import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
 import generateRandomAvatar from '~/helpers/random-avatar.helper';
@@ -16,17 +13,11 @@ import type { UserUpdateRequestDto } from './dto/user.dto';
 
 @Injectable()
 export class UserService {
-  private cloudflareR2Path: string;
-
   constructor(
     @Inject(DrizzleAsyncProvider)
     private db: NodePgDatabase<typeof schema>,
     private cloudflareConfig: CloudflareConfig,
-    configService: ConfigService<EnvType>,
-  ) {
-    this.cloudflareR2Path =
-      configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
-  }
+  ) {}
 
   async getUserByEmail(email: string): Promise<UserResponseType> {
     const user = await this.db.query.usersSchema.findFirst({
@@ -77,11 +68,7 @@ export class UserService {
       // FIXME: Need to think about related family trees
     }
 
-    if (
-      user.image &&
-      user.image !== body.image &&
-      user.image?.includes(this.cloudflareR2Path)
-    ) {
+    if (user.image && user.image !== body.image) {
       this.cloudflareConfig.deleteFile(user.image);
     }
 
@@ -102,7 +89,7 @@ export class UserService {
       throw new NotFoundException(`User with id ${id} not found`);
     }
 
-    if (user.image?.includes(this.cloudflareR2Path)) {
+    if (user.image) {
       this.cloudflareConfig.deleteFile(user.image);
     }
 

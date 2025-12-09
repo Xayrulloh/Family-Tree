@@ -36,6 +36,7 @@ sample({
 
 export const useMessageApi = () => {
   const [messageApi, contextHolder] = message.useMessage();
+
   useGate(Gate, messageApi);
 
   return contextHolder;

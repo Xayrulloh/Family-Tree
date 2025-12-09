@@ -116,7 +116,7 @@ sample({
   target: uploadImageFx,
 });
 
-// If image is already a URL, skip upload and go directly to edit
+// If image is already a URL (no upload needed), go directly to edit
 sample({
   clock: formValidated,
   source: {
@@ -124,6 +124,10 @@ sample({
     edited: form.$formValues,
   },
   filter: ({ original, edited }) => {
+    if (!!edited.image && edited.image.startsWith('blob')) {
+      return false;
+    }
+
     if (
       !!edited.image &&
       edited.image.startsWith('https') &&

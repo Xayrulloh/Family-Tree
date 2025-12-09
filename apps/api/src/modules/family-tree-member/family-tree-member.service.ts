@@ -437,11 +437,14 @@ export class FamilyTreeMemberService {
       );
     }
 
+    // check member
+    const member = await this.getFamilyTreeMember(param);
+
     // check descendants
     const descendants =
       await this.db.query.familyTreeMemberConnectionsSchema.findMany({
         where: and(
-          eq(schema.familyTreeMemberConnectionsSchema.fromMemberId, param.id),
+          eq(schema.familyTreeMemberConnectionsSchema.fromMemberId, member.id),
           eq(
             schema.familyTreeMemberConnectionsSchema.type,
             FamilyTreeMemberConnectionEnum.PARENT,
@@ -475,7 +478,7 @@ export class FamilyTreeMemberService {
     const parents =
       await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
         where: and(
-          eq(schema.familyTreeMemberConnectionsSchema.toMemberId, param.id),
+          eq(schema.familyTreeMemberConnectionsSchema.toMemberId, member.id),
           eq(
             schema.familyTreeMemberConnectionsSchema.type,
             FamilyTreeMemberConnectionEnum.PARENT,
@@ -483,39 +486,64 @@ export class FamilyTreeMemberService {
         ),
       });
 
+    // if has parents delete member with their spouse
     if (parents) {
-      // if has parents delete member with spouse
-      const partner =
+      const partners =
         await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
           where: and(
             or(
               eq(
                 schema.familyTreeMemberConnectionsSchema.fromMemberId,
-                param.id,
+                member.id,
               ),
-              eq(schema.familyTreeMemberConnectionsSchema.toMemberId, param.id),
+              eq(
+                schema.familyTreeMemberConnectionsSchema.toMemberId,
+                member.id,
+              ),
             ),
             eq(
               schema.familyTreeMemberConnectionsSchema.type,
               FamilyTreeMemberConnectionEnum.SPOUSE,
             ),
           ),
+          with: {
+            fromMember: true,
+            toMember: true,
+          },
         });
 
-      await this.db
-        .delete(schema.familyTreeMembersSchema)
-        .where(
-          inArray(schema.familyTreeMembersSchema.id, [
-            partner?.toMemberId || param.id,
-            partner?.fromMemberId || param.id,
-          ]),
-        );
-    } else {
-      // otherwise just delete
-      await this.db
-        .delete(schema.familyTreeMembersSchema)
-        .where(eq(schema.familyTreeMembersSchema.id, param.id));
+      if (partners) {
+        // async delete avatar
+        if (partners?.fromMember.image) {
+          this.cloudflareConfig.deleteFile(partners?.fromMember?.image);
+        }
+
+        if (partners?.toMember.image) {
+          this.cloudflareConfig.deleteFile(partners?.toMember?.image);
+        }
+
+        await this.db
+          .delete(schema.familyTreeMembersSchema)
+          .where(
+            inArray(schema.familyTreeMembersSchema.id, [
+              partners?.toMemberId || member.id,
+              partners?.fromMemberId || member.id,
+            ]),
+          );
+
+        return;
+      }
     }
+    // otherwise just delete
+
+    // async delete avatar
+    if (member?.image) {
+      this.cloudflareConfig.deleteFile(member.image);
+    }
+
+    await this.db
+      .delete(schema.familyTreeMembersSchema)
+      .where(eq(schema.familyTreeMembersSchema.id, member.id));
   }
 
   // get all members
