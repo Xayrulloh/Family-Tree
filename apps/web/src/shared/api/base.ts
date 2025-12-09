@@ -28,7 +28,7 @@ base.interceptors.response.use(
     if (
       method &&
       successMessages[method] &&
-      response.config.url !== '/files/tree'
+      !response.config.url?.startsWith('/files/')
     ) {
       successFx(successMessages[method]);
     }

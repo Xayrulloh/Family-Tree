@@ -4,15 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { ConfigService } from '@nestjs/config';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, notLike } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
-import type { EnvType } from '~/config/env/env-validation';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
+import { DICEBEAR_URL } from '~/utils/constants';
 import type {
   FamilyTreeArrayResponseDto,
   FamilyTreeCreateRequestDto,
@@ -22,17 +20,11 @@ import type {
 
 @Injectable()
 export class FamilyTreeService {
-  private cloudflareR2Path: string;
-
   constructor(
     @Inject(DrizzleAsyncProvider)
     private db: NodePgDatabase<typeof schema>,
     private cloudflareConfig: CloudflareConfig,
-    configService: ConfigService<EnvType>,
-  ) {
-    this.cloudflareR2Path =
-      configService.getOrThrow<EnvType['CLOUDFLARE_URL']>('CLOUDFLARE_URL');
-  }
+  ) {}
 
   async getFamilyTreesOfUser(
     userId: string,
@@ -100,11 +92,7 @@ export class FamilyTreeService {
       throw new NotFoundException(`Family tree with id ${id} not found`);
     }
 
-    if (
-      body.image &&
-      familyTree.image !== body.image &&
-      familyTree.image?.includes(this.cloudflareR2Path)
-    ) {
+    if (familyTree.image && familyTree.image !== body.image) {
       this.cloudflareConfig.deleteFile(familyTree.image);
     }
 
@@ -128,6 +116,27 @@ export class FamilyTreeService {
     if (!familyTree) {
       throw new NotFoundException(`Family tree with id ${id} not found`);
     }
+
+    // delete family tree image
+    if (familyTree.image) {
+      this.cloudflareConfig.deleteFile(familyTree.image);
+    }
+
+    // delete family tree members images
+    await this.db.query.familyTreeMembersSchema
+      .findMany({
+        where: and(
+          eq(schema.familyTreeMembersSchema.familyTreeId, id),
+          notLike(schema.familyTreeMembersSchema.image, `${DICEBEAR_URL}%`),
+        ),
+      })
+      .then((members) => {
+        members.forEach((member) => {
+          if (member.image) {
+            this.cloudflareConfig.deleteFile(member.image);
+          }
+        });
+      });
 
     await this.db
       .delete(schema.familyTreesSchema)
