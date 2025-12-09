@@ -4,12 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, notLike } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
+import { DICEBEAR_URL } from '~/utils/constants';
 import type {
   FamilyTreeArrayResponseDto,
   FamilyTreeCreateRequestDto,
@@ -116,9 +117,26 @@ export class FamilyTreeService {
       throw new NotFoundException(`Family tree with id ${id} not found`);
     }
 
+    // delete family tree image
     if (familyTree.image) {
       this.cloudflareConfig.deleteFile(familyTree.image);
     }
+
+    // delete family tree members images
+    await this.db.query.familyTreeMembersSchema
+      .findMany({
+        where: and(
+          eq(schema.familyTreeMembersSchema.familyTreeId, id),
+          notLike(schema.familyTreeMembersSchema.image, `${DICEBEAR_URL}%`),
+        ),
+      })
+      .then((members) => {
+        members.forEach((member) => {
+          if (member.image) {
+            this.cloudflareConfig.deleteFile(member.image);
+          }
+        });
+      });
 
     await this.db
       .delete(schema.familyTreesSchema)
