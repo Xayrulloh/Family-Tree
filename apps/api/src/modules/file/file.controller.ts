@@ -1,4 +1,7 @@
-import { FileUploadResponseSchema } from '@family-tree/shared';
+import {
+  FileUploadFolderEnum,
+  FileUploadResponseSchema,
+} from '@family-tree/shared';
 import {
   Controller,
   HttpStatus,
@@ -50,7 +53,15 @@ export class FileController {
       },
     },
   })
-  @ApiParam({ name: 'folder', required: true, enum: ['avatar', 'tree'] })
+  @ApiParam({
+    name: 'folder',
+    required: true,
+    enum: [
+      FileUploadFolderEnum.AVATAR,
+      FileUploadFolderEnum.TREE,
+      FileUploadFolderEnum.TREE_MEMBER,
+    ],
+  })
   @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
   @ApiResponse({ status: 422, description: 'File type or size not valid.' })
   @ZodSerializerDto(FileUploadResponseSchema)

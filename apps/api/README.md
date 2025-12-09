@@ -1,186 +1,658 @@
-# Family Tree Backend Architecture
+# 🔧 Family Tree - API (Backend)
 
-## Technologies used
+Enterprise-grade NestJS backend API for the Family Tree platform, featuring graph-inspired database architecture and robust cloud infrastructure.
 
-- [NestJS](https://nestjs.com/)
-- [Cloudflare R2](https://developers.cloudflare.com/r2/)
-- [Zod](https://zod.dev/)
-- [Drizzle ORM](https://orm.drizzle.team/)
-- [PostgreSQL](https://www.postgresql.org/)
-- [Google Auth](https://developers.google.com/identity/protocols/oauth2)
-- [JWT](https://jwt.io/)
+---
 
-## Database structure
+## 🏗️ Architecture
+
+This application follows **NestJS modular architecture** with a clean separation of concerns:
+
+```
+apps/api/src/
+├── modules/          # Feature modules (controllers, services, DTOs)
+├── database/         # Database schema and migrations
+├── config/           # Configuration modules (cache, env, etc.)
+├── common/           # Shared guards, interceptors, decorators
+├── helpers/          # Utility functions
+└── main.ts           # Application entry point
+```
+
+### Shared Types & Validation
+
+All TypeScript types and Zod validation schemas are **shared from `@family-tree/shared`**, ensuring 100% type safety and consistency with the frontend.
+
+---
+
+## 🗄️ Database Structure
+
+### Graph-Inspired Architecture
+
+The database schema is **inspired by Neo4j graph database concepts**, modeling family relationships as a graph:
+
+- **Nodes** → Family Tree Members (individuals)
+- **Edges** → Connections (relationships between members)
+
+This approach naturally represents family hierarchies and relationships, making it ideal for genealogical data.
+
+### Database Schema
+
+Built with **Drizzle ORM** and **PostgreSQL**, the schema includes:
+
+#### Core Tables
+
+**`users`** - Authenticated users (Google OAuth)
+- `id`, `email`, `username`, `name`, `image`
+- `gender`, `dob`, `dod`, `description`
+- `createdAt`, `updatedAt`, `deletedAt`
+
+**`family_trees`** - Family tree containers
+- `id`, `name`, `image`
+- `createdBy` → references `users.id`
+- Unique constraint on `(name, createdBy)`
+
+**`family_tree_members`** - Individual family members (Nodes)
+- `id`, `name`, `image`, `gender`
+- `dob`, `dod`, `description`
+- `familyTreeId` → references `family_trees.id`
+
+**`family_tree_member_connections`** - Relationships (Edges)
+- `id`, `type` (SPOUSE | PARENT)
+- `fromMemberId` → references `family_tree_members.id`
+- `toMemberId` → references `family_tree_members.id`
+- `familyTreeId` → references `family_trees.id`
+
+#### Supporting Tables
+
+**`fcm_tokens`** - Firebase Cloud Messaging tokens
+- `id`, `token`, `deviceType` (ANDROID | IOS | WEB)
+- `userId` → references `users.id`
+
+**`notifications`** - User notifications
+- `id`, `content`
+- `senderUserId` → references `users.id`
+- `receiverUserId` → references `users.id`
+
+**`notification_reads`** - Notification read status
+- `userId` → references `users.id`
+- `updatedAt`
+
+### Enums
+
+```typescript
+// Gender enums
+UserGenderEnum: MALE | FEMALE | UNKNOWN
+MemberGenderEnum: MALE | FEMALE
+
+// Connection types
+FamilyTreeMemberConnectionEnum: SPOUSE | PARENT
+
+// Device types
+FCMTokenDeviceEnum: ANDROID | IOS | WEB
+```
+
+### Cascade Deletions
+
+All foreign keys use `onDelete: 'cascade'` to maintain referential integrity:
+- Deleting a user → deletes their trees, tokens, notifications
+- Deleting a tree → deletes all members and connections
+- Deleting a member → deletes all their connections
+
+### Entity Relationship Diagram
 
 ```mermaid
 erDiagram
-    users {
-        uuid id PK
-        text email "unique"
-        text username
-        text name
-        text image "url to bucket"
-        user_gender gender "male female unknown"
-        text description "who he/she is"
-        date dob "date of birth"
-        date dod "date of death"
-        timestamp created_at
-        timestamp updated_at
-        timestamp deleted_at
-    }
-
-    members {
-        uuid id PK
-        uuid family_tree_id FK
-        text name
-        text image "url to bucket"
-        member_gender gender "male female unknown"
-        text description "who he/she is/was"
-        date dob "date of birth"
-        date dod "date of death"
-        timestamp created_at
-        timestamp updated_at
-        timestamp deleted_at
-    }
-
-    family_trees {
-        uuid id PK
-        text name
-        uuid created_by FK
-        text image "url to bucket"
-        boolean public "not mvp"
-        timestamp created_at
-        timestamp updated_at
-        timestamp deleted_at
-    }
-
-    family_tree_members {
-        uuid id PK
-        uuid family_tree_id FK
-        uuid user_id FK "not mvp"
-        uuid member_id FK
-        timestamp created_at
-        timestamp updated_at
-        timestamp deleted_at
-    }
-
-    family_tree_members_connection {
-        uuid id PK
-        uuid family_tree_id FK
-        uuid from_user_id FK
-        uuid to_user_id FK
-        family_tree_connection connection_type "parent(vertical) or spouse(horizontal)"
-        timestamp created_at
-        timestamp updated_at
-        timestamp deleted_at
-    }
-
-    fcm_tokens {
-        uuid id PK
-        text token
-        uuid user_id FK
-        fcm_token_device_type device_type "Android, Mac, Linux, Windows"
-        timestamp created_at
-        timestamp updated_at
-        timestamp deleted_at
-    }
-
-    notifications {
-        uuid id PK
-        text content
-        uuid receiver_user_id FK
-        uuid sender_user_id FK
-        timestamp created_at
-        timestamp updated_at
-        timestamp deleted_at
-    }
-
-    notification_reads {
-        uuid user_id FK,PK
-        timestamp updated_at
-    }
-
-    users ||--o{ family_trees : "owner"
-    users ||--o{ family_tree_members : "users in family tree"
-    users ||--o{ family_tree_members_connections : "connects_from"
-    users ||--o{ family_tree_members_connections : "connects_to"
+    users ||--o{ family_trees : "creates"
     users ||--o{ fcm_tokens : "has"
     users ||--o{ notifications : "sends"
     users ||--o{ notifications : "receives"
-    users ||--o{ notification_reads : "marks_read"
+    users ||--o{ notification_reads : "reads"
     
-    family_trees ||--o{ members : "contains"
-    family_trees ||--o{ family_tree_members : "has_members"
-    family_trees ||--o{ family_tree_members_connections : "has_connections"
+    family_trees ||--o{ family_tree_members : "contains"
+    family_trees ||--o{ family_tree_member_connections : "has"
     
-    members ||--o{ family_tree_members : "represented_in"
+    family_tree_members ||--o{ family_tree_member_connections : "from"
+    family_tree_members ||--o{ family_tree_member_connections : "to"
     
-    family_tree_members }o--|| members : "references_members"
-    family_tree_members }o--|| users : "references_user"
-    family_tree_members }o--|| family_trees : "belongs_to"
+    users {
+        uuid id PK
+        string email UK
+        string username
+        string name
+        string image
+        enum gender
+        date dob
+        date dod
+        string description
+        timestamp createdAt
+        timestamp updatedAt
+        timestamp deletedAt
+    }
     
-    family_tree_members_connections }o--|| family_trees : "belongs_to"
-    family_tree_members_connections }o--|| users : "from_user"
-    family_tree_members_connections }o--|| users : "to_user"
+    family_trees {
+        uuid id PK
+        string name
+        uuid createdBy FK
+        string image
+        timestamp createdAt
+        timestamp updatedAt
+        timestamp deletedAt
+    }
     
-    fcm_tokens }o--|| users : "belongs_to"
+    family_tree_members {
+        uuid id PK
+        string name
+        string image
+        enum gender
+        date dob
+        date dod
+        string description
+        uuid familyTreeId FK
+        timestamp createdAt
+        timestamp updatedAt
+        timestamp deletedAt
+    }
     
-    notifications }o--|| users : "sender"
-    notifications }o--|| users : "receiver"
+    family_tree_member_connections {
+        uuid id PK
+        uuid familyTreeId FK
+        uuid fromMemberId FK
+        uuid toMemberId FK
+        enum type "SPOUSE | PARENT"
+        timestamp createdAt
+        timestamp updatedAt
+        timestamp deletedAt
+    }
     
-    notification_reads }o--|| users : "user"
+    fcm_tokens {
+        uuid id PK
+        string token
+        uuid userId FK
+        enum deviceType "ANDROID | IOS | WEB"
+        timestamp createdAt
+        timestamp updatedAt
+        timestamp deletedAt
+    }
+    
+    notifications {
+        uuid id PK
+        string content
+        uuid receiverUserId FK
+        uuid senderUserId FK
+        timestamp createdAt
+        timestamp updatedAt
+        timestamp deletedAt
+    }
+    
+    notification_reads {
+        uuid userId FK
+        timestamp updatedAt
+    }
 ```
 
-## APIs
 
-- ### **Auth**
+---
 
-  - **GET** `/auth/google` => Redirect to Google Auth
-  - **GET** `/auth/google/callback` => Callback from Google Auth
-  - **GET** `/auth/logout` => Logout from current session
+## ⚡ Redis Caching Strategy
 
-- ### **Users**
+### Cost Efficiency & Performance
 
-  - **GET** `/users/me` => Get current user
-  - **GET** `/users/{id}` => Get user by id
-  - **PUT** `/users` => Update current user
-  - **PATCH** `/users/avatar` => Update user avatar to random one
+To optimize **cost efficiency** and reduce load on the Neon PostgreSQL database, the API implements **Redis caching** for frequently accessed data.
 
-- ### **Family Trees**
+### Why Redis?
 
-  - **GET** `/family-trees` => Get all family trees of current user
-  - **GET** `/family-trees/publics/{name}` => Get all public family trees by name (not mvp)
-  - **GET** `/family-trees/{id}` => Get members and members connections of family tree
-  - **POST** `/family-trees` => Create family tree
-  - **PUT** `/family-trees/{id}` => Update family tree by id
-  - **DELETE** `/family-trees/{id}` => Delete family tree by id
+- **Reduce Database Hits** - Minimize queries to Neon, staying within free tier limits
+- **Cost Optimization** - Lower database costs by caching expensive queries
+- **Improved Performance** - Sub-millisecond response times for cached data
+- **Reduced Latency** - Faster API responses for end users
 
-- ### **Family Tree Members**
+### Caching Implementation
 
-  - **GET** `/family-trees/{familyTreeId}/members` => Get members of family tree
-  - **GET** `/family-trees/{familyTreeId}/members/{id}` => Get member info by id
-  - **POST** `/family-trees/{familyTreeId}/members` => Add member to family tree
-  - **PUT** `/family-trees/{familyTreeId}/members/{id}` => Update member by id
-  - **DELETE** `/family-trees/{familyTreeId}/members/{id}` => Delete member from family tree
+The API uses **@nestjs/cache-manager** with **Redis** as the backing store:
 
-- ### **Family Tree Members Connections**
+```typescript
+// Example: Caching family tree members
+const cachedMembers = await this.cacheService.get(
+  `family-trees:${familyTreeId}:members`
+);
 
-  - **GET** `/family-trees/{familyTreeId}/members/connections` => Get connections of family tree
-  - **GET** `/family-trees/{familyTreeId}/members/{memberUserId}/connections` => Get connections of member
-  - **POST** `/family-trees/{familyTreeId}/members/connections` => Add connection to member
-  - **PUT** `/family-trees/{familyTreeId}/members/connections/{id}` => Update connection by id
-  - **DELETE** `/family-trees/{familyTreeId}/members/connections/{id}` => Delete connection from member
+if (cachedMembers) {
+  return cachedMembers; // Return from cache
+}
 
-- ### **FCM Tokens**
+// Fetch from database if not cached
+const members = await this.db.query(...);
 
-  - **POST** `/fcm-tokens` => Create fcm token
-  - **DELETE** `/fcm-tokens` => Delete fcm token
+// Store in cache for future requests
+this.cacheService.set(
+  `family-trees:${familyTreeId}:members`,
+  members
+);
+```
 
-- ### **Notifications**
+### Cached Endpoints
 
-  - **GET** `/notifications` => Get notifications of current user
-  - **GET** `/notifications/read` => Mark notifications as read
+The following endpoints utilize Redis caching:
 
-- ### **Files**
+- **Users**
+  - `GET /users/me` - Current user profile
+  - `GET /users/:id` - User by ID
 
-  - **POST** `/files/{folder}` => Upload file, either avatar or tree
+- **Family Trees**
+  - `GET /family-trees` - User's family trees
+  - `GET /family-trees/:id` - Tree by ID
+
+- **Family Tree Members**
+  - `GET /family-trees/:familyTreeId/members` - All members
+  - `GET /family-trees/:familyTreeId/members/:id` - Member by ID
+
+- **Member Connections**
+  - `GET /family-trees/:familyTreeId/members/connections` - All connections
+  - `GET /family-trees/:familyTreeId/members/:memberUserId/connections` - Member connections
+
+### Cache Invalidation
+
+Cache is automatically invalidated on data mutations:
+
+```typescript
+// On update/delete operations
+await this.cacheService.delMultiple([
+  `family-trees:${treeId}`,
+  `family-trees:${treeId}:members`,
+  `family-trees:${treeId}:members:connections`,
+  `users:${userId}:family-trees`,
+]);
+```
+
+### Cache Configuration
+
+- **TTL (Time To Live)**: Configurable via `REDIS_TTL` environment variable
+- **Connection**: Redis URL via `REDIS_URL` environment variable
+- **Adapter**: `@keyv/redis` for seamless integration
+
+---
+
+
+## 🛠️ Technologies Used
+
+### Core Framework
+- **NestJS 11** - Progressive Node.js framework
+- **TypeScript 5** - Type-safe development
+- **Express 5** - HTTP server
+
+### Database & ORM
+- **PostgreSQL** - Relational database (hosted on Neon)
+- **Drizzle ORM** - Type-safe SQL query builder
+- **Drizzle Kit** - Database migrations
+
+### Authentication & Security
+- **Passport.js** - Authentication middleware
+- **Passport Google OAuth2** - Google authentication strategy
+- **Passport JWT** - JWT authentication strategy
+- **@nestjs/jwt** - JWT token generation
+- **Cookie Parser** - Secure cookie handling
+
+### Caching & Performance
+- **Redis** - In-memory caching (via Keyv)
+- **@nestjs/cache-manager** - Cache abstraction
+- **@keyv/redis** - Redis adapter for Keyv
+
+### File Storage
+- **AWS SDK S3** - S3-compatible client
+- **Cloudflare R2** - Object storage (S3-compatible)
+- **Multer** - Multipart/form-data handling
+
+### Validation & Documentation
+- **Zod** - Runtime type validation (from shared library)
+- **nestjs-zod** - NestJS integration for Zod
+- **@nestjs/swagger** - OpenAPI/Swagger documentation
+
+### Monitoring & Error Tracking
+- **Sentry** - Error tracking and performance monitoring
+- **@sentry/nestjs** - NestJS integration
+- **@sentry/profiling-node** - Performance profiling
+
+### Rate Limiting & Security
+- **@nestjs/throttler** - Rate limiting
+- **CORS** - Cross-origin resource sharing
+- **Express Basic Auth** - Basic authentication
+
+### Development Tools
+- **Biome** - Fast linting and formatting
+- **Vitest** - Unit testing
+- **ts-node** - TypeScript execution
+- **tsx** - Fast TypeScript runner
+
+---
+
+## 📡 API Endpoints
+
+### Authentication (`/auth`)
+
+- `GET /auth/google` - Initiate Google OAuth flow
+- `GET /auth/google/callback` - Google OAuth callback
+- `GET /auth/logout` - Logout user
+
+### Users (`/users`)
+
+- `GET /users/me` - Get current authenticated user
+- `GET /users/:id` - Get user by ID
+- `PUT /users` - Update current user profile
+- `PATCH /users/avatar` - Generate random avatar for user
+
+### Family Trees (`/family-trees`)
+
+- `GET /family-trees` - Get all trees of current user
+- `GET /family-trees/:id` - Get tree by ID
+- `POST /family-trees` - Create new family tree
+- `PUT /family-trees/:id` - Update tree
+- `DELETE /family-trees/:id` - Delete tree
+
+### Family Tree Members (`/family-trees/:familyTreeId/members`)
+
+- `GET /family-trees/:familyTreeId/members` - Get all members in tree
+- `GET /family-trees/:familyTreeId/members/:id` - Get member by ID
+- `POST /family-trees/:familyTreeId/members/child` - Add child member
+- `POST /family-trees/:familyTreeId/members/spouse` - Add spouse member
+- `POST /family-trees/:familyTreeId/members/parents` - Add parents
+- `PUT /family-trees/:familyTreeId/members/:id` - Update member
+- `DELETE /family-trees/:familyTreeId/members/:id` - Delete member
+
+### Member Connections (`/family-trees/:familyTreeId/members`)
+
+- `GET /family-trees/:familyTreeId/members/connections` - Get all connections in tree
+- `GET /family-trees/:familyTreeId/members/:memberUserId/connections` - Get connections for specific member
+
+### File Upload (`/files`)
+
+- `POST /files/:folder` - Upload file to Cloudflare R2
+  - Supported folders: `avatar`, `tree`
+  - Accepted formats: JPEG, PNG
+  - Max size: 5MB
+
+### Notifications (`/notifications`)
+
+- `GET /notifications` - Get user notifications
+- `GET /notifications/read` - Mark all notifications as read
+
+### FCM Tokens (`/fcm-tokens`)
+
+- Manage Firebase Cloud Messaging tokens for push notifications
+
+---
+
+## 🚀 Running Locally
+
+### Prerequisites
+
+- **Node.js** 18 or higher
+- **pnpm** 10 or higher
+- **Docker** & **Docker Compose** (for PostgreSQL and Redis)
+
+### Installation
+
+1. **Install dependencies** (from project root)
+   ```bash
+   pnpm install
+   ```
+
+2. **Set up environment variables**
+   
+   Create a `.env` file in `apps/api/` based on `.env.example`:
+   ```bash
+   cp apps/api/.env.example apps/api/.env
+   ```
+   
+   See [Environment Variables](#environment-variables) section below for details.
+
+3. **Start Docker services** (PostgreSQL + Redis)
+   ```bash
+   cd apps/api
+   docker compose up -d
+   ```
+
+4. **Run database migrations**
+   ```bash
+   # Generate migrations
+   pnpm drizzle:generate
+   
+   # Push schema to database
+   pnpm drizzle:push
+   ```
+
+5. **Start development server**
+   ```bash
+   # From project root
+   pnpm start:backend
+   
+   # Or using Nx directly
+   npx nx serve api
+   ```
+
+6. **Access the API**
+   ```
+   http://localhost:${PORT}
+   ```
+
+7. **View Swagger documentation**
+   ```
+   http://localhost:${PORT}/api
+   ```
+
+### Environment Variables
+
+All environment variable examples are stored in `apps/api/.env.example`.
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/db` |
+| `PORT` | Server port | `${PORT}` |
+| **Google OAuth** | | |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID | From Google Console |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | From Google Console |
+| `GOOGLE_CALLBACK_URL` | OAuth callback URL | `http://localhost:${PORT}/auth/google/callback` |
+| **JWT** | | |
+| `JWT_SECRET` | Secret for signing JWT tokens | Random secure string |
+| **Cookies** | | |
+| `COOKIES_SECRET` | Secret for cookie encryption | Random secure string |
+| **Cloudflare R2** | | |
+| `CLOUDFLARE_URL` | Public R2 bucket URL | `https://pub-xxxxx.r2.dev` |
+| `CLOUDFLARE_ACCESS_KEY_ID` | R2 access key ID | From Cloudflare |
+| `CLOUDFLARE_SECRET_ACCESS_KEY` | R2 secret access key | From Cloudflare |
+| `CLOUDFLARE_ENDPOINT` | R2 endpoint URL | `https://xxxxx.r2.cloudflarestorage.com` |
+| **Sentry** | | |
+| `SENTRY_DSN` | Sentry project DSN | From Sentry dashboard |
+| **Redis** | | |
+| `REDIS_URL` | Redis connection string | `redis://localhost:6379` |
+| `REDIS_TTL` | Cache TTL in seconds | `3600` |
+
+### Development Commands
+
+```bash
+# Start dev server
+pnpm start:backend
+
+# Build for production
+npx nx build api --prod
+
+# Run linting
+npx nx lint api
+
+# Run tests
+npx nx test api
+
+# Database management
+pnpm drizzle:generate  # Generate migrations
+pnpm drizzle:push      # Push schema to DB
+pnpm drizzle:studio    # Open Drizzle Studio
+```
+
+---
+
+## 🚢 DevOps & Deployment
+
+### Infrastructure
+
+The backend is deployed with a modern, scalable infrastructure:
+
+- **Hosting**: [Hetzner](https://www.hetzner.com/) - High-performance cloud servers
+- **Database**: [Neon](https://neon.tech/) - Serverless PostgreSQL
+- **Storage**: [Cloudflare R2](https://www.cloudflare.com/products/r2/) - S3-compatible object storage
+- **Monitoring**: [Sentry](https://sentry.io/) - Error tracking and performance monitoring
+- **Secrets**: [Infisical](https://infisical.com/) - Centralized environment variable management
+
+### Deployment Pipeline
+
+Automated deployment via **GitHub Actions** (`.github/workflows/cd.yml`):
+
+#### 1. Build Stage
+- Checkout code
+- Install dependencies with pnpm
+- Build API with Nx (`npx nx build api --prod`)
+- Build Docker image
+- Push to GitHub Container Registry (GHCR)
+- Generate artifact attestation
+
+#### 2. Deploy Stage
+- Fetch secrets from **Infisical**
+- Upload `.env` and `docker-compose.yml` to Hetzner server
+- SSH into server
+- Pull latest Docker image from GHCR
+- Restart containers with Docker Compose
+- Clean up unused images
+
+### Docker Configuration
+
+The API runs in a Docker container:
+
+```yaml
+# docker-compose.yml
+services:
+  api:
+    image: ghcr.io/xayrulloh/family-tree-api:stable
+    ports:
+      - "${PORT}:${PORT}"
+    env_file:
+      - .env
+    restart: unless-stopped
+```
+
+### Secrets Management with Infisical
+
+All environment variables are stored securely in **Infisical**:
+
+- Centralized secret management
+- Environment-specific configurations (dev, staging, prod)
+- Automatic secret injection during deployment
+- No secrets in Git repository
+
+### Monitoring with Sentry
+
+**Sentry** integration provides:
+- Real-time error tracking
+- Performance monitoring
+- Request tracing
+- User feedback collection
+- Release tracking
+
+### Continuous Deployment
+
+Deployment triggers:
+- **Push to `main` branch** → Automatic production deployment
+- Build → Test → Deploy pipeline
+- Zero-downtime deployments with Docker Compose
+
+---
+
+## 📁 Project Structure
+
+```
+apps/api/
+├── src/
+│   ├── modules/              # Feature modules
+│   │   ├── auth/             # Authentication (Google OAuth, JWT)
+│   │   ├── user/             # User management
+│   │   ├── family-tree/      # Family tree CRUD
+│   │   ├── family-tree-member/           # Member management
+│   │   ├── family-tree-member-connection/ # Relationship management
+│   │   ├── file/             # File upload (Cloudflare R2)
+│   │   ├── notification/     # Push notifications
+│   │   └── fcm-token/        # FCM token management
+│   ├── database/
+│   │   └── schema.ts         # Drizzle ORM schema
+│   ├── config/               # Configuration modules
+│   │   ├── cache/            # Redis cache configuration
+│   │   ├── env/              # Environment validation
+│   │   └── ...
+│   ├── common/               # Shared resources
+│   │   ├── guards/           # Auth guards (JWT, Google OAuth)
+│   │   ├── interceptors/     # Request/response interceptors
+│   │   └── decorators/       # Custom decorators
+│   ├── helpers/              # Utility functions
+│   ├── utils/                # Constants and utilities
+│   └── main.ts               # Application entry point
+├── drizzle/                  # Database migrations
+├── Dockerfile                # Docker configuration
+├── docker-compose.yml        # Local development services
+├── .env.example              # Environment variables template
+└── package.json              # Dependencies
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run unit tests
+npx nx test api
+
+# Run tests with coverage
+npx nx test api --coverage
+
+# Run tests in watch mode
+npx nx test api --watch
+```
+
+---
+
+## 📚 API Documentation
+
+### Swagger/OpenAPI
+
+Interactive API documentation is available at:
+```
+http://localhost:${PORT}/docs
+```
+
+Features:
+- Try out endpoints directly
+- View request/response schemas
+- Authentication testing
+- Zod schema validation
+
+---
+
+## 🔗 Related Documentation
+
+- **Frontend Web**: See [apps/web/README.md](../web/README.md)
+- **Shared Library**: See [libs/shared/README.md](../../libs/shared/README.md)
+- **Main README**: See [root README.md](../../README.md)
+
+---
+
+## 📖 Key Libraries Documentation
+
+- [NestJS](https://nestjs.com)
+- [Drizzle ORM](https://orm.drizzle.team)
+- [PostgreSQL](https://www.postgresql.org)
+- [Passport.js](https://www.passportjs.org)
+- [Zod](https://zod.dev)
+- [Sentry](https://docs.sentry.io)
+- [Redis](https://redis.io)
+
+---
+
+<div align="center">
+  <p>Built with 🚀 NestJS and 🐘 PostgreSQL</p>
+  <p>Deployed on Hetzner with ❤️</p>
+</div>
