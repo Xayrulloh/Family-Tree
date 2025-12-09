@@ -20,6 +20,8 @@
     "patronum",
     "reinit",
     "rspack",
-    "Vercel"
+    "Vercel",
+    "VITE",
+    "zoomable"
   ]
 }

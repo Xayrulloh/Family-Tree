@@ -7,7 +7,11 @@ enum FileUploadFolderEnum {
 }
 
 const FileUploadParamSchema = z.object({
-  folder: z.enum([FileUploadFolderEnum.AVATAR, FileUploadFolderEnum.TREE]),
+  folder: z.enum([
+    FileUploadFolderEnum.AVATAR,
+    FileUploadFolderEnum.TREE,
+    FileUploadFolderEnum.TREE_MEMBER,
+  ]),
 });
 
 type FileUploadParamType = z.infer<typeof FileUploadParamSchema>;
