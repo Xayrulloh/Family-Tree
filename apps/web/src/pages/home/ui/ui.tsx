@@ -1,4 +1,3 @@
-import { useState, type FC } from 'react';
 import {
   ArrowRightOutlined,
   BranchesOutlined,
@@ -9,6 +8,7 @@ import {
   SearchOutlined,
 } from '@ant-design/icons';
 import { Button, Card } from 'antd';
+import { type FC, useState } from 'react';
 import { routes } from '~/shared/config/routing';
 import { factory } from '../model';
 
