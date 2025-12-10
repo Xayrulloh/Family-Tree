@@ -8,10 +8,45 @@ import {
   SearchOutlined,
 } from '@ant-design/icons';
 import { Button, Card } from 'antd';
+import { type FC, useState } from 'react';
 import { routes } from '~/shared/config/routing';
 import { factory } from '../model';
 
-const HomePage: React.FC = () => {
+const HomePage: FC = () => {
+  const howItWorksSteps = [
+    {
+      number: '01',
+      icon: <GoogleOutlined className="text-2xl" />,
+      title: 'Sign In with Google',
+      highlight: 'Instant, secure access without new passwords.',
+      description:
+        'Quick and secure login with your Google account. No manual registration or passwords needed.',
+      color: 'from-blue-500 to-blue-700',
+    },
+    {
+      number: '02',
+      icon: <BranchesOutlined className="text-2xl" />,
+      title: 'Create Your Tree',
+      highlight: 'Start with a clean canvas and infinite members.',
+      description:
+        'Start building your family tree instantly. Add 1000+ members in a single tree with no limitations.',
+      color: 'from-purple-500 to-purple-700',
+    },
+    {
+      number: '03',
+      icon: <FileImageOutlined className="text-2xl" />,
+      title: 'Add Details',
+      highlight: 'Bring every branch to life with memories.',
+      description:
+        'Enrich your tree with photos, stories, dates, and special memories that bring your family history to life.',
+      color: 'from-emerald-500 to-emerald-700',
+    },
+  ];
+
+  const [activeStep, setActiveStep] = useState<string | null>(
+    howItWorksSteps[0].number,
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Hero Section */}
@@ -43,7 +78,7 @@ const HomePage: React.FC = () => {
               </span>
             </div>
 
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold mb-5 leading-tight animate-fade-in-up">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold mb-5 leading-relaxed tracking-tight animate-fade-in-up">
               Your Family's
               <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mt-2">
                 Legacy Begins Here
@@ -86,7 +121,7 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 animate-bounce">
           <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
             <div className="w-1.5 h-3 bg-gray-400 rounded-full mt-2 animate-scroll" />
           </div>
@@ -102,7 +137,7 @@ const HomePage: React.FC = () => {
             <span className="inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">
               FEATURES
             </span>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-relaxed tracking-tight mb-6 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
               Everything You Need
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -182,28 +217,13 @@ const HomePage: React.FC = () => {
 
       {/* How It Works */}
       <section className="py-32 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
-        {/* Background Video */}
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          className="absolute inset-0 w-full h-full object-cover opacity-30"
-        >
-          <source
-            src="https://storage.famtree.uz/assets/family-tree.webm"
-            type="video/webm"
-          />
-        </video>
-
         <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/30 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl" />
+          <div className="absolute top-16 left-6 w-64 h-64 bg-blue-200/30 rounded-full blur-3xl" />
+          <div className="absolute bottom-12 right-8 w-80 h-80 bg-purple-200/30 rounded-full blur-3xl" />
         </div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center mb-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16">
             <span className="inline-block px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-semibold mb-4">
               HOW IT WORKS
             </span>
@@ -215,62 +235,100 @@ const HomePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
-              {/* Connecting Line */}
-              <div
-                className="hidden md:block absolute top-24 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-300 via-purple-300 to-emerald-300"
-                style={{ top: '4rem' }}
-              />
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            <div className="space-y-6">
+              <div className="space-y-4">
+                {howItWorksSteps.map((step) => {
+                  const isActive = activeStep === step.number;
 
-              {[
-                {
-                  number: '1',
-                  icon: <GoogleOutlined className="text-3xl" />,
-                  title: 'Sign In with Google',
-                  description:
-                    'Quick and secure login with your Google account. No manual registration or passwords needed.',
-                  color: 'from-blue-500 to-blue-700',
-                },
-                {
-                  number: '2',
-                  icon: <BranchesOutlined className="text-3xl" />,
-                  title: 'Create Your Tree',
-                  description:
-                    'Start building your family tree instantly. Add 1000+ members in a single tree with no limitations.',
-                  color: 'from-purple-500 to-purple-700',
-                },
-                {
-                  number: '3',
-                  icon: <FileImageOutlined className="text-3xl" />,
-                  title: 'Add Details',
-                  description:
-                    'Enrich your tree with photos, stories, dates, and special memories that bring your family history to life.',
-                  color: 'from-emerald-500 to-emerald-700',
-                },
-              ].map((step) => (
-                <div key={step.number} className="relative text-center group">
-                  <div
-                    className={`w-24 h-24 mx-auto mb-8 rounded-full bg-gradient-to-br ${step.color} text-white flex items-center justify-center text-4xl font-bold shadow-2xl relative z-10 transform group-hover:scale-110 transition-all duration-500`}
-                  >
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      {step.icon}
-                    </div>
-                    <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center text-sm font-bold text-gray-700 shadow-lg">
-                      {step.number}
-                    </div>
-                  </div>
+                  return (
+                    <div
+                      key={step.number}
+                      className={`relative overflow-hidden rounded-2xl border transition-all duration-300 backdrop-blur-sm ${
+                        isActive
+                          ? 'border-indigo-200 bg-white/80 shadow-xl'
+                          : 'border-white/60 bg-white/60 hover:border-indigo-200 hover:shadow-md'
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setActiveStep((current) =>
+                            current === step.number ? current : step.number,
+                          )
+                        }
+                        className="w-full flex items-center gap-4 px-5 py-4 text-left"
+                        aria-expanded={isActive}
+                      >
+                        <div
+                          className={`flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${step.color} text-white shadow-lg`}
+                        >
+                          {step.icon}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                              Step {step.number}
+                            </span>
+                            <span
+                              className={`h-1 w-12 rounded-full bg-gradient-to-r ${step.color}`}
+                            />
+                          </div>
+                          <div className="text-lg sm:text-xl font-semibold text-gray-900">
+                            {step.title}
+                          </div>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {step.highlight}
+                          </p>
+                        </div>
+                        <ArrowRightOutlined
+                          className={`text-xl text-gray-400 transition-transform duration-300 ${
+                            isActive ? 'rotate-90 text-indigo-600' : ''
+                          }`}
+                        />
+                      </button>
 
-                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform group-hover:-translate-y-2">
-                    <h3 className="text-2xl font-bold mb-4 text-gray-900">
-                      {step.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      {step.description}
-                    </p>
-                  </div>
+                      {isActive && (
+                        <div className="px-5 pb-5 pt-0 text-gray-700 leading-relaxed border-t border-dashed border-gray-200">
+                          {step.description}
+                        </div>
+                      )}
+
+                      <div
+                        className={`absolute inset-y-0 left-0 w-1 bg-gradient-to-b ${step.color}`}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="relative space-y-4">
+              <div className="relative overflow-hidden bg-white/70 backdrop-blur-sm border border-white/60 shadow-2xl">
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  controls
+                  className="w-full h-full object-cover min-h-[290px] max-h-[520px]"
+                >
+                  <source
+                    src="https://storage.famtree.uz/assets/family-tree.webm"
+                    type="video/webm"
+                  />
+                </video>
+              </div>
+              <div className="w-full bg-white/85 backdrop-blur-sm border border-indigo-100 shadow-lg rounded-2xl px-6 py-5 text-center">
+                <div className="flex items-center justify-center gap-2 text-indigo-700 font-semibold text-sm uppercase tracking-wide">
+                  <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  Live Demo
                 </div>
-              ))}
+                <p className="mt-2 text-gray-700 text-sm sm:text-base">
+                  See how a full family tree comes together in under a minute.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -287,7 +345,7 @@ const HomePage: React.FC = () => {
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-8 leading-tight bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-8 leading-relaxed bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
               Ready to Preserve Your
               <span className="block mt-2">Family's Legacy?</span>
             </h2>
