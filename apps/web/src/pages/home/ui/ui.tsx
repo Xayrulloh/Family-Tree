@@ -401,7 +401,7 @@ const HomePage: FC = () => {
               Family Tree
             </h3>
             <p className="text-sm opacity-75">
-              © 2024 Family Tree. Preserving memories for generations.
+              © 2025 Family Tree. Preserving memories for generations.
             </p>
           </div>
         </div>
