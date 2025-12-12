@@ -315,7 +315,7 @@ const HomePage: FC = () => {
                   className="w-full h-full object-cover min-h-[290px] max-h-[520px]"
                 >
                   <source
-                    src="https://storage.famtree.uz/assets/family-tree.webm"
+                    src="https://storage.famtree.uz/assets/demo.webm"
                     type="video/webm"
                   />
                 </video>
