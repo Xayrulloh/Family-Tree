@@ -97,7 +97,7 @@
     "@types/passport-google-oauth2": "^0.1.10",
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
-    "@types/pg": "^8.15.4",
+    "@types/pg": "^8.16.0",
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",
     "@vitejs/plugin-react": "^4.3.3",
