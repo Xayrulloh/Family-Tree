@@ -124,6 +124,10 @@ sample({
     edited: form.$formValues,
   },
   filter: ({ original, edited }) => {
+    if (!!edited.image && edited.image.startsWith('blob')) {
+      return false;
+    }
+
     if (
       !!edited.image &&
       edited.image.startsWith('https') &&
