@@ -105,14 +105,14 @@ export const EditMemberModal: React.FC = () => {
             {member.image && (
               <img
                 src={member.image}
-                alt="Image preview for currently selected family member"
+                alt="Profile preview"
                 height={160}
                 style={{
                   maxHeight: 160,
-                  objectFit: 'cover',
+                  objectFit: "cover",
                   borderRadius: "50%",
-                  display: 'block',
-                  margin: '0 auto',
+                  display: "block",
+                  margin: "0 auto",
                   aspectRatio: "1/1"
                 }}
               />

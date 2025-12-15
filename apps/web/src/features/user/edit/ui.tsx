@@ -118,14 +118,14 @@ export const EditProfileModal: React.FC = () => {
             {img && (
               <img
                 src={img}
-                alt="Image preview for your profile"
+                alt="Profile preview"
                 height={160}
                 style={{
                   maxHeight: 160,
-                  objectFit: 'cover',
+                  objectFit: "cover",
                   borderRadius: "50%",
-                  display: 'block',
-                  margin: '0 auto',
+                  display: "block",
+                  margin: "0 auto",
                   aspectRatio: "1/1"
                 }}
               />
