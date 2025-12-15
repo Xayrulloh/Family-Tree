@@ -48,6 +48,37 @@ export const EditProfileModal: React.FC = () => {
         id={formId}
       >
         <Flex vertical gap={16}>
+          {/* === 🖼️ PROFILE IMAGE === */}
+          <Flex vertical gap={12} align="center">
+            {img && (
+              <img
+                src={img}
+                alt="Profile preview"
+                height={160}
+                style={{
+                  maxHeight: 160,
+                  objectFit: 'cover',
+                  borderRadius: '50%',
+                  display: 'block',
+                  aspectRatio: '1/1',
+                }}
+              />
+            )}
+
+            <Upload
+              accept="image/*"
+              showUploadList={false}
+              customRequest={({ file, onSuccess }) => {
+                model.uploaded(file as RcFile);
+                setTimeout(() => onSuccess?.('ok'), 0);
+              }}
+            >
+              <Button icon={<UploadOutlined />}>Upload Profile Image</Button>
+            </Upload>
+          </Flex>
+
+          <Divider style={{ margin: '4px 0' }} />
+
           {/* === 👤 Name === */}
           <Controller
             control={form.control}
@@ -110,43 +141,6 @@ export const EditProfileModal: React.FC = () => {
               </FieldWrapper>
             )}
           />
-
-          <Divider style={{ margin: 0 }} />
-
-          {/* === 🖼️ Image Preview and Upload === */}
-          <Flex vertical gap={12}>
-            {img && (
-              <img
-                src={img}
-                alt="Profile preview"
-                height={160}
-                style={{
-                  maxHeight: 160,
-                  objectFit: 'cover',
-                  borderRadius: '50%',
-                  display: 'block',
-                  margin: '0 auto',
-                  aspectRatio: '1/1',
-                }}
-              />
-            )}
-
-            <Upload
-              accept="image/*"
-              showUploadList={false}
-              customRequest={({ file, onSuccess }) => {
-                model.uploaded(file as RcFile);
-                setTimeout(() => onSuccess?.('ok'), 0);
-              }}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-              }}
-            >
-              <Button icon={<UploadOutlined />}>Upload Profile Image</Button>
-            </Upload>
-          </Flex>
         </Flex>
       </form>
     </Modal>
