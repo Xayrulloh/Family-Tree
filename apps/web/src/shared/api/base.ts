@@ -1,12 +1,16 @@
-import axios, { type AxiosError, type AxiosResponse } from 'axios';
-import type { ZodIssue } from 'zod';
-import { errorFx, successFx } from '~/shared/lib/message';
+import axios, {
+  HttpStatusCode,
+  type AxiosError,
+  type AxiosResponse,
+} from "axios";
+import type { ZodIssue } from "zod";
+import { errorFx, successFx } from "~/shared/lib/message";
 
 const successMessages: Record<string, string> = {
-  post: 'Created successfully',
-  put: 'Updated successfully',
-  patch: 'Updated successfully',
-  delete: 'Deleted successfully',
+  post: "Created successfully",
+  put: "Updated successfully",
+  patch: "Updated successfully",
+  delete: "Deleted successfully",
 };
 
 export interface ApiErrorResponse {
@@ -28,7 +32,7 @@ base.interceptors.response.use(
     if (
       method &&
       successMessages[method] &&
-      !response.config.url?.startsWith('/files/')
+      !response.config.url?.startsWith("/files/")
     ) {
       successFx(successMessages[method]);
     }
@@ -37,14 +41,14 @@ base.interceptors.response.use(
   },
   (error: AxiosError<ApiErrorResponse>) => {
     const res = error.response?.data;
-    let errorMsg = 'Something went wrong';
+    let errorMsg = "Something went wrong";
 
-    if (res?.statusCode === 401) {
+    if (res?.statusCode === HttpStatusCode.Unauthorized) {
       return Promise.reject(error);
     }
 
     if (res?.errors?.length) {
-      errorMsg = res.errors.map((err) => err.message).join('\n');
+      errorMsg = res.errors.map((err) => err.message).join("\n");
     } else if (res?.message) {
       errorMsg = res.message;
     } else if (error.message) {
@@ -54,5 +58,5 @@ base.interceptors.response.use(
     errorFx(errorMsg);
 
     return Promise.reject(error);
-  },
+  }
 );
