@@ -40,8 +40,39 @@ export const EditMemberModal: React.FC = () => {
         onSubmit={form.handleSubmit(() => model.formValidated())}
         id={formId}
       >
-        <Flex vertical gap={8}>
-          {/* === NAME === */}
+        <Flex vertical gap={16}>
+          {/* === 🖼️ PROFILE IMAGE === */}
+          <Flex vertical gap={12} align="center">
+            {member.image && (
+              <img
+                src={member.image}
+                alt="Profile preview"
+                height={160}
+                style={{
+                  maxHeight: 160,
+                  objectFit: 'cover',
+                  borderRadius: '50%',
+                  display: 'block',
+                  aspectRatio: '1/1',
+                }}
+              />
+            )}
+
+            <Upload
+              accept="image/*"
+              showUploadList={false}
+              customRequest={({ file, onSuccess }) => {
+                model.uploaded(file as RcFile);
+                setTimeout(() => onSuccess?.('ok'), 0);
+              }}
+            >
+              <Button icon={<UploadOutlined />}>Upload Profile Image</Button>
+            </Upload>
+          </Flex>
+
+          <Divider style={{ margin: '4px 0' }} />
+
+          {/* === 👤 NAME === */}
           <Controller
             control={form.control}
             name="name"
@@ -56,7 +87,7 @@ export const EditMemberModal: React.FC = () => {
             )}
           />
 
-          {/* === BIRTHDATE === */}
+          {/* === 🎂 BIRTHDATE === */}
           <Controller
             control={form.control}
             name="dob"
@@ -77,7 +108,7 @@ export const EditMemberModal: React.FC = () => {
             )}
           />
 
-          {/* === DEATH DATE IF EXISTS === */}
+          {/* === 🕊️ DEATH DATE IF EXISTS === */}
           <Controller
             control={form.control}
             name="dod"
@@ -98,44 +129,7 @@ export const EditMemberModal: React.FC = () => {
             )}
           />
 
-          <Divider style={{ margin: '4px 0' }} />
-
-          {/* === IMAGE UPLOAD === */}
-          <Flex vertical gap={12}>
-            {member.image && (
-              <img
-                src={member.image}
-                alt="Profile preview"
-                height={160}
-                style={{
-                  maxHeight: 160,
-                  objectFit: 'cover',
-                  borderRadius: '50%',
-                  display: 'block',
-                  margin: '0 auto',
-                  aspectRatio: '1/1',
-                }}
-              />
-            )}
-
-            <Upload
-              accept="image/*"
-              showUploadList={false}
-              customRequest={({ file, onSuccess }) => {
-                model.uploaded(file as RcFile);
-                setTimeout(() => onSuccess?.('ok'), 0);
-              }}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-              }}
-            >
-              <Button icon={<UploadOutlined />}>Upload Profile Image</Button>
-            </Upload>
-          </Flex>
-
-          {/* === DESCRIPTION === */}
+          {/* === 📝 DESCRIPTION === */}
           <Controller
             control={form.control}
             name="description"

@@ -39,6 +39,10 @@ base.interceptors.response.use(
     const res = error.response?.data;
     let errorMsg = 'Something went wrong';
 
+    if (res?.statusCode === 401) {
+      return Promise.reject(error);
+    }
+
     if (res?.errors?.length) {
       errorMsg = res.errors.map((err) => err.message).join('\n');
     } else if (res?.message) {
