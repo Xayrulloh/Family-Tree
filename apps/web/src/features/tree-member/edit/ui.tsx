@@ -109,11 +109,11 @@ export const EditMemberModal: React.FC = () => {
                 height={160}
                 style={{
                   maxHeight: 160,
-                  objectFit: "cover",
-                  borderRadius: "50%",
-                  display: "block",
-                  margin: "0 auto",
-                  aspectRatio: "1/1"
+                  objectFit: 'cover',
+                  borderRadius: '50%',
+                  display: 'block',
+                  margin: '0 auto',
+                  aspectRatio: '1/1',
                 }}
               />
             )}
@@ -126,9 +126,9 @@ export const EditMemberModal: React.FC = () => {
                 setTimeout(() => onSuccess?.('ok'), 0);
               }}
               style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
               }}
             >
               <Button icon={<UploadOutlined />}>Upload Profile Image</Button>
