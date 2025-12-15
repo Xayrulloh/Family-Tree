@@ -106,12 +106,14 @@ export const EditMemberModal: React.FC = () => {
               <img
                 src={member.image}
                 alt="Profile preview"
-                height={150}
+                height={160}
                 style={{
-                  maxHeight: 150,
-                  maxWidth: '100%',
-                  objectFit: 'fill',
-                  borderRadius: 6,
+                  maxHeight: 160,
+                  objectFit: 'cover',
+                  borderRadius: '50%',
+                  display: 'block',
+                  margin: '0 auto',
+                  aspectRatio: '1/1',
                 }}
               />
             )}
@@ -122,6 +124,11 @@ export const EditMemberModal: React.FC = () => {
               customRequest={({ file, onSuccess }) => {
                 model.uploaded(file as RcFile);
                 setTimeout(() => onSuccess?.('ok'), 0);
+              }}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
               }}
             >
               <Button icon={<UploadOutlined />}>Upload Profile Image</Button>
