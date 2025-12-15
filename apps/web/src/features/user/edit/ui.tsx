@@ -118,15 +118,15 @@ export const EditProfileModal: React.FC = () => {
             {img && (
               <img
                 src={img}
-                alt="Profile preview"
+                alt="Image preview for your profile"
                 height={160}
                 style={{
                   maxHeight: 160,
-                  maxWidth: '100%',
                   objectFit: 'cover',
-                  borderRadius: 6,
+                  borderRadius: "50%",
                   display: 'block',
                   margin: '0 auto',
+                  aspectRatio: "1/1"
                 }}
               />
             )}
@@ -137,6 +137,11 @@ export const EditProfileModal: React.FC = () => {
               customRequest={({ file, onSuccess }) => {
                 model.uploaded(file as RcFile);
                 setTimeout(() => onSuccess?.('ok'), 0);
+              }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
               }}
             >
               <Button icon={<UploadOutlined />}>Upload Profile Image</Button>
