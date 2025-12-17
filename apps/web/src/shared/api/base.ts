@@ -1,4 +1,8 @@
-import axios, { type AxiosError, type AxiosResponse } from 'axios';
+import axios, {
+  HttpStatusCode,
+  type AxiosError,
+  type AxiosResponse,
+} from 'axios';
 import type { ZodIssue } from 'zod';
 import { errorFx, successFx } from '~/shared/lib/message';
 
@@ -39,7 +43,7 @@ base.interceptors.response.use(
     const res = error.response?.data;
     let errorMsg = 'Something went wrong';
 
-    if (res?.statusCode === 401) {
+    if (res?.statusCode === HttpStatusCode.Unauthorized) {
       return Promise.reject(error);
     }
 
@@ -54,5 +58,5 @@ base.interceptors.response.use(
     errorFx(errorMsg);
 
     return Promise.reject(error);
-  },
+  }
 );
