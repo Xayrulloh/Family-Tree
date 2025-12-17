@@ -51,20 +51,10 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const { positions, metadata, couples } = useMemo(() => {
-    console.time('⚡ Layout Calculation');
-    const result = calculatePositions(members, connections, containerWidth);
-    console.timeEnd('⚡ Layout Calculation');
-
-    console.log('📊 Performance Stats:', {
-      totalMembers: members.length,
-      totalConnections: connections.length,
-      metadataSize: result.metadata.size,
-      couplesCount: result.couples.length,
-    });
-
-    return result;
-  }, [members, connections, containerWidth]);
+  const { positions, metadata, couples } = useMemo(
+    () => calculatePositions(members, connections, containerWidth),
+    [members, connections, containerWidth],
+  );
 
   /* ===============================
    * Center tree in the viewport
