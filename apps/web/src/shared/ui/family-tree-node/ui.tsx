@@ -9,7 +9,7 @@ type FamilyTreeNodeProps = {
   member: FamilyTreeMemberGetResponseType;
   position: { x: number; y: number };
   hasMarriage: boolean;
-  isParent: boolean;
+  hasParents: boolean;
   onPreviewClick: (member: FamilyTreeMemberGetResponseType) => void;
   onAddBoyClick: (member: FamilyTreeMemberGetResponseType) => void;
   onAddGirlClick: (member: FamilyTreeMemberGetResponseType) => void;
@@ -27,7 +27,7 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
   member,
   position,
   hasMarriage,
-  isParent,
+  hasParents,
   onPreviewClick,
   onAddBoyClick,
   onAddGirlClick,
@@ -161,7 +161,7 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
       {/* ================================
       HOVER: PARENT BUTTON (rounded split)
    ================================ */}
-      {hover && !isParent && (
+      {hover && !hasParents && (
         <g
           style={{ cursor: 'pointer' }}
           onClick={() => onAddParentClick(member)}
