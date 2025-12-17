@@ -29,8 +29,17 @@ const CONNECTION = {
 const NODE_WIDTH = 160;
 const NODE_HEIGHT = 80;
 
+const savedViews = new Map<
+  string,
+  { x: number; y: number; width: number; height: number }
+>();
+
 export const Visualization: React.FC<Props> = ({ model }) => {
-  const [connections, members] = useUnit([model.$connections, model.$members]);
+  const [connections, members, id] = useUnit([
+    model.$connections,
+    model.$members,
+    model.$id,
+  ]);
   const { token } = theme.useToken();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -68,8 +77,21 @@ export const Visualization: React.FC<Props> = ({ model }) => {
   });
 
   // Center once based on layout
-  useMemo(() => {
-    if (positions.size === 0) return;
+  const isCenteredRef = useRef(false);
+
+  useEffect(() => {
+    if (isCenteredRef.current || positions.size === 0 || !id) return;
+
+    // Check if we have a saved view for this tree
+    const saved = savedViews.get(id);
+
+    if (saved) {
+      setViewBox(saved);
+
+      isCenteredRef.current = true;
+
+      return;
+    }
 
     const xs = Array.from(positions.values()).map((p) => p.x);
     const ys = Array.from(positions.values()).map((p) => p.y);
@@ -83,8 +105,21 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     const vbX = Math.max(0, minX - NODE_WIDTH);
     const vbY = Math.max(0, minY - NODE_HEIGHT);
 
-    setViewBox({ x: vbX, y: vbY, width, height });
-  }, [positions]);
+    const initialView = { x: vbX, y: vbY, width, height };
+
+    setViewBox(initialView);
+
+    savedViews.set(id, initialView);
+
+    isCenteredRef.current = true;
+  }, [positions, id]);
+
+  // Persist view changes
+  useEffect(() => {
+    if (id && isCenteredRef.current) {
+      savedViews.set(id, viewBox);
+    }
+  }, [viewBox, id]);
 
   /* ===============================
    * Drag logic for panning
