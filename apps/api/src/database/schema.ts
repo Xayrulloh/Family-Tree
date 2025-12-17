@@ -45,7 +45,8 @@ const baseSchema = {
     .notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true })
     .defaultNow()
-    .notNull(),
+    .notNull()
+    .$onUpdate(() => new Date()),
   deletedAt: timestamp('deleted_at', { mode: 'date', withTimezone: true }),
 };
 
