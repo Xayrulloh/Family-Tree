@@ -170,49 +170,87 @@ export const Visualization: React.FC<Props> = ({ model }) => {
    * Drag logic for panning
    * =============================== */
   const [isDragging, setIsDragging] = useState(false);
-  const [lastPoint, setLastPoint] = useState<{ x: number; y: number } | null>(
-    null,
-  );
+  const isDraggingRef = useRef(false);
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  const rafRef = useRef<number | null>(null);
 
   const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
     setIsDragging(true);
-    setLastPoint({ x: e.clientX, y: e.clientY });
+
+    isDraggingRef.current = true;
+    lastPointRef.current = { x: e.clientX, y: e.clientY };
   };
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!isDragging || !lastPoint || !svgRef.current) return;
+    if (!isDraggingRef.current || !lastPointRef.current || !svgRef.current) {
+      return;
+    }
 
-    const dx = e.clientX - lastPoint.x;
-    const dy = e.clientY - lastPoint.y;
+    const currentX = e.clientX;
+    const currentY = e.clientY;
 
-    // Calculate the ratio between viewBox coordinates and screen pixels
-    const rect = svgRef.current.getBoundingClientRect();
-    const scaleX = viewBox.width / rect.width;
-    const scaleY = viewBox.height / rect.height;
+    if (rafRef.current !== null) return;
 
-    // Move opposite to drag direction, scaled by current zoom level
-    // Y-axis has a 1.3x multiplier for slightly faster vertical movement
-    setViewBox((prev) => ({
-      ...prev,
-      x: prev.x - dx * scaleX,
-      y: prev.y - dy * scaleY * 1.18,
-    }));
+    rafRef.current = requestAnimationFrame(() => {
+      if (!lastPointRef.current || !svgRef.current) {
+        rafRef.current = null;
 
-    setLastPoint({ x: e.clientX, y: e.clientY });
+        return;
+      }
+
+      const dx = currentX - lastPointRef.current.x;
+      const dy = currentY - lastPointRef.current.y;
+
+      const rect = svgRef.current.getBoundingClientRect();
+
+      // Update last point immediately
+      lastPointRef.current = { x: currentX, y: currentY };
+
+      setViewBox((prev) => {
+        const scaleX = prev.width / rect.width;
+        const scaleY = prev.height / rect.height;
+        const uniformScale = Math.max(scaleX, scaleY);
+
+        return {
+          ...prev,
+          x: prev.x - dx * uniformScale,
+          y: prev.y - dy * uniformScale,
+        };
+      });
+
+      rafRef.current = null;
+    });
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
-    setLastPoint(null);
+
+    isDraggingRef.current = false;
+    lastPointRef.current = null;
+
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+
+      rafRef.current = null;
+    }
   };
 
   const handleMouseLeave = () => {
     setIsDragging(false);
-    setLastPoint(null);
+
+    isDraggingRef.current = false;
+    lastPointRef.current = null;
+
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+
+      rafRef.current = null;
+    }
   };
 
   useEffect(() => {
     const svg = svgRef.current;
+
     if (!svg) return;
 
     const handleWheel = (e: WheelEvent) => {
