@@ -1,8 +1,4 @@
-import {
-  FamilyTreeMemberConnectionEnum,
-  type FamilyTreeMemberConnectionGetAllResponseType,
-  type FamilyTreeMemberConnectionSchemaType,
-} from '@family-tree/shared';
+import type { FamilyTreeMemberConnectionGetAllResponseType } from '@family-tree/shared';
 import { theme } from 'antd';
 import { useUnit } from 'effector-react';
 import {
@@ -17,7 +13,7 @@ import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
 import {
   calculatePositions,
-  getCouples,
+  type MemberMetadata,
   type Position,
 } from '~/shared/lib/layout-engine';
 import { FamilyTreeNode } from '~/shared/ui/family-tree-node';
@@ -55,33 +51,20 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const positions = useMemo(
-    () => calculatePositions(members, connections, containerWidth),
-    [members, connections],
-  );
+  const { positions, metadata, couples } = useMemo(() => {
+    console.time('⚡ Layout Calculation');
+    const result = calculatePositions(members, connections, containerWidth);
+    console.timeEnd('⚡ Layout Calculation');
 
-  const couples = useMemo(() => getCouples(connections), [connections]);
-  const marriageMap = useMemo(() => {
-    const map = new Map<string, string>();
-
-    couples.forEach(({ fromMemberId, toMemberId }) => {
-      map.set(fromMemberId, toMemberId);
-      map.set(toMemberId, fromMemberId);
+    console.log('📊 Performance Stats:', {
+      totalMembers: members.length,
+      totalConnections: connections.length,
+      metadataSize: result.metadata.size,
+      couplesCount: result.couples.length,
     });
 
-    return map;
-  }, [couples]);
-  const parentsSet = useMemo(() => {
-    const set = new Set<string>();
-
-    connections.forEach(({ toMemberId, type }) => {
-      if (type === FamilyTreeMemberConnectionEnum.PARENT) {
-        set.add(toMemberId);
-      }
-    });
-
-    return set;
-  }, [connections]);
+    return result;
+  }, [members, connections, containerWidth]);
 
   /* ===============================
    * Center tree in the viewport
@@ -225,30 +208,28 @@ export const Visualization: React.FC<Props> = ({ model }) => {
           <ParentChildConnections
             couples={couples}
             positions={positions}
-            connections={connections}
+            metadata={metadata}
           />
         </g>
         <g>
-          {members.map((m) => (
-            <MemoizedFamilyTreeNode
-              key={m.id}
-              member={m}
-              // biome-ignore lint/style/noNonNullAssertion: <I hope it's always gets the position)>
-              position={positions.get(m.id)!}
-              hasMarriage={marriageMap.has(m.id)}
-              isParent={
-                !(
-                  !parentsSet.has(m.id) &&
-                  !parentsSet.has(marriageMap.get(m.id) || '')
-                )
-              }
-              onPreviewClick={previewMemberModel.previewMemberTrigger}
-              onAddBoyClick={addMemberModel.addBoyTrigger}
-              onAddGirlClick={addMemberModel.addGirlTrigger}
-              onAddSpouseClick={addMemberModel.addSpouseTrigger}
-              onAddParentClick={addMemberModel.addParentsTrigger}
-            />
-          ))}
+          {members.map((m) => {
+            const memberMetadata = metadata.get(m.id);
+            return (
+              <MemoizedFamilyTreeNode
+                key={m.id}
+                member={m}
+                // biome-ignore lint/style/noNonNullAssertion: <I hope it's always gets the position)>
+                position={positions.get(m.id)!}
+                hasMarriage={!!memberMetadata?.spouseId}
+                hasParents={(memberMetadata?.parents.length ?? 0) > 0}
+                onPreviewClick={previewMemberModel.previewMemberTrigger}
+                onAddBoyClick={addMemberModel.addBoyTrigger}
+                onAddGirlClick={addMemberModel.addGirlTrigger}
+                onAddSpouseClick={addMemberModel.addSpouseTrigger}
+                onAddParentClick={addMemberModel.addParentsTrigger}
+              />
+            );
+          })}
         </g>
       </svg>
     </div>
@@ -293,46 +274,26 @@ const CoupleConnections: React.FC<{
 const ParentChildConnections: React.FC<{
   couples: FamilyTreeMemberConnectionGetAllResponseType;
   positions: Map<string, Position>;
-  connections: FamilyTreeMemberConnectionSchemaType[];
-}> = memo(({ couples, positions, connections }) => {
+  metadata: Map<string, MemberMetadata>;
+}> = memo(({ positions, metadata }) => {
   const result: React.ReactNode[] = [];
 
-  // Map couple centers to children
-  const coupleCenters = new Map<string, { x: number; y: number }>();
-
-  couples.forEach((couple) => {
-    const p1 = positions.get(couple.fromMemberId);
-    const p2 = positions.get(couple.toMemberId);
-
-    if (!p1 || !p2) return;
-
-    coupleCenters.set(couple.fromMemberId, {
-      x: (p1.x + p2.x) / 2,
-      y: (p1.y + p2.y) / 2,
-    });
-
-    coupleCenters.set(couple.toMemberId, {
-      x: (p1.x + p2.x) / 2,
-      y: (p1.y + p2.y) / 2,
-    });
-  });
-
-  // Group children by couple
+  // Group children by parent using metadata
   const grouped = new Map<string, Set<string>>();
 
-  connections.forEach((conn) => {
-    if (conn.type !== FamilyTreeMemberConnectionEnum.PARENT) return;
+  metadata.forEach((memberData) => {
+    if (memberData.children.length === 0) return;
 
-    const origin =
-      coupleCenters.get(conn.fromMemberId) ?? positions.get(conn.fromMemberId);
-
+    const origin = memberData.coupleCenterPosition ?? memberData.position;
     if (!origin) return;
 
     const key = `${origin.x},${origin.y}`;
 
     if (!grouped.has(key)) grouped.set(key, new Set());
 
-    grouped.get(key)?.add(conn.toMemberId);
+    memberData.children.forEach((childId) => {
+      grouped.get(key)?.add(childId);
+    });
   });
 
   grouped.forEach((childSet, key) => {
@@ -355,10 +316,8 @@ const ParentChildConnections: React.FC<{
       const childId = childIds[0];
       const childTop = child.y;
 
-      const childHasSpouse = couples.some(
-        (couple) =>
-          couple.fromMemberId === childId || couple.toMemberId === childId,
-      );
+      const childMetadata = metadata.get(childId);
+      const childHasSpouse = !!childMetadata?.spouseId;
 
       if (childHasSpouse) {
         const intermediateY = childTop - NODE_HEIGHT / 2 - 8;
