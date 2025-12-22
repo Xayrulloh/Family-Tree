@@ -1,6 +1,7 @@
 import type {
   FamilyTreeMemberConnectionGetAllResponseType,
   FamilyTreeMemberGetAllResponseType,
+  FamilyTreeResponseType,
 } from '@family-tree/shared';
 import { attach, createStore, sample } from 'effector';
 import { or } from 'patronum';
@@ -19,6 +20,7 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   const $members = createStore<FamilyTreeMemberGetAllResponseType>([]);
   const $connections =
     createStore<FamilyTreeMemberConnectionGetAllResponseType>([]);
+  const $tree = createStore<FamilyTreeResponseType | null>(null);
 
   const $id = authorizedRoute.$params.map((params) => params.id ?? null);
 
@@ -34,11 +36,16 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
       api.treeMemberConnection.findAll({ familyTreeId }),
   });
 
+  const fetchTreeFx = attach({
+    source: $id,
+    effect: (familyTreeId: string) => api.tree.findById(familyTreeId),
+  });
+
   // Samples
   // Trigger fetches when familyTreeId is set
   sample({
     clock: authorizedRoute.opened,
-    target: [fetchMembersFx, fetchConnectionsFx],
+    target: [fetchMembersFx, fetchConnectionsFx, fetchTreeFx],
   });
 
   // Update stores with API responses
@@ -52,6 +59,12 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
     clock: fetchConnectionsFx.doneData,
     fn: (response) => response.data,
     target: $connections,
+  });
+
+  sample({
+    clock: fetchTreeFx.doneData,
+    fn: (response) => response.data,
+    target: $tree,
   });
 
   // Reset preview on member edit
@@ -79,6 +92,7 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   return {
     $members,
     $connections,
+    $tree,
     $id,
     $loading: or(fetchMembersFx.pending, fetchConnectionsFx.pending),
   };
