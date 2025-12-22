@@ -1,14 +1,17 @@
+import { DownloadOutlined } from '@ant-design/icons';
 import type { FamilyTreeMemberConnectionGetAllResponseType } from '@family-tree/shared';
 import { theme } from 'antd';
 import { useUnit } from 'effector-react';
 import {
   memo,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
+import { saveSvgAsPng } from 'save-svg-as-png';
 import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
 import {
@@ -35,10 +38,11 @@ const savedViews = new Map<
 >();
 
 export const Visualization: React.FC<Props> = ({ model }) => {
-  const [connections, members, id] = useUnit([
+  const [connections, members, id, tree] = useUnit([
     model.$connections,
     model.$members,
     model.$id,
+    model.$tree,
   ]);
   const { token } = theme.useToken();
 
@@ -81,8 +85,11 @@ export const Visualization: React.FC<Props> = ({ model }) => {
   // Center once based on layout
   const isCenteredRef = useRef(false);
 
-  const handleCenterView = () => {
-    if (positions.size === 0) return;
+  /* ===============================
+   * Helper to get tree bounds
+   * =============================== */
+  const treeBounds = useMemo(() => {
+    if (positions.size === 0) return null;
 
     let minY = Number.POSITIVE_INFINITY;
     let maxY = Number.NEGATIVE_INFINITY;
@@ -104,7 +111,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
       }
     }
 
-    if (rootCount === 0) return;
+    if (rootCount === 0) return null;
 
     const rootCenterX = rootSumX / rootCount;
 
@@ -127,14 +134,34 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     const vbX = rootCenterX - width / 2;
     const vbY = minY - NODE_HEIGHT;
 
-    const newView = { x: vbX, y: vbY, width, height };
+    return { x: vbX, y: vbY, width, height };
+  }, [positions]);
 
-    setViewBox(newView);
+  const handleCenterView = useCallback(() => {
+    if (!treeBounds) return;
+
+    setViewBox(treeBounds);
 
     if (id) {
-      savedViews.set(id, newView);
+      savedViews.set(id, treeBounds);
     }
-  };
+  }, [treeBounds, id]);
+
+  const handleDownloadImage = useCallback(() => {
+    if (svgRef.current) {
+      const filename = tree?.name ? `${tree.name}-famtree.png` : 'famtree.png';
+
+      saveSvgAsPng(svgRef.current, filename, {
+        backgroundColor: 'rgba(249, 250, 251, 0.9)',
+        ...(treeBounds && {
+          left: treeBounds.x,
+          top: treeBounds.y,
+          width: treeBounds.width,
+          height: treeBounds.height,
+        }),
+      });
+    }
+  }, [tree, treeBounds]);
 
   useEffect(() => {
     if (isCenteredRef.current || positions.size === 0 || !id) return;
@@ -174,14 +201,14 @@ export const Visualization: React.FC<Props> = ({ model }) => {
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
   const rafRef = useRef<number | null>(null);
 
-  const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
     setIsDragging(true);
 
     isDraggingRef.current = true;
     lastPointRef.current = { x: e.clientX, y: e.clientY };
-  };
+  }, []);
 
-  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
     if (!isDraggingRef.current || !lastPointRef.current || !svgRef.current) {
       return;
     }
@@ -220,9 +247,9 @@ export const Visualization: React.FC<Props> = ({ model }) => {
 
       rafRef.current = null;
     });
-  };
+  }, []);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
 
     isDraggingRef.current = false;
@@ -233,9 +260,9 @@ export const Visualization: React.FC<Props> = ({ model }) => {
 
       rafRef.current = null;
     }
-  };
+  }, []);
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     setIsDragging(false);
 
     isDraggingRef.current = false;
@@ -246,7 +273,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
 
       rafRef.current = null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -295,18 +322,28 @@ export const Visualization: React.FC<Props> = ({ model }) => {
         transition: 'opacity 0.2s ease-in',
       }}
     >
-      <button
-        type="button"
-        onClick={handleCenterView}
-        className="absolute top-8 right-8 z-10 p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors border border-gray-200 cursor-pointer"
-        title="Center Tree"
-      >
-        <img
-          src="/family-tree-icon.png"
-          alt="Center Tree"
-          className="w-6 h-6 object-contain"
-        />
-      </button>
+      <div className="absolute top-8 right-8 z-10 flex gap-2">
+        <button
+          type="button"
+          onClick={handleDownloadImage}
+          className="p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors border border-gray-200 cursor-pointer"
+          title="Convert to Image"
+        >
+          <DownloadOutlined style={{ fontSize: '24px', color: '#595959' }} />
+        </button>
+        <button
+          type="button"
+          onClick={handleCenterView}
+          className="p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors border border-gray-200 cursor-pointer"
+          title="Center Tree"
+        >
+          <img
+            src="/family-tree-icon.png"
+            alt="Center Tree"
+            className="w-6 h-6 object-contain"
+          />
+        </button>
+      </div>
 
       {/** biome-ignore lint/a11y/noSvgWithoutTitle: <There's no need for title> */}
       <svg
