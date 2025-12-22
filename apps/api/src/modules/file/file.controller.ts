@@ -25,7 +25,8 @@ import {
 import { ZodSerializerDto } from 'nestjs-zod';
 import type { EnvType } from '~/config/env/env-validation';
 import generateRandomString from '~/helpers/random-string.helper';
-import type { FileUploadParamDto, FileUploadResponseDto } from './dto/file.dto';
+// biome-ignore lint/style/useImportType: <query/param doesn't work>
+import { FileUploadParamDto, FileUploadResponseDto } from './dto/file.dto';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { FileService } from './file.service';
 import 'multer';

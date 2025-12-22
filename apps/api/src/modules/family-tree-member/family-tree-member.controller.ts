@@ -30,13 +30,14 @@ import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import { CacheService } from '~/config/cache/cache.service';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
+// biome-ignore lint/style/useImportType: <query/param doesn't work>
 import {
   FamilyTreeMemberCreateChildRequestDto,
   FamilyTreeMemberCreateParentsRequestDto,
   FamilyTreeMemberCreateSpouseRequestDto,
-  type FamilyTreeMemberGetAllParamDto,
+  FamilyTreeMemberGetAllParamDto,
   FamilyTreeMemberGetAllResponseDto,
-  type FamilyTreeMemberGetParamDto,
+  FamilyTreeMemberGetParamDto,
   FamilyTreeMemberGetResponseDto,
   FamilyTreeMemberUpdateRequestDto,
 } from './dto/family-tree-member.dto';
