@@ -45,7 +45,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const [containerWidth, setContainerWidth] = useState(1200);
+  const [containerWidth, setContainerWidth] = useState(0);
 
   useLayoutEffect(() => {
     const update = () => {
@@ -60,10 +60,16 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const { positions, metadata, couples } = useMemo(
-    () => calculatePositions(members, connections, containerWidth),
-    [members, connections, containerWidth],
-  );
+  const { positions, metadata, couples } = useMemo(() => {
+    if (containerWidth === 0) {
+      return {
+        positions: new Map(),
+        metadata: new Map(),
+        couples: [],
+      };
+    }
+    return calculatePositions(members, connections, containerWidth);
+  }, [members, connections, containerWidth]);
 
   /* ===============================
    * Center tree in the viewport
@@ -326,36 +332,42 @@ export const Visualization: React.FC<Props> = ({ model }) => {
         ref={svgRef}
       >
         {/* <title>Family Tree</title> */}
-        <g>
-          <CoupleConnections couples={couples} positions={positions} />
-        </g>
-        <g>
-          <ParentChildConnections
-            couples={couples}
-            positions={positions}
-            metadata={metadata}
-          />
-        </g>
-        <g>
-          {members.map((m) => {
-            const memberMetadata = metadata.get(m.id);
-            return (
-              <MemoizedFamilyTreeNode
-                key={m.id}
-                member={m}
-                // biome-ignore lint/style/noNonNullAssertion: <I hope it's always gets the position)>
-                position={positions.get(m.id)!}
-                hasMarriage={!!memberMetadata?.spouseId}
-                hasParents={(memberMetadata?.parents.length ?? 0) > 0}
-                onPreviewClick={previewMemberModel.previewMemberTrigger}
-                onAddBoyClick={addMemberModel.addBoyTrigger}
-                onAddGirlClick={addMemberModel.addGirlTrigger}
-                onAddSpouseClick={addMemberModel.addSpouseTrigger}
-                onAddParentClick={addMemberModel.addParentsTrigger}
+        {positions.size > 0 && (
+          <>
+            <g>
+              <CoupleConnections couples={couples} positions={positions} />
+            </g>
+            <g>
+              <ParentChildConnections
+                couples={couples}
+                positions={positions}
+                metadata={metadata}
               />
-            );
-          })}
-        </g>
+            </g>
+            <g>
+              {members.map((m) => {
+                const memberMetadata = metadata.get(m.id);
+                // biome-ignore lint/style/noNonNullAssertion: <Checked by positions.size > 0>
+                const position = positions.get(m.id)!;
+
+                return (
+                  <MemoizedFamilyTreeNode
+                    key={m.id}
+                    member={m}
+                    position={position}
+                    hasMarriage={!!memberMetadata?.spouseId}
+                    hasParents={(memberMetadata?.parents.length ?? 0) > 0}
+                    onPreviewClick={previewMemberModel.previewMemberTrigger}
+                    onAddBoyClick={addMemberModel.addBoyTrigger}
+                    onAddGirlClick={addMemberModel.addGirlTrigger}
+                    onAddSpouseClick={addMemberModel.addSpouseTrigger}
+                    onAddParentClick={addMemberModel.addParentsTrigger}
+                  />
+                );
+              })}
+            </g>
+          </>
+        )}
       </svg>
     </div>
   );
