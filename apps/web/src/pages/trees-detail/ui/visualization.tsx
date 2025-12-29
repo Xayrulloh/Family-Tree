@@ -142,7 +142,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     }
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isCenteredRef.current || positions.size === 0 || !id) return;
 
     // Check if we have a saved view for this tree
