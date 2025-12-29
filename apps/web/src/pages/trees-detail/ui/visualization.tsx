@@ -39,11 +39,12 @@ const savedViews = new Map<
 >();
 
 export const Visualization: React.FC<Props> = ({ model }) => {
-  const [connections, members, id, tree] = useUnit([
+  const [connections, members, id, tree, isOwner] = useUnit([
     model.$connections,
     model.$members,
     model.$id,
     model.$tree,
+    model.$isOwner,
   ]);
   const { token } = theme.useToken();
 
@@ -401,6 +402,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
                 onAddGirlClick={addMemberModel.addGirlTrigger}
                 onAddSpouseClick={addMemberModel.addSpouseTrigger}
                 onAddParentClick={addMemberModel.addParentsTrigger}
+                isOwner={isOwner}
               />
             );
           })}

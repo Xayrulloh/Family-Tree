@@ -3,7 +3,7 @@ import type {
   FamilyTreeMemberGetAllResponseType,
   FamilyTreeResponseType,
 } from '@family-tree/shared';
-import { attach, createStore, sample } from 'effector';
+import { attach, combine, createStore, sample } from 'effector';
 import { or } from 'patronum';
 import { userModel } from '~/entities/user';
 import { addMemberModel } from '~/features/tree-member/add';
@@ -12,6 +12,7 @@ import { editMemberModel } from '~/features/tree-member/edit';
 import { previewMemberModel } from '~/features/tree-member/preview';
 import { api } from '~/shared/api';
 import type { LazyPageFactoryParams } from '~/shared/lib/lazy-page';
+import * as treesModel from '../trees/model';
 
 export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   const authorizedRoute = userModel.chainAuthorized({ route });
@@ -23,6 +24,14 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   const $tree = createStore<FamilyTreeResponseType | null>(null);
 
   const $id = authorizedRoute.$params.map((params) => params.id ?? null);
+  // biome-ignore lint/suspicious/noExplicitAny: <need to fix>
+  const $ownerTrees = treesModel.factory({ route: route as any }).$trees;
+
+  const $isOwner = combine(
+    $id,
+    $ownerTrees,
+    (id, trees) => !!(id && new Set(trees.map((t) => t.id)).has(id)),
+  );
 
   // Effects
   const fetchMembersFx = attach({
@@ -94,6 +103,7 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
     $connections,
     $tree,
     $id,
+    $isOwner,
     $loading: or(fetchMembersFx.pending, fetchConnectionsFx.pending),
   };
 };

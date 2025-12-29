@@ -15,6 +15,7 @@ type FamilyTreeNodeProps = {
   onAddGirlClick: (member: FamilyTreeMemberGetResponseType) => void;
   onAddSpouseClick: (member: FamilyTreeMemberGetResponseType) => void;
   onAddParentClick: (member: FamilyTreeMemberGetResponseType) => void;
+  isOwner?: boolean;
 };
 
 const getGenderColor = (gender: string) => {
@@ -33,6 +34,7 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
   onAddGirlClick,
   onAddSpouseClick,
   onAddParentClick,
+  isOwner = false,
 }) => {
   const [hover, setHover] = useState(false);
   const hideTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -105,41 +107,50 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
       {/* ================================
           HOVER CHILDREN BUTTONS
          ================================ */}
-      {hover && hasMarriage && member.gender === UserGenderEnum.FEMALE && (
-        <g>
-          {/* Left blue button */}
-          <rect
-            x={nodeWidth / 2 - 26}
-            y={nodeHeight + 6}
-            width={20}
-            height={20}
-            rx={4}
-            fill="#3b82f6"
-            stroke="#1e40af"
-            strokeWidth="1.5"
-            style={{ cursor: 'pointer' }}
-            onClick={() => onAddBoyClick(member)}
-          />
+      {/* ================================
+          HOVER CHILDREN BUTTONS
+         ================================ */}
+      {hover &&
+        isOwner &&
+        hasMarriage &&
+        member.gender === UserGenderEnum.FEMALE && (
+          <g>
+            {/* Left blue button */}
+            <rect
+              x={nodeWidth / 2 - 26}
+              y={nodeHeight + 6}
+              width={20}
+              height={20}
+              rx={4}
+              fill="#3b82f6"
+              stroke="#1e40af"
+              strokeWidth="1.5"
+              style={{ cursor: 'pointer' }}
+              onClick={() => onAddBoyClick(member)}
+            />
 
-          {/* Right pink button */}
-          <rect
-            x={nodeWidth / 2 + 6}
-            y={nodeHeight + 6}
-            width={20}
-            height={20}
-            rx={4}
-            fill="#ec4899"
-            stroke="#be185d"
-            strokeWidth="1.5"
-            style={{ cursor: 'pointer' }}
-            onClick={() => onAddGirlClick(member)}
-          />
-        </g>
-      )}
+            {/* Right pink button */}
+            <rect
+              x={nodeWidth / 2 + 6}
+              y={nodeHeight + 6}
+              width={20}
+              height={20}
+              rx={4}
+              fill="#ec4899"
+              stroke="#be185d"
+              strokeWidth="1.5"
+              style={{ cursor: 'pointer' }}
+              onClick={() => onAddGirlClick(member)}
+            />
+          </g>
+        )}
       {/* ================================
           HOVER: SPOUSE BUTTON (only if no marriage)
         ================================ */}
-      {hover && !hasMarriage && (
+      {/* ================================
+          HOVER: SPOUSE BUTTON (only if no marriage)
+        ================================ */}
+      {hover && isOwner && !hasMarriage && (
         <rect
           x={nodeWidth + 6} // right side of node
           y={nodeHeight / 2 - 10} // vertically centered
@@ -161,7 +172,10 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
       {/* ================================
       HOVER: PARENT BUTTON (rounded split)
    ================================ */}
-      {hover && !hasParents && (
+      {/* ================================
+      HOVER: PARENT BUTTON (rounded split)
+   ================================ */}
+      {hover && isOwner && !hasParents && (
         <g
           style={{ cursor: 'pointer' }}
           onClick={() => onAddParentClick(member)}
