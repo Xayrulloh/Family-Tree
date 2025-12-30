@@ -121,7 +121,19 @@ const buildFamilyHierarchy = (
       .map((id) => memberMap.get(id))
       .filter(Boolean) as FamilyTreeMemberGetResponseType[];
 
-    const childIds = Array.from(familyChildren.get(familyKey) ?? []);
+    // sort children by dob
+    const childIds = Array.from(familyChildren.get(familyKey) ?? []).sort(
+      (a, b) => {
+        const mA = memberMap.get(a);
+        const mB = memberMap.get(b);
+
+        if (!mA?.dob && !mB?.dob) return 0;
+        if (!mA?.dob) return 1;
+        if (!mB?.dob) return -1;
+
+        return mA.dob.localeCompare(mB.dob);
+      },
+    );
 
     const childNodes = childIds
       .map((cid) => familyKeyOf.get(cid))
