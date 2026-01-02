@@ -1,4 +1,7 @@
-import type { FamilyTreeSchemaType, SharedFamilyTreeArrayResponseType } from '@family-tree/shared';
+import type {
+  FamilyTreeSchemaType,
+  SharedFamilyTreeArrayResponseType,
+} from '@family-tree/shared';
 import { createEffect, createStore, sample } from 'effector';
 import { or } from 'patronum';
 import { userModel } from '~/entities/user';

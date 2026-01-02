@@ -32,6 +32,8 @@ import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { FamilyTreeMemberService } from '../family-tree-member/family-tree-member.service';
+// biome-ignore lint/style/useImportType: <throws an error if put type>
+import { SharedFamilyTreeService } from '../shared-family-tree/shared-family-tree.service';
 // biome-ignore lint/style/useImportType: <query/param doesn't work>
 import {
   FamilyTreeArrayResponseDto,
@@ -42,8 +44,6 @@ import {
 } from './dto/family-tree.dto';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { FamilyTreeService } from './family-tree.service';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { SharedFamilyTreeService } from '../shared-family-tree/shared-family-tree.service';
 
 @ApiTags('Family Tree')
 @Controller('family-trees')

@@ -318,7 +318,7 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
 
       {sharedTrees.length > 0 && (
         <div style={{ marginBottom: 40 }}>
-          <Typography.Title level={3}>Shared Family Trees</Typography.Title>
+          <Typography.Title level={3}>Shared With Me</Typography.Title>
           <Row gutter={[16, 16]}>
             {/* Shared Trees */}
             {sharedTrees.map((tree) => (
