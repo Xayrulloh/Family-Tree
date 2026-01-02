@@ -179,24 +179,114 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
   );
 };
 
-// Trees Grid Component => Already Created Trees Component
-const TreesGrid: React.FC<Props> = ({ model }) => {
-  const [trees] = useUnit([model.$trees, model.$fetching]);
+// Shared Tree Card Component
+export const SharedTreeCard: React.FC<TreeCardProps> = ({ tree }) => {
+  const { token } = theme.useToken();
 
   return (
-    <div style={{ marginBottom: 40, padding: '0 16px' }}>
-      <Typography.Title level={3}>My Family Trees</Typography.Title>
+    <Link to={routes.treesDetail} params={{ id: tree.id }}>
+      {''}
+      <Card
+        hoverable
+        styles={{
+          body: {
+            padding: '12px 16px 16px',
+            height: 'calc(100% - 140px)',
+          },
+        }}
+        style={{
+          height: '100%',
+          position: 'relative',
+          borderRadius: 12,
+          overflow: 'hidden',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          transition: 'all 0.2s ease',
+          display: 'flex',
+          flexDirection: 'column',
+          cursor: 'pointer',
+        }}
+        cover={
+          <div
+            style={{
+              height: 140,
+              background: token.colorFillContent,
+              display: 'flex',
+              overflow: 'hidden',
+              position: 'relative',
+              ...(tree.image
+                ? {}
+                : {
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: token.colorFillSecondary,
+                  }),
+            }}
+          >
+            {tree.image ? (
+              <img
+                src={tree.image}
+                loading="eager"
+                alt={tree.name}
+                style={{
+                  height: '100%',
+                  width: '100%',
+                  objectFit: 'cover',
+                  objectPosition: 'center',
+                  transition: 'transform 0.3s',
+                }}
+              />
+            ) : (
+              <span
+                role="img"
+                aria-label="tree"
+                style={{
+                  fontSize: 48,
+                  lineHeight: 1,
+                  color: token.colorTextDescription,
+                }}
+              >
+                🌲
+              </span>
+            )}
+          </div>
+        }
+      >
+        <Typography.Title
+          level={5}
+          style={{
+            marginBottom: 4,
+            marginTop: 0,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+          title={tree.name}
+        >
+          {tree.name}
+        </Typography.Title>
+      </Card>
+    </Link>
+  );
+};
 
-      <Row gutter={[16, 16]}>
-        {/* Exist Trees */}
-        {trees.map((tree) => (
-          <Col xs={12} sm={8} md={6} lg={6} xl={4} key={tree.id}>
-            <TreeCard tree={tree} />
-          </Col>
-        ))}
+// Trees Grid Component => Already Created Trees Component
+const TreesGrid: React.FC<Props> = ({ model }) => {
+  const [trees, sharedTrees] = useUnit([model.$trees, model.$sharedTrees]);
 
-        {/* Create A New Tree */}
-        {
+  return (
+    <div style={{ padding: '0 16px' }}>
+      <div style={{ marginBottom: 40 }}>
+        <Typography.Title level={3}>My Family Trees</Typography.Title>
+
+        <Row gutter={[16, 16]}>
+          {/* Own Trees */}
+          {trees.map((tree) => (
+            <Col xs={12} sm={8} md={6} lg={6} xl={4} key={tree.id}>
+              <TreeCard tree={tree} />
+            </Col>
+          ))}
+
+          {/* Create A New Tree */}
           <Col xs={12} sm={8} md={6} lg={6} xl={4}>
             <Card
               hoverable
@@ -223,8 +313,22 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
               </Typography.Text>
             </Card>
           </Col>
-        }
-      </Row>
+        </Row>
+      </div>
+
+      {sharedTrees.length > 0 && (
+        <div style={{ marginBottom: 40 }}>
+          <Typography.Title level={3}>Shared Family Trees</Typography.Title>
+          <Row gutter={[16, 16]}>
+            {/* Shared Trees */}
+            {sharedTrees.map((tree) => (
+              <Col xs={12} sm={8} md={6} lg={6} xl={4} key={tree.id}>
+                <SharedTreeCard tree={tree} />
+              </Col>
+            ))}
+          </Row>
+        </div>
+      )}
     </div>
   );
 };
