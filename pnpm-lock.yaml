@@ -335,6 +335,10 @@ importers:
         version: link:../../libs/shared
 
   apps/web:
+    dependencies:
+      save-svg-as-png:
+        specifier: ^1.4.17
+        version: 1.4.17
     devDependencies:
       '@family-tree/shared':
         specifier: workspace:*
@@ -7799,6 +7803,9 @@ packages:
     resolution: {integrity: sha512-N+7WK20/wOr7CzA2snJcUSSNTCzeCGUTFY3OgeQP3mZ1aj9NMQ0mSTXwlrnd89j33zzQJGqIN52GIOmYrfq46A==}
     engines: {node: '>=14.0.0'}
     hasBin: true
+
+  save-svg-as-png@1.4.17:
+    resolution: {integrity: sha512-7QDaqJsVhdFPwviCxkgHiGm9omeaMBe1VKbHySWU6oFB2LtnGCcYS13eVoslUgq6VZC6Tjq/HddBd1K6p2PGpA==}
 
   sax@1.4.3:
     resolution: {integrity: sha512-yqYn1JhPczigF94DMS+shiDMjDowYO6y9+wB/4WgO0Y19jWYk0lQ4tuG5KI7kj4FTp1wxPj5IFfcrz/s1c3jjQ==}
@@ -17752,6 +17759,8 @@ snapshots:
       source-map-js: 1.2.1
     optionalDependencies:
       '@parcel/watcher': 2.5.1
+
+  save-svg-as-png@1.4.17: {}
 
   sax@1.4.3:
     optional: true
