@@ -2,8 +2,9 @@ import type {
   FamilyTreeMemberConnectionGetAllResponseType,
   FamilyTreeMemberGetAllResponseType,
   FamilyTreeResponseType,
+  FamilyTreeSchemaType,
 } from '@family-tree/shared';
-import { attach, combine, createStore, sample } from 'effector';
+import { attach, combine, createEffect, createStore, sample } from 'effector';
 import { or } from 'patronum';
 import { userModel } from '~/entities/user';
 import { addMemberModel } from '~/features/tree-member/add';
@@ -12,7 +13,6 @@ import { editMemberModel } from '~/features/tree-member/edit';
 import { previewMemberModel } from '~/features/tree-member/preview';
 import { api } from '~/shared/api';
 import type { LazyPageFactoryParams } from '~/shared/lib/lazy-page';
-import * as treesModel from '../trees/model';
 
 export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   const authorizedRoute = userModel.chainAuthorized({ route });
@@ -21,16 +21,15 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   const $members = createStore<FamilyTreeMemberGetAllResponseType>([]);
   const $connections =
     createStore<FamilyTreeMemberConnectionGetAllResponseType>([]);
+  const $trees = createStore<FamilyTreeSchemaType[]>([]);
   const $tree = createStore<FamilyTreeResponseType | null>(null);
 
   const $id = authorizedRoute.$params.map((params) => params.id ?? null);
-  // biome-ignore lint/suspicious/noExplicitAny: <need to fix>
-  const $ownerTrees = treesModel.factory({ route: route as any }).$trees;
 
   const $isOwner = combine(
     $id,
-    $ownerTrees,
-    (id, trees) => !!(id && new Set(trees.map((t) => t.id)).has(id)),
+    $trees,
+    (id, trees) => !!id && trees.some((tree) => tree.id === id),
   );
 
   // Effects
@@ -50,11 +49,13 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
     effect: (familyTreeId: string) => api.tree.findById(familyTreeId),
   });
 
+  const fetchTreesFx = createEffect(() => api.tree.findAll());
+
   // Samples
   // Trigger fetches when familyTreeId is set
   sample({
     clock: authorizedRoute.opened,
-    target: [fetchMembersFx, fetchConnectionsFx, fetchTreeFx],
+    target: [fetchMembersFx, fetchConnectionsFx, fetchTreeFx, fetchTreesFx],
   });
 
   // Update stores with API responses
@@ -96,6 +97,12 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
       addMemberModel.created,
     ],
     target: [fetchMembersFx, fetchConnectionsFx],
+  });
+
+  // Delete unnecessary data
+  sample({
+    clock: authorizedRoute.closed,
+    target: [$members.reinit, $connections.reinit, $tree.reinit, $trees.reinit],
   });
 
   return {
