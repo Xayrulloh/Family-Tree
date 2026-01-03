@@ -44,7 +44,13 @@ export class AuthController {
       domain: COOKIE_DOMAIN,
     });
 
-    res.redirect(`${CLIENT_URL}/family-trees`);
+    const redirectUrl = req.cookies.auth_redirect_url || '/family-trees';
+
+    res.clearCookie('auth_redirect_url', {
+      domain: COOKIE_DOMAIN,
+    });
+
+    res.redirect(`${CLIENT_URL}${redirectUrl}`);
   }
 
   // Logout

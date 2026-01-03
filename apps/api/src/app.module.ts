@@ -15,6 +15,7 @@ import { FamilyTreeMemberConnectionModule } from './modules/family-tree-member-c
 import { FCMTokenModule } from './modules/fcm-token/fcm-token.module';
 import { FileModule } from './modules/file/file.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { SharedFamilyTreeModule } from './modules/shared-family-tree/shared-family-tree.module';
 import { UserModule } from './modules/user/user.module';
 
 @Module({
@@ -35,6 +36,7 @@ import { UserModule } from './modules/user/user.module';
     CookiesModule,
     FCMTokenModule,
     FamilyTreeModule,
+    SharedFamilyTreeModule,
     FamilyTreeMemberConnectionModule,
     FamilyTreeMemberModule,
     FileModule,

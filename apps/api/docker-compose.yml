@@ -1,7 +1,7 @@
 services:
   api:
     container_name: family-tree-api
-    image: ${DOCKER_IMAGE:-ghcr.io/Xayrulloh/family-tree-api:latest}
+    image: ${DOCKER_IMAGE:-ghcr.io/xayrulloh/family-tree-api:latest}
     restart: unless-stopped
     ports:
       - "3000:8080"
