@@ -1,8 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { CacheService } from '~/config/cache/cache.service';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
 import type {
@@ -15,8 +13,6 @@ export class SharedFamilyTreeService {
   constructor(
     @Inject(DrizzleAsyncProvider)
     private db: NodePgDatabase<typeof schema>,
-    private readonly cacheService: CacheService,
-    // we need cache
   ) {}
 
   async getSharedFamilyTreesOfUser(
@@ -68,10 +64,5 @@ export class SharedFamilyTreeService {
       familyTreeId: body.familyTreeId,
       sharedWithUserId: body.sharedWithUserId,
     });
-
-    // clear cache
-    await this.cacheService.del(
-      `users:${body.sharedWithUserId}:shared-family-trees`,
-    );
   }
 }
