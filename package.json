@@ -27,7 +27,7 @@
     "@nestjs/platform-express": "^11.1.5",
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/throttler": "^6.4.0",
-    "@sentry/nestjs": "^10.27.0",
+    "@sentry/nestjs": "^10.32.1",
     "@sentry/profiling-node": "^10.27.0",
     "@types/d3": "^7.4.3",
     "@types/d3-hierarchy": "^3.1.7",
