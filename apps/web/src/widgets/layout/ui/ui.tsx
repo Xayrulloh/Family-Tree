@@ -8,7 +8,14 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
 
   return (
     <AntLayout style={{ height: '100dvh', background: token.colorBgBase }}>
-      <AntLayout style={{ background: token.colorBgBase }}>
+      <AntLayout
+        style={{
+          background: token.colorBgBase,
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+        }}
+      >
         {/* Header part */}
         <Header
           style={{
@@ -18,6 +25,7 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
+            flexShrink: 0,
           }}
         >
           {/* Header Title */}
@@ -52,7 +60,13 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
         </Header>
 
         {/* Main content */}
-        <Content className="px-4 sm:px-6 md:px-8 py-4">
+        <Content
+          className="px-4 sm:px-6 md:px-8 py-4"
+          style={{
+            flex: 1,
+            overflow: 'auto',
+          }}
+        >
           <div
             className="min-h-[360px] rounded-lg"
             style={{
@@ -68,6 +82,7 @@ export const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
           className="text-center py-4"
           style={{
             background: token.colorBgBase,
+            flexShrink: 0,
           }}
         >
           © {new Date().getFullYear()} FamilyTree. All rights reserved.
