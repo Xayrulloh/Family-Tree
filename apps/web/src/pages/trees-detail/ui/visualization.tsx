@@ -413,7 +413,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
                     onAddSpouseClick={addMemberModel.addSpouseTrigger}
                     onAddParentClick={addMemberModel.addParentsTrigger}
                     isOwner={isOwner}
-              />
+                  />
                 );
               })}
             </g>
