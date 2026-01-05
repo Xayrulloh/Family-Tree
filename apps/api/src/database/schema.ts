@@ -45,7 +45,8 @@ const baseSchema = {
     .notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true })
     .defaultNow()
-    .notNull(),
+    .notNull()
+    .$onUpdate(() => new Date()),
   deletedAt: timestamp('deleted_at', { mode: 'date', withTimezone: true }),
 };
 
@@ -77,6 +78,17 @@ export const familyTreesSchema = pgTable(
     nameAndUserIdx: unique('name_and_user_idx').on(table.name, table.createdBy),
   }),
 );
+
+export const sharedFamilyTreesSchema = pgTable('shared_family_trees', {
+  familyTreeId: uuid('family_tree_id')
+    .references(() => familyTreesSchema.id, { onDelete: 'cascade' })
+    .unique()
+    .notNull(),
+  sharedWithUserId: uuid('shared_with_user_id')
+    .references(() => usersSchema.id, { onDelete: 'cascade' })
+    .notNull(),
+  ...baseSchema,
+});
 
 export const familyTreeMembersSchema = pgTable('family_tree_members', {
   name: text('name').notNull(),
@@ -179,6 +191,22 @@ export const familyTreesRelations = relations(
     }),
     familyTreeMemberConnections: many(familyTreeMemberConnectionsSchema, {
       relationName: 'tree_connections',
+    }),
+  }),
+);
+
+export const sharedFamilyTreesRelations = relations(
+  sharedFamilyTreesSchema,
+  ({ one }) => ({
+    familyTree: one(familyTreesSchema, {
+      fields: [sharedFamilyTreesSchema.familyTreeId],
+      references: [familyTreesSchema.id],
+      relationName: 'shared_family_trees',
+    }),
+    sharedWithUser: one(usersSchema, {
+      fields: [sharedFamilyTreesSchema.sharedWithUserId],
+      references: [usersSchema.id],
+      relationName: 'shared_family_trees',
     }),
   }),
 );

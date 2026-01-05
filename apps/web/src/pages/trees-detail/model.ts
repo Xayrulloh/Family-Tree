@@ -1,8 +1,10 @@
 import type {
   FamilyTreeMemberConnectionGetAllResponseType,
   FamilyTreeMemberGetAllResponseType,
+  FamilyTreeResponseType,
+  FamilyTreeSchemaType,
 } from '@family-tree/shared';
-import { attach, createStore, sample } from 'effector';
+import { attach, combine, createEffect, createStore, sample } from 'effector';
 import { or } from 'patronum';
 import { userModel } from '~/entities/user';
 import { addMemberModel } from '~/features/tree-member/add';
@@ -19,8 +21,16 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   const $members = createStore<FamilyTreeMemberGetAllResponseType>([]);
   const $connections =
     createStore<FamilyTreeMemberConnectionGetAllResponseType>([]);
+  const $trees = createStore<FamilyTreeSchemaType[]>([]);
+  const $tree = createStore<FamilyTreeResponseType | null>(null);
 
   const $id = authorizedRoute.$params.map((params) => params.id ?? null);
+
+  const $isOwner = combine(
+    $id,
+    $trees,
+    (id, trees) => !!id && trees.some((tree) => tree.id === id),
+  );
 
   // Effects
   const fetchMembersFx = attach({
@@ -34,11 +44,18 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
       api.treeMemberConnection.findAll({ familyTreeId }),
   });
 
+  const fetchTreeFx = attach({
+    source: $id,
+    effect: (familyTreeId: string) => api.tree.findById(familyTreeId),
+  });
+
+  const fetchTreesFx = createEffect(() => api.tree.findAll());
+
   // Samples
   // Trigger fetches when familyTreeId is set
   sample({
     clock: authorizedRoute.opened,
-    target: [fetchMembersFx, fetchConnectionsFx],
+    target: [fetchMembersFx, fetchConnectionsFx, fetchTreeFx, fetchTreesFx],
   });
 
   // Update stores with API responses
@@ -52,6 +69,12 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
     clock: fetchConnectionsFx.doneData,
     fn: (response) => response.data,
     target: $connections,
+  });
+
+  sample({
+    clock: fetchTreeFx.doneData,
+    fn: (response) => response.data,
+    target: $tree,
   });
 
   // Reset preview on member edit
@@ -76,10 +99,18 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
     target: [fetchMembersFx, fetchConnectionsFx],
   });
 
+  // Delete unnecessary data
+  sample({
+    clock: authorizedRoute.closed,
+    target: [$members.reinit, $connections.reinit, $tree.reinit, $trees.reinit],
+  });
+
   return {
     $members,
     $connections,
+    $tree,
     $id,
+    $isOwner,
     $loading: or(fetchMembersFx.pending, fetchConnectionsFx.pending),
   };
 };

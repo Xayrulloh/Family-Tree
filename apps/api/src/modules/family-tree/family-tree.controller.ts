@@ -32,10 +32,13 @@ import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { FamilyTreeMemberService } from '../family-tree-member/family-tree-member.service';
+// biome-ignore lint/style/useImportType: <throws an error if put type>
+import { SharedFamilyTreeService } from '../shared-family-tree/shared-family-tree.service';
+// biome-ignore lint/style/useImportType: <query/param doesn't work>
 import {
   FamilyTreeArrayResponseDto,
   FamilyTreeCreateRequestDto,
-  type FamilyTreeIdParamDto,
+  FamilyTreeIdParamDto,
   FamilyTreeResponseDto,
   FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
@@ -48,6 +51,7 @@ export class FamilyTreeController {
   constructor(
     private readonly familyTreeService: FamilyTreeService,
     private readonly familyTreeMemberService: FamilyTreeMemberService,
+    private readonly sharedFamilyTreeService: SharedFamilyTreeService,
     private readonly cacheService: CacheService,
   ) {}
 
@@ -88,6 +92,7 @@ export class FamilyTreeController {
   @ApiOkResponse({ type: FamilyTreeResponseDto })
   @ZodSerializerDto(FamilyTreeResponseSchema)
   async getFamilyTreeById(
+    @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeIdParamDto,
   ): Promise<FamilyTreeResponseDto> {
     const cachedFamilyTree = await this.cacheService.get<FamilyTreeResponseDto>(
@@ -95,10 +100,24 @@ export class FamilyTreeController {
     );
 
     if (cachedFamilyTree) {
+      if (req.user.id !== cachedFamilyTree.createdBy) {
+        await this.sharedFamilyTreeService.createSharedFamilyTree({
+          familyTreeId: param.id,
+          sharedWithUserId: req.user.id,
+        });
+      }
+
       return cachedFamilyTree;
     }
 
     const familyTree = await this.familyTreeService.getFamilyTreeById(param.id);
+
+    if (req.user.id !== familyTree.createdBy) {
+      await this.sharedFamilyTreeService.createSharedFamilyTree({
+        familyTreeId: param.id,
+        sharedWithUserId: req.user.id,
+      });
+    }
 
     this.cacheService.set(`family-trees:${param.id}`, familyTree);
 

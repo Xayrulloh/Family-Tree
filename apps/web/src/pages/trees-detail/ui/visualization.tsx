@@ -1,23 +1,23 @@
-import {
-  FamilyTreeMemberConnectionEnum,
-  type FamilyTreeMemberConnectionGetAllResponseType,
-  type FamilyTreeMemberConnectionSchemaType,
-} from '@family-tree/shared';
+import { DownloadOutlined, ShareAltOutlined } from '@ant-design/icons';
+import type { FamilyTreeMemberConnectionGetAllResponseType } from '@family-tree/shared';
 import { theme } from 'antd';
 import { useUnit } from 'effector-react';
 import {
   memo,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
+import { saveSvgAsPng } from 'save-svg-as-png';
 import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
+import { ShareTreeModal, shareTreeModel } from '~/features/trees-detail/share';
 import {
   calculatePositions,
-  getCouples,
+  type MemberMetadata,
   type Position,
 } from '~/shared/lib/layout-engine';
 import { FamilyTreeNode } from '~/shared/ui/family-tree-node';
@@ -33,14 +33,25 @@ const CONNECTION = {
 const NODE_WIDTH = 160;
 const NODE_HEIGHT = 80;
 
+const savedViews = new Map<
+  string,
+  { x: number; y: number; width: number; height: number }
+>();
+
 export const Visualization: React.FC<Props> = ({ model }) => {
-  const [connections, members] = useUnit([model.$connections, model.$members]);
+  const [connections, members, id, tree, isOwner] = useUnit([
+    model.$connections,
+    model.$members,
+    model.$id,
+    model.$tree,
+    model.$isOwner,
+  ]);
   const { token } = theme.useToken();
 
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const [containerWidth, setContainerWidth] = useState(1200);
+  const [containerWidth, setContainerWidth] = useState(0);
 
   useLayoutEffect(() => {
     const update = () => {
@@ -55,33 +66,16 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const positions = useMemo(
-    () => calculatePositions(members, connections, containerWidth),
-    [members, connections],
-  );
-
-  const couples = useMemo(() => getCouples(connections), [connections]);
-  const marriageMap = useMemo(() => {
-    const map = new Map<string, string>();
-
-    couples.forEach(({ fromMemberId, toMemberId }) => {
-      map.set(fromMemberId, toMemberId);
-      map.set(toMemberId, fromMemberId);
-    });
-
-    return map;
-  }, [couples]);
-  const parentsSet = useMemo(() => {
-    const set = new Set<string>();
-
-    connections.forEach(({ toMemberId, type }) => {
-      if (type === FamilyTreeMemberConnectionEnum.PARENT) {
-        set.add(toMemberId);
-      }
-    });
-
-    return set;
-  }, [connections]);
+  const { positions, metadata, couples } = useMemo(() => {
+    if (containerWidth === 0) {
+      return {
+        positions: new Map(),
+        metadata: new Map(),
+        couples: [],
+      };
+    }
+    return calculatePositions(members, connections, containerWidth);
+  }, [members, connections, containerWidth]);
 
   /* ===============================
    * Center tree in the viewport
@@ -94,72 +88,204 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     height: 800,
   });
 
+  const [isReady, setIsReady] = useState(false);
+
   // Center once based on layout
-  useMemo(() => {
-    if (positions.size === 0) return;
+  const isCenteredRef = useRef(false);
 
-    const xs = Array.from(positions.values()).map((p) => p.x);
-    const ys = Array.from(positions.values()).map((p) => p.y);
-    const minX = Math.min(...xs);
-    const maxX = Math.max(...xs);
-    const minY = Math.min(...ys);
-    const maxY = Math.max(...ys);
+  /* ===============================
+   * Helper to get tree bounds
+   * =============================== */
+  const treeBounds = useMemo(() => {
+    if (positions.size === 0) return null;
 
-    const width = maxX - minX + NODE_WIDTH * 2;
-    const height = maxY - minY + NODE_HEIGHT * 2;
-    const vbX = Math.max(0, minX - NODE_WIDTH);
-    const vbY = Math.max(0, minY - NODE_HEIGHT);
+    let minY = Number.POSITIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
 
-    setViewBox({ x: vbX, y: vbY, width, height });
+    // Pass 1: Find vertical bounds
+    for (const p of positions.values()) {
+      if (p.y < minY) minY = p.y;
+      if (p.y > maxY) maxY = p.y;
+    }
+
+    // Pass 2: Calculate center of root nodes
+    let rootSumX = 0;
+    let rootCount = 0;
+
+    for (const p of positions.values()) {
+      if (Math.abs(p.y - minY) < 5) {
+        rootSumX += p.x;
+        rootCount++;
+      }
+    }
+
+    if (rootCount === 0) return null;
+
+    const rootCenterX = rootSumX / rootCount;
+
+    // Pass 3: Calculate max symmetric distance
+    let maxDistX = 0;
+    const halfNode = NODE_WIDTH / 2;
+
+    for (const p of positions.values()) {
+      const distLeft = Math.abs(p.x - halfNode - rootCenterX);
+      const distRight = Math.abs(p.x + halfNode - rootCenterX);
+      const dist = distLeft > distRight ? distLeft : distRight;
+
+      if (dist > maxDistX) maxDistX = dist;
+    }
+
+    // Calculate fit dimensions
+    const width = maxDistX * 2 + NODE_WIDTH; // Extra padding
+    const height = maxY - minY + NODE_HEIGHT * 3; // Extra vertical padding
+
+    const vbX = rootCenterX - width / 2;
+    const vbY = minY - NODE_HEIGHT;
+
+    return { x: vbX, y: vbY, width, height };
   }, [positions]);
+
+  const handleCenterView = useCallback(() => {
+    if (!treeBounds) return;
+
+    setViewBox(treeBounds);
+
+    if (id) {
+      savedViews.set(id, treeBounds);
+    }
+  }, [treeBounds, id]);
+
+  const handleDownloadImage = useCallback(() => {
+    if (svgRef.current) {
+      const filename = tree?.name ? `${tree.name}-famtree.png` : 'famtree.png';
+
+      saveSvgAsPng(svgRef.current, filename, {
+        backgroundColor: 'rgba(249, 250, 251, 0.9)',
+        ...(treeBounds && {
+          left: treeBounds.x,
+          top: treeBounds.y,
+          width: treeBounds.width,
+          height: treeBounds.height,
+        }),
+      });
+    }
+  }, [tree, treeBounds]);
+
+  useLayoutEffect(() => {
+    if (isCenteredRef.current || positions.size === 0 || !id) return;
+
+    // Check if we have a saved view for this tree
+    const saved = savedViews.get(id);
+
+    if (saved) {
+      setViewBox(saved);
+
+      isCenteredRef.current = true;
+
+      setIsReady(true);
+
+      return;
+    }
+
+    handleCenterView();
+
+    isCenteredRef.current = true;
+
+    setIsReady(true);
+  }, [positions, id]);
+
+  // Persist view changes
+  useEffect(() => {
+    if (id && isCenteredRef.current) {
+      savedViews.set(id, viewBox);
+    }
+  }, [viewBox, id]);
 
   /* ===============================
    * Drag logic for panning
    * =============================== */
   const [isDragging, setIsDragging] = useState(false);
-  const [lastPoint, setLastPoint] = useState<{ x: number; y: number } | null>(
-    null,
-  );
+  const isDraggingRef = useRef(false);
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  const rafRef = useRef<number | null>(null);
 
-  const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
     setIsDragging(true);
-    setLastPoint({ x: e.clientX, y: e.clientY });
-  };
 
-  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!isDragging || !lastPoint || !svgRef.current) return;
+    isDraggingRef.current = true;
+    lastPointRef.current = { x: e.clientX, y: e.clientY };
+  }, []);
 
-    const dx = e.clientX - lastPoint.x;
-    const dy = e.clientY - lastPoint.y;
+  const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+    if (!isDraggingRef.current || !lastPointRef.current || !svgRef.current) {
+      return;
+    }
 
-    // Calculate the ratio between viewBox coordinates and screen pixels
-    const rect = svgRef.current.getBoundingClientRect();
-    const scaleX = viewBox.width / rect.width;
-    const scaleY = viewBox.height / rect.height;
+    const currentX = e.clientX;
+    const currentY = e.clientY;
 
-    // Move opposite to drag direction, scaled by current zoom level
-    // Y-axis has a 1.3x multiplier for slightly faster vertical movement
-    setViewBox((prev) => ({
-      ...prev,
-      x: prev.x - dx * scaleX,
-      y: prev.y - dy * scaleY * 1.18,
-    }));
+    if (rafRef.current !== null) return;
 
-    setLastPoint({ x: e.clientX, y: e.clientY });
-  };
+    rafRef.current = requestAnimationFrame(() => {
+      if (!lastPointRef.current || !svgRef.current) {
+        rafRef.current = null;
 
-  const handleMouseUp = () => {
+        return;
+      }
+
+      const dx = currentX - lastPointRef.current.x;
+      const dy = currentY - lastPointRef.current.y;
+
+      const rect = svgRef.current.getBoundingClientRect();
+
+      // Update last point immediately
+      lastPointRef.current = { x: currentX, y: currentY };
+
+      setViewBox((prev) => {
+        const scaleX = prev.width / rect.width;
+        const scaleY = prev.height / rect.height;
+        const uniformScale = Math.max(scaleX, scaleY);
+
+        return {
+          ...prev,
+          x: prev.x - dx * uniformScale,
+          y: prev.y - dy * uniformScale,
+        };
+      });
+
+      rafRef.current = null;
+    });
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-    setLastPoint(null);
-  };
 
-  const handleMouseLeave = () => {
+    isDraggingRef.current = false;
+    lastPointRef.current = null;
+
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+
+      rafRef.current = null;
+    }
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
     setIsDragging(false);
-    setLastPoint(null);
-  };
+
+    isDraggingRef.current = false;
+    lastPointRef.current = null;
+
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+
+      rafRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     const svg = svgRef.current;
+
     if (!svg) return;
 
     const handleWheel = (e: WheelEvent) => {
@@ -197,9 +323,47 @@ export const Visualization: React.FC<Props> = ({ model }) => {
   return (
     <div
       ref={containerRef}
-      className="w-full p-4 select-none"
-      style={{ height: 'calc(103vh - 160px)' }}
+      className="w-full p-4 select-none relative"
+      style={{
+        height: 'calc(103vh - 160px)',
+        opacity: isReady ? 1 : 0,
+        transition: 'opacity 0.2s ease-in',
+      }}
     >
+      <ShareTreeModal />
+      <div className="absolute top-8 right-8 z-10 flex gap-2">
+        <button
+          type="button"
+          onClick={() =>
+            shareTreeModel.shareTrigger({ url: window.location.href })
+          }
+          className="p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors border border-gray-200 cursor-pointer"
+          title="Share Tree"
+        >
+          <ShareAltOutlined style={{ fontSize: '24px', color: '#595959' }} />
+        </button>
+        <button
+          type="button"
+          onClick={handleDownloadImage}
+          className="p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors border border-gray-200 cursor-pointer"
+          title="Convert to Image"
+        >
+          <DownloadOutlined style={{ fontSize: '24px', color: '#595959' }} />
+        </button>
+        <button
+          type="button"
+          onClick={handleCenterView}
+          className="p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors border border-gray-200 cursor-pointer"
+          title="Center Tree"
+        >
+          <img
+            src="/family-tree-icon.png"
+            alt="Center Tree"
+            className="w-6 h-6 object-contain"
+          />
+        </button>
+      </div>
+
       {/** biome-ignore lint/a11y/noSvgWithoutTitle: <There's no need for title> */}
       <svg
         width="100%"
@@ -218,38 +382,43 @@ export const Visualization: React.FC<Props> = ({ model }) => {
         ref={svgRef}
       >
         {/* <title>Family Tree</title> */}
-        <g>
-          <CoupleConnections couples={couples} positions={positions} />
-        </g>
-        <g>
-          <ParentChildConnections
-            couples={couples}
-            positions={positions}
-            connections={connections}
-          />
-        </g>
-        <g>
-          {members.map((m) => (
-            <MemoizedFamilyTreeNode
-              key={m.id}
-              member={m}
-              // biome-ignore lint/style/noNonNullAssertion: <I hope it's always gets the position)>
-              position={positions.get(m.id)!}
-              hasMarriage={marriageMap.has(m.id)}
-              isParent={
-                !(
-                  !parentsSet.has(m.id) &&
-                  !parentsSet.has(marriageMap.get(m.id) || '')
-                )
-              }
-              onPreviewClick={previewMemberModel.previewMemberTrigger}
-              onAddBoyClick={addMemberModel.addBoyTrigger}
-              onAddGirlClick={addMemberModel.addGirlTrigger}
-              onAddSpouseClick={addMemberModel.addSpouseTrigger}
-              onAddParentClick={addMemberModel.addParentsTrigger}
-            />
-          ))}
-        </g>
+        {positions.size > 0 && (
+          <>
+            <g>
+              <CoupleConnections couples={couples} positions={positions} />
+            </g>
+            <g>
+              <ParentChildConnections
+                couples={couples}
+                positions={positions}
+                metadata={metadata}
+              />
+            </g>
+            <g>
+              {members.map((m) => {
+                const memberMetadata = metadata.get(m.id);
+                // biome-ignore lint/style/noNonNullAssertion: <Checked by positions.size > 0>
+                const position = positions.get(m.id)!;
+
+                return (
+                  <MemoizedFamilyTreeNode
+                    key={m.id}
+                    member={m}
+                    position={position}
+                    hasMarriage={!!memberMetadata?.spouseId}
+                    hasParents={(memberMetadata?.parents.length ?? 0) > 0}
+                    onPreviewClick={previewMemberModel.previewMemberTrigger}
+                    onAddBoyClick={addMemberModel.addBoyTrigger}
+                    onAddGirlClick={addMemberModel.addGirlTrigger}
+                    onAddSpouseClick={addMemberModel.addSpouseTrigger}
+                    onAddParentClick={addMemberModel.addParentsTrigger}
+                    isOwner={isOwner}
+                  />
+                );
+              })}
+            </g>
+          </>
+        )}
       </svg>
     </div>
   );
@@ -293,46 +462,26 @@ const CoupleConnections: React.FC<{
 const ParentChildConnections: React.FC<{
   couples: FamilyTreeMemberConnectionGetAllResponseType;
   positions: Map<string, Position>;
-  connections: FamilyTreeMemberConnectionSchemaType[];
-}> = memo(({ couples, positions, connections }) => {
+  metadata: Map<string, MemberMetadata>;
+}> = memo(({ positions, metadata }) => {
   const result: React.ReactNode[] = [];
 
-  // Map couple centers to children
-  const coupleCenters = new Map<string, { x: number; y: number }>();
-
-  couples.forEach((couple) => {
-    const p1 = positions.get(couple.fromMemberId);
-    const p2 = positions.get(couple.toMemberId);
-
-    if (!p1 || !p2) return;
-
-    coupleCenters.set(couple.fromMemberId, {
-      x: (p1.x + p2.x) / 2,
-      y: (p1.y + p2.y) / 2,
-    });
-
-    coupleCenters.set(couple.toMemberId, {
-      x: (p1.x + p2.x) / 2,
-      y: (p1.y + p2.y) / 2,
-    });
-  });
-
-  // Group children by couple
+  // Group children by parent using metadata
   const grouped = new Map<string, Set<string>>();
 
-  connections.forEach((conn) => {
-    if (conn.type !== FamilyTreeMemberConnectionEnum.PARENT) return;
+  metadata.forEach((memberData) => {
+    if (memberData.children.length === 0) return;
 
-    const origin =
-      coupleCenters.get(conn.fromMemberId) ?? positions.get(conn.fromMemberId);
-
+    const origin = memberData.coupleCenterPosition ?? memberData.position;
     if (!origin) return;
 
     const key = `${origin.x},${origin.y}`;
 
     if (!grouped.has(key)) grouped.set(key, new Set());
 
-    grouped.get(key)?.add(conn.toMemberId);
+    memberData.children.forEach((childId) => {
+      grouped.get(key)?.add(childId);
+    });
   });
 
   grouped.forEach((childSet, key) => {
@@ -355,10 +504,8 @@ const ParentChildConnections: React.FC<{
       const childId = childIds[0];
       const childTop = child.y;
 
-      const childHasSpouse = couples.some(
-        (couple) =>
-          couple.fromMemberId === childId || couple.toMemberId === childId,
-      );
+      const childMetadata = metadata.get(childId);
+      const childHasSpouse = !!childMetadata?.spouseId;
 
       if (childHasSpouse) {
         const intermediateY = childTop - NODE_HEIGHT / 2 - 8;
