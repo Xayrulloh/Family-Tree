@@ -77,6 +77,12 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
     target: $tree,
   });
 
+  sample({
+    clock: fetchTreesFx.doneData,
+    fn: (response) => response.data,
+    target: $trees,
+  });
+
   // Reset preview on member edit
   sample({
     clock: editMemberModel.editTrigger,
