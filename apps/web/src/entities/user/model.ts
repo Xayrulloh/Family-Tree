@@ -146,6 +146,13 @@ export const chainAuthorized = <Params extends RouteParams>({
     sample({
       clock: [alreadyAnonymous, notAuthorized],
       filter: route.$isOpened,
+      fn: () => {
+        // Store the current URL directly in a cookie for later redirect
+        const returnUrl = window.location.pathname + window.location.search;
+
+        // biome-ignore lint/suspicious/noDocumentCookie: <We have no other choice, sry)>
+        document.cookie = `auth_redirect_url=${returnUrl}; path=/; max-age=300`;
+      },
       target: routes.registration.open,
     });
   }

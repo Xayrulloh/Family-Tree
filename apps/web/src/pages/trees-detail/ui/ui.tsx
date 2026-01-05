@@ -18,7 +18,7 @@ type Model = ReturnType<typeof factory>;
 export type Props = LazyPageProps<Model>;
 
 export const FamilyTreeView: React.FC<Props> = ({ model }) => {
-  const [loading] = useUnit([model.$loading]);
+  const [loading, isOwner] = useUnit([model.$loading, model.$isOwner]);
 
   if (loading) return <PageLoading />;
 
@@ -26,21 +26,25 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
     <>
       <Visualization model={model} />
       <PreviewMemberModal
-        renderEditMemberSlot={(member) => (
-          <Button
-            type="text"
-            icon={<EditOutlined style={{ fontSize: 18 }} />}
-            onClick={() => editMemberModel.editTrigger(member)}
-          />
-        )}
-        renderDeleteMemberSlot={(member) => (
-          <Button
-            type="text"
-            danger
-            icon={<DeleteOutlined style={{ fontSize: 18 }} />}
-            onClick={() => deleteMemberModel.deleteTrigger(member)}
-          />
-        )}
+        renderEditMemberSlot={(member) =>
+          isOwner && (
+            <Button
+              type="text"
+              icon={<EditOutlined style={{ fontSize: 18 }} />}
+              onClick={() => editMemberModel.editTrigger(member)}
+            />
+          )
+        }
+        renderDeleteMemberSlot={(member) =>
+          isOwner && (
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined style={{ fontSize: 18 }} />}
+              onClick={() => deleteMemberModel.deleteTrigger(member)}
+            />
+          )
+        }
       />
       <EditMemberModal />
       <DeleteMemberModal />

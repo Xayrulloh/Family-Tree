@@ -2,6 +2,7 @@ import { auth } from './auth';
 import { fcmToken } from './fcm-token';
 import { file } from './file';
 import { notification } from './notification';
+import { sharedTree } from './shared-tree';
 import { tree } from './tree';
 import { treeMember } from './tree-member';
 import { treeMemberConnection } from './tree-member-connection';
@@ -11,6 +12,7 @@ export const api = {
   auth,
   user,
   tree,
+  sharedTree,
   file,
   fcmToken,
   notification,

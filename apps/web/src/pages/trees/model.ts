@@ -1,5 +1,9 @@
-import type { FamilyTreeSchemaType } from '@family-tree/shared';
+import type {
+  FamilyTreeSchemaType,
+  SharedFamilyTreeArrayResponseType,
+} from '@family-tree/shared';
 import { createEffect, createStore, sample } from 'effector';
+import { or } from 'patronum';
 import { userModel } from '~/entities/user';
 import { createEditTreeModel } from '~/features/tree/create-edit';
 import { deleteTreeModel } from '~/features/tree/delete';
@@ -10,8 +14,10 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
   const authorizedRoute = userModel.chainAuthorized({ route });
 
   const $trees = createStore<FamilyTreeSchemaType[]>([]);
+  const $sharedTrees = createStore<SharedFamilyTreeArrayResponseType>([]);
 
   const fetchTreesFx = createEffect(async () => api.tree.findAll());
+  const fetchSharedTreesFx = createEffect(async () => api.sharedTree.findAll());
 
   sample({
     clock: [
@@ -19,7 +25,7 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
       createEditTreeModel.mutated,
       deleteTreeModel.mutated,
     ],
-    target: fetchTreesFx,
+    target: [fetchTreesFx, fetchSharedTreesFx],
   });
 
   sample({
@@ -28,8 +34,15 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
     target: $trees,
   });
 
+  sample({
+    clock: fetchSharedTreesFx.doneData,
+    fn: (response) => response.data,
+    target: $sharedTrees,
+  });
+
   return {
     $trees,
-    $fetching: fetchTreesFx.pending,
+    $sharedTrees,
+    $fetching: or(fetchTreesFx.pending, fetchSharedTreesFx.pending),
   };
 };

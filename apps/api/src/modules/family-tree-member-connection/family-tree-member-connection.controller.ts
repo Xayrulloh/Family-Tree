@@ -18,10 +18,11 @@ import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CacheService } from '~/config/cache/cache.service';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
+// biome-ignore lint/style/useImportType: <query/param doesn't work>
 import {
-  type FamilyTreeMemberConnectionGetAllParamDto,
+  FamilyTreeMemberConnectionGetAllParamDto,
   FamilyTreeMemberConnectionGetAllResponseDto,
-  type FamilyTreeMemberConnectionGetByMemberParamDto,
+  FamilyTreeMemberConnectionGetByMemberParamDto,
 } from './dto/family-tree-member-connection.dto';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { FamilyTreeMemberConnectionService } from './family-tree-member-connection.service';
