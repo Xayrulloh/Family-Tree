@@ -150,8 +150,11 @@ export const chainAuthorized = <Params extends RouteParams>({
         // Store the current URL directly in a cookie for later redirect
         const returnUrl = window.location.pathname + window.location.search;
 
+        const isProd = window.location.hostname.endsWith('famtree.uz');
+        const domainAttribute = isProd ? '; domain=.famtree.uz' : '';
+
         // biome-ignore lint/suspicious/noDocumentCookie: <We have no other choice, sry)>
-        document.cookie = `auth_redirect_url=${returnUrl}; path=/; max-age=300`;
+        document.cookie = `auth_redirect_url=${returnUrl}; path=/; max-age=300${domainAttribute}`;
       },
       target: routes.registration.open,
     });
