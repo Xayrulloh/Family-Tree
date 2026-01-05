@@ -1,0 +1,1 @@
+ALTER TABLE "shared_family_trees" ADD CONSTRAINT "family_tree_and_user_idx" UNIQUE("family_tree_id","shared_with_user_id");

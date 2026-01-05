@@ -79,16 +79,24 @@ export const familyTreesSchema = pgTable(
   }),
 );
 
-export const sharedFamilyTreesSchema = pgTable('shared_family_trees', {
-  familyTreeId: uuid('family_tree_id')
-    .references(() => familyTreesSchema.id, { onDelete: 'cascade' })
-    .unique()
-    .notNull(),
-  sharedWithUserId: uuid('shared_with_user_id')
-    .references(() => usersSchema.id, { onDelete: 'cascade' })
-    .notNull(),
-  ...baseSchema,
-});
+export const sharedFamilyTreesSchema = pgTable(
+  'shared_family_trees',
+  {
+    familyTreeId: uuid('family_tree_id')
+      .references(() => familyTreesSchema.id, { onDelete: 'cascade' })
+      .notNull(),
+    sharedWithUserId: uuid('shared_with_user_id')
+      .references(() => usersSchema.id, { onDelete: 'cascade' })
+      .notNull(),
+    ...baseSchema,
+  },
+  (table) => ({
+    familyTreeAndUserIdx: unique('family_tree_and_user_idx').on(
+      table.familyTreeId,
+      table.sharedWithUserId,
+    ),
+  }),
+);
 
 export const familyTreeMembersSchema = pgTable('family_tree_members', {
   name: text('name').notNull(),
