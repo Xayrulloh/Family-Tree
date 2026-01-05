@@ -1,22 +1,8 @@
 import { createEffect } from 'effector';
 
-// Simulate Google login + redirect to return_url
+// Simulate Google login
 const googleLoginFx = createEffect(async () => {
-  const returnUrl = localStorage.getItem('auth_redirect_url');
-
-  if (returnUrl) {
-    localStorage.removeItem('auth_redirect_url');
-  }
-
-  const backendLoginUrl = new URL(
-    `${import.meta.env.VITE_API_URL}/auth/google`,
-  );
-
-  if (returnUrl) {
-    backendLoginUrl.searchParams.append('return_url', returnUrl);
-  }
-
-  window.location.href = backendLoginUrl.toString();
+  window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
 
   return window.location.href;
 });
