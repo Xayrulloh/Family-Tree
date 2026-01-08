@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "license": "MIT",
   "scripts": {
-    "start:all": "concurrently -n \"DOCKER,BACKEND,FRONTEND\" -c \"bgBlue.bold,bgGreen.bold,bgMagenta.bold\" \"cd apps/api && docker compose up\" \"pnpm start:backend\" \"pnpm start:frontend\"",
+    "start:all": "concurrently -n \"DOCKER,BACKEND,FRONTEND\" -c \"bgBlue.bold,bgGreen.bold,bgMagenta.bold\" \"cd apps/api && docker compose up redis\" \"pnpm start:backend\" \"pnpm start:frontend\"",
     "start:backend": "nx serve api",
     "start:frontend": "nx serve web",
     "drizzle:generate": "nx run api:db:generate",
