@@ -18,7 +18,12 @@ async function bootstrap() {
     cors({
       origin: [CLIENT_URL, CLIENT_URL.replace('https://', 'https://www.')],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'sentry-trace',
+        'baggage',
+      ],
       credentials: true,
     }),
   );

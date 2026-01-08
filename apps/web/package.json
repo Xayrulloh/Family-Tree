@@ -24,6 +24,7 @@
     }
   },
   "dependencies": {
+    "@sentry/react": "^10.32.1",
     "save-svg-as-png": "^1.4.17"
   }
 }
