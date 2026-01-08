@@ -16,6 +16,8 @@ const envSchema = z.object({
   SENTRY_DSN: z.string().min(1),
   REDIS_URL: z.string().url(),
   REDIS_TTL: z.string().min(4).transform(Number),
+  COOKIE_DOMAIN: z.string().min(1),
+  COOKIE_CLIENT_URL: z.string().min(1),
 });
 
 type EnvType = z.infer<typeof envSchema>;

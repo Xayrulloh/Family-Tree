@@ -18,7 +18,7 @@ import { AuthService } from './auth.service';
       useFactory: async (configService: ConfigService) => ({
         secret: configService.getOrThrow('JWT_SECRET'),
         signOptions: {
-          expiresIn: '1d',
+          expiresIn: '30d',
         },
       }),
     }),

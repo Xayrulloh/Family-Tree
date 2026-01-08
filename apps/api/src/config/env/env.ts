@@ -6,3 +6,5 @@ export const env = registerAs('env', () => {
 
   return parsed;
 });
+
+export const checkedEnv = env();

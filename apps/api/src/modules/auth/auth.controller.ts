@@ -2,12 +2,9 @@ import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { GoogleOauthGuard } from '~/common/guards/google-oauth.guard';
+import { checkedEnv } from '~/config/env/env';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
-import {
-  CLIENT_URL,
-  COOKIE_DOMAIN,
-  COOKIES_ACCESS_TOKEN_KEY,
-} from '~/utils/constants';
+import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { AuthService } from './auth.service';
 
@@ -41,16 +38,16 @@ export class AuthController {
       httpOnly: true,
       sameSite: 'none',
       secure: true,
-      domain: COOKIE_DOMAIN,
+      domain: checkedEnv.COOKIE_DOMAIN,
     });
 
     const redirectUrl = req.cookies.auth_redirect_url || '/family-trees';
 
     res.clearCookie('auth_redirect_url', {
-      domain: COOKIE_DOMAIN,
+      domain: checkedEnv.COOKIE_DOMAIN,
     });
 
-    res.redirect(`${CLIENT_URL}${redirectUrl}`);
+    res.redirect(`${checkedEnv.COOKIE_CLIENT_URL}${redirectUrl}`);
   }
 
   // Logout
@@ -60,7 +57,7 @@ export class AuthController {
       httpOnly: true,
       sameSite: 'none',
       secure: true,
-      domain: COOKIE_DOMAIN,
+      domain: checkedEnv.COOKIE_DOMAIN,
     });
 
     res.status(200).send();

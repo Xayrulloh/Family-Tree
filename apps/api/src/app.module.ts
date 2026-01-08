@@ -20,6 +20,7 @@ import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
+    EnvModule,
     SentryModule.forRoot(),
     ThrottlerModule.forRoot({
       throttlers: [
@@ -32,7 +33,6 @@ import { UserModule } from './modules/user/user.module';
     RedisCacheModule,
     AuthModule,
     UserModule,
-    EnvModule,
     CookiesModule,
     FCMTokenModule,
     FamilyTreeModule,
