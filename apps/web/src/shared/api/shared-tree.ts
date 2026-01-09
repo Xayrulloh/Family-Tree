@@ -5,7 +5,7 @@ import { base } from './base';
 export const sharedTree = {
   findAll: (config?: AxiosRequestConfig) => {
     return base.get<SharedFamilyTreeArrayResponseType>(
-      `/shared-family-trees`,
+      `/family-trees/shared`,
       config,
     );
   },

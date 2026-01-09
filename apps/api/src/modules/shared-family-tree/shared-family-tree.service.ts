@@ -6,6 +6,7 @@ import * as schema from '~/database/schema';
 import type {
   SharedFamilyTreeArrayResponseDto,
   SharedFamilyTreeCreateRequestDto,
+  SharedFamilyTreeUsersArrayResponseDto,
 } from './dto/shared-family-tree.dto';
 
 @Injectable()
@@ -63,6 +64,34 @@ export class SharedFamilyTreeService {
     await this.db.insert(schema.sharedFamilyTreesSchema).values({
       familyTreeId: body.familyTreeId,
       sharedWithUserId: body.sharedWithUserId,
+    });
+  }
+
+  async getSharedFamilyTreeUsersById(
+    userId: string,
+    familyTreeId: string,
+  ): Promise<SharedFamilyTreeUsersArrayResponseDto> {
+    const familyTree = await this.db.query.familyTreesSchema.findFirst({
+      where: and(
+        eq(schema.familyTreesSchema.id, familyTreeId),
+        eq(schema.familyTreesSchema.createdBy, userId),
+      ),
+    });
+
+    if (!familyTree) {
+      throw new BadRequestException(`You don't have a permission`);
+    }
+
+    const sharedFamilyTrees =
+      await this.db.query.sharedFamilyTreesSchema.findMany({
+        where: eq(schema.sharedFamilyTreesSchema.familyTreeId, familyTreeId),
+        with: {
+          sharedWithUser: true,
+        },
+      });
+
+    return sharedFamilyTrees.map((sharedFamilyTree) => {
+      return sharedFamilyTree.sharedWithUser;
     });
   }
 }
