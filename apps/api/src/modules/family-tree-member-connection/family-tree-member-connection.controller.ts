@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -26,6 +27,9 @@ import {
 } from './dto/family-tree-member-connection.dto';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { FamilyTreeMemberConnectionService } from './family-tree-member-connection.service';
+// biome-ignore lint/style/useImportType: <throws an error if put type>
+import { SharedFamilyTreeService } from '../shared-family-tree/shared-family-tree.service';
+import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 
 @ApiTags('Family Tree Member Connection')
 @ApiParam({ name: 'familyTreeId', required: true, type: String })
@@ -34,6 +38,7 @@ export class FamilyTreeMemberConnectionController {
   constructor(
     private readonly familyTreeMemberConnectionService: FamilyTreeMemberConnectionService,
     private readonly cacheService: CacheService,
+    private readonly sharedFamilyTreeService: SharedFamilyTreeService,
   ) {}
 
   // get all connections of tree
@@ -44,8 +49,15 @@ export class FamilyTreeMemberConnectionController {
   @ApiOkResponse({ type: FamilyTreeMemberConnectionGetAllResponseDto })
   @ZodSerializerDto(FamilyTreeMemberConnectionGetAllResponseSchema)
   async getAllFamilyTreeMemberConnections(
+    @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeMemberConnectionGetAllParamDto,
   ): Promise<FamilyTreeMemberConnectionGetAllResponseDto> {
+    // check access
+    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
+      req.user.id,
+      param.familyTreeId,
+    );
+
     const cachedFamilyTreeMemberConnections =
       await this.cacheService.get<FamilyTreeMemberConnectionGetAllResponseDto>(
         `family-trees:${param.familyTreeId}:members:connections`,

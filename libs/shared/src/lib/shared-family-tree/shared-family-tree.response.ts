@@ -1,7 +1,18 @@
 import type { z } from 'zod';
-import { FamilyTreeSchema, UserSchema } from '../schema';
+import {
+  FamilyTreeSchema,
+  SharedFamilyTreeSchema,
+  UserSchema,
+} from '../schema';
 
-const SharedFamilyTreeResponseSchema = FamilyTreeSchema;
+const SharedFamilyTreeResponseSchema = FamilyTreeSchema.merge(
+  SharedFamilyTreeSchema.pick({
+    canAddMembers: true,
+    canEditMembers: true,
+    canDeleteMembers: true,
+    isBlocked: true,
+  }),
+);
 
 const SharedFamilyTreeArrayResponseSchema =
   SharedFamilyTreeResponseSchema.array();

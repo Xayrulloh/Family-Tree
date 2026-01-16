@@ -5,6 +5,7 @@ import {
 } from '@family-tree/shared';
 import { relations } from 'drizzle-orm';
 import {
+  boolean,
   date,
   pgEnum,
   pgTable,
@@ -88,6 +89,10 @@ export const sharedFamilyTreesSchema = pgTable(
     sharedWithUserId: uuid('shared_with_user_id')
       .references(() => usersSchema.id, { onDelete: 'cascade' })
       .notNull(),
+    isBlocked: boolean('is_blocked').notNull().default(false),
+    canEditMembers: boolean('can_edit_members').notNull().default(false),
+    canDeleteMembers: boolean('can_delete_members').notNull().default(false),
+    canAddMembers: boolean('can_add_members').notNull().default(false),
     ...baseSchema,
   },
   (table) => ({
