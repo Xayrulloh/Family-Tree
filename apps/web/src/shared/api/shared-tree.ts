@@ -13,7 +13,10 @@ export const sharedTree = {
       config,
     );
   },
-  findUsers: (param: SharedFamilyTreeIdParamType, config?: AxiosRequestConfig) => {
+  findUsers: (
+    param: SharedFamilyTreeIdParamType,
+    config?: AxiosRequestConfig,
+  ) => {
     return base.get<SharedFamilyTreeUsersArrayResponseType>(
       `/family-trees/${param.familyTreeId}/shared-users`,
       config,

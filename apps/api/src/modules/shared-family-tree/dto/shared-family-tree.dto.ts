@@ -12,7 +12,9 @@ class SharedFamilyTreeCreateRequestDto extends createZodDto(
 ) {}
 
 // param
-class SharedFamilyTreeIdParamDto extends createZodDto(SharedFamilyTreeIdParamSchema) {}
+class SharedFamilyTreeIdParamDto extends createZodDto(
+  SharedFamilyTreeIdParamSchema,
+) {}
 
 // response
 class SharedFamilyTreeArrayResponseDto extends createZodDto(

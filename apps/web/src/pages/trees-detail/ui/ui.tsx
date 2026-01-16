@@ -20,7 +20,9 @@ export type Props = LazyPageProps<Model>;
 export const FamilyTreeView: React.FC<Props> = ({ model }) => {
   const [loading, isOwner] = useUnit([model.$loading, model.$isOwner]);
 
-  if (loading) {return <PageLoading />;}
+  if (loading) {
+    return <PageLoading />;
+  }
 
   return (
     <>
