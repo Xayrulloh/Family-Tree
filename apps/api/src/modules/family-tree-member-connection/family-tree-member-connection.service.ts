@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
@@ -44,55 +44,5 @@ export class FamilyTreeMemberConnectionService {
         ),
       ),
     });
-  }
-
-  // get fromMember, toMember and family Tree after checking
-  async getFamilyTreeMembers(
-    fromMemberId: string,
-    toMemberId: string,
-    familyTreeId: string,
-  ) {
-    const [fromFamilyTreeMember, toFamilyTreeMember, familyTree] =
-      await Promise.all([
-        this.db.query.familyTreeMembersSchema.findFirst({
-          where: and(
-            eq(schema.familyTreeMembersSchema.id, fromMemberId),
-            eq(schema.familyTreeMembersSchema.familyTreeId, familyTreeId),
-          ),
-        }),
-        this.db.query.familyTreeMembersSchema.findFirst({
-          where: and(
-            eq(schema.familyTreeMembersSchema.id, toMemberId),
-            eq(schema.familyTreeMembersSchema.familyTreeId, familyTreeId),
-          ),
-        }),
-        this.db.query.familyTreesSchema.findFirst({
-          where: eq(schema.familyTreesSchema.id, familyTreeId),
-        }),
-      ]);
-
-    if (!familyTree) {
-      throw new NotFoundException(
-        `Family tree with id ${familyTreeId} not found`,
-      );
-    }
-
-    if (!fromFamilyTreeMember) {
-      throw new NotFoundException(
-        `Family Tree Member "from member" with id ${fromMemberId} not found`,
-      );
-    }
-
-    if (!toFamilyTreeMember) {
-      throw new NotFoundException(
-        `Family Tree Member "to member" with id ${toMemberId} not found`,
-      );
-    }
-
-    return {
-      fromMember: fromFamilyTreeMember,
-      toMember: toFamilyTreeMember,
-      familyTree,
-    };
   }
 }
