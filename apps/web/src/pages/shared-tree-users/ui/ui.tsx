@@ -34,9 +34,9 @@ const SharedTreeUsers: React.FC<Props> = ({ model }) => {
   return (
     <div className="p-4">
       <Title level={2}>Shared Users</Title>
-      <Table 
-        dataSource={users} 
-        columns={columns} 
+      <Table
+        dataSource={users}
+        columns={columns}
         rowKey="id"
         pagination={false}
       />

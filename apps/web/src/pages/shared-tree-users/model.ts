@@ -1,15 +1,15 @@
-import { SharedFamilyTreeUsersArrayResponseType } from '@family-tree/shared';
+import type { SharedFamilyTreeUsersArrayResponseType } from '@family-tree/shared';
 import { attach, createStore, sample } from 'effector';
-import { api } from '~/shared/api';
-import { LazyPageFactoryParams } from '~/shared/lib/lazy-page';
 import { userModel } from '~/entities/user';
+import { api } from '~/shared/api';
+import type { LazyPageFactoryParams } from '~/shared/lib/lazy-page';
 
 export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
-    const authorizedRoute = userModel.chainAuthorized({ route });
-  
+  const authorizedRoute = userModel.chainAuthorized({ route });
+
   // Stores
   const $users = createStore<SharedFamilyTreeUsersArrayResponseType>([]);
-  
+
   const $id = authorizedRoute.$params.map((params) => params.id ?? null);
 
   // Effects
@@ -30,18 +30,18 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
     target: $users,
   });
 
-    sample({
+  sample({
     clock: fetchSharedTreeUsersFx.failData,
     // FIXME: Xikmat pls help
     fn: async (response: any) => {
-      console.log('🚀 ~ factory ~ response:', response.status)
+      console.log('🚀 ~ factory ~ response:', response.status);
       // FIXME: Xikmat pls help
       if (response.status >= 400 && response.status < 500) {
         await Promise.resolve(() => {
           setTimeout(() => {
             window.location.replace('/family-trees');
           }, 2000);
-        })
+        });
       }
     },
   });
