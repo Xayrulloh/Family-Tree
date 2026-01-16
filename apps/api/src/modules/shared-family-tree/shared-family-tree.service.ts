@@ -1,4 +1,10 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import type { SharedFamilyTreeSchemaType } from '@family-tree/shared';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { and, asc, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
@@ -26,10 +32,19 @@ export class SharedFamilyTreeService {
         with: {
           familyTree: true,
         },
+        columns: {
+          canAddMembers: true,
+          canEditMembers: true,
+          canDeleteMembers: true,
+          isBlocked: true,
+        },
       });
 
     return sharedFamilyTrees.map((sharedFamilyTree) => {
-      return sharedFamilyTree.familyTree;
+      return {
+        ...sharedFamilyTree,
+        ...sharedFamilyTree.familyTree,
+      };
     });
   }
 
@@ -94,5 +109,60 @@ export class SharedFamilyTreeService {
     return sharedFamilyTrees.map((sharedFamilyTree) => {
       return sharedFamilyTree.sharedWithUser;
     });
+  }
+
+  async checkAccessSharedFamilyTree(
+    userId: string,
+    familyTreeId: string,
+    access?: Partial<
+      Pick<
+        SharedFamilyTreeSchemaType,
+        'canAddMembers' | 'canEditMembers' | 'canDeleteMembers'
+      >
+    >,
+  ): Promise<void> {
+    const isOwner = await this.db.query.familyTreesSchema.findFirst({
+      where: and(
+        eq(schema.familyTreesSchema.id, familyTreeId),
+        eq(schema.familyTreesSchema.createdBy, userId),
+      ),
+    });
+
+    if (isOwner) {
+      return;
+    }
+
+    const sharedFamilyTreeUserAccess =
+      await this.db.query.sharedFamilyTreesSchema.findFirst({
+        where: and(
+          eq(schema.sharedFamilyTreesSchema.familyTreeId, familyTreeId),
+          eq(schema.sharedFamilyTreesSchema.sharedWithUserId, userId),
+        ),
+        columns: {
+          canAddMembers: true,
+          canEditMembers: true,
+          canDeleteMembers: true,
+          isBlocked: true,
+        },
+      });
+
+    if (!sharedFamilyTreeUserAccess || sharedFamilyTreeUserAccess.isBlocked) {
+      throw new ForbiddenException(`You don't have a permission`);
+    }
+
+    if (access?.canAddMembers && !sharedFamilyTreeUserAccess.canAddMembers) {
+      throw new ForbiddenException(`You don't have a permission`);
+    }
+
+    if (access?.canEditMembers && !sharedFamilyTreeUserAccess.canEditMembers) {
+      throw new ForbiddenException(`You don't have a permission`);
+    }
+
+    if (
+      access?.canDeleteMembers &&
+      !sharedFamilyTreeUserAccess.canDeleteMembers
+    ) {
+      throw new ForbiddenException(`You don't have a permission`);
+    }
   }
 }

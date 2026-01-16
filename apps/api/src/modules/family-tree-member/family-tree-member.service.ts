@@ -47,18 +47,9 @@ export class FamilyTreeMemberService {
 
   // create child
   async createFamilyTreeMemberChild(
-    userId: string,
     familyTreeId: string,
     body: FamilyTreeMemberCreateChildRequestDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
-    const familyTree = await this.getFamilyTreeById(familyTreeId);
-
-    if (familyTree.createdBy !== userId) {
-      throw new BadRequestException(
-        'You do not have permission to modify this family tree',
-      );
-    }
-
     // Parent logic
     const parents =
       await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
@@ -120,18 +111,9 @@ export class FamilyTreeMemberService {
 
   // create spouse
   async createFamilyTreeMemberSpouse(
-    userId: string,
     familyTreeId: string,
     body: FamilyTreeMemberCreateSpouseRequestDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
-    const familyTree = await this.getFamilyTreeById(familyTreeId);
-
-    if (familyTree.createdBy !== userId) {
-      throw new BadRequestException(
-        'You do not have permission to modify this family tree',
-      );
-    }
-
     const partner1 = await this.getFamilyTreeMember({
       id: body.fromMemberId,
       familyTreeId,
@@ -195,18 +177,9 @@ export class FamilyTreeMemberService {
 
   // create parents
   async createFamilyTreeMemberParents(
-    userId: string,
     familyTreeId: string,
     body: FamilyTreeMemberCreateParentsRequestDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
-    const familyTree = await this.getFamilyTreeById(familyTreeId);
-
-    if (familyTree.createdBy !== userId) {
-      throw new BadRequestException(
-        'You do not have permission to modify this family tree',
-      );
-    }
-
     const member = await this.getFamilyTreeMember({
       id: body.fromMemberId,
       familyTreeId,
@@ -394,18 +367,9 @@ export class FamilyTreeMemberService {
 
   // update member
   async updateFamilyTreeMember(
-    userId: string,
     param: FamilyTreeMemberGetParamDto,
     body: FamilyTreeMemberUpdateRequestDto,
   ) {
-    const familyTree = await this.getFamilyTreeById(param.familyTreeId);
-
-    if (familyTree.createdBy !== userId) {
-      throw new BadRequestException(
-        'You do not have permission to modify this family tree',
-      );
-    }
-
     const familyTreeMember = await this.getFamilyTreeMember(param);
 
     if (
@@ -425,18 +389,7 @@ export class FamilyTreeMemberService {
   }
 
   // delete member
-  async deleteFamilyTreeMember(
-    userId: string,
-    param: FamilyTreeMemberGetParamDto,
-  ) {
-    const familyTree = await this.getFamilyTreeById(param.familyTreeId);
-
-    if (familyTree.createdBy !== userId) {
-      throw new BadRequestException(
-        'You do not have permission to modify this family tree',
-      );
-    }
-
+  async deleteFamilyTreeMember(param: FamilyTreeMemberGetParamDto) {
     // check member
     const member = await this.getFamilyTreeMember(param);
 
