@@ -6,11 +6,21 @@ const SharedFamilyTreeCreateRequestSchema = SharedFamilyTreeSchema.pick({
   sharedWithUserId: true,
 });
 
+const SharedFamilyTreeIdParamSchema = SharedFamilyTreeSchema.pick({
+  familyTreeId: true,
+});
+
 type SharedFamilyTreeCreateRequestType = z.infer<
   typeof SharedFamilyTreeCreateRequestSchema
 >;
 
+type SharedFamilyTreeIdParamType = z.infer<
+  typeof SharedFamilyTreeIdParamSchema
+>;
+
 export {
   SharedFamilyTreeCreateRequestSchema,
+  SharedFamilyTreeIdParamSchema,
   type SharedFamilyTreeCreateRequestType,
+  type SharedFamilyTreeIdParamType,
 };

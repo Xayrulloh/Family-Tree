@@ -4,7 +4,8 @@ import { NotFound } from './not-found';
 import { Registration } from './registration';
 import { Trees } from './trees';
 import { TreesDetail } from './trees-detail';
+import { SharedTreeUsers } from './shared-tree-users';
 
 export const Routing = createRoutesView({
-  routes: [Home, Registration, Trees, TreesDetail, NotFound],
+  routes: [Home, Registration, Trees, TreesDetail, SharedTreeUsers, NotFound],
 });

@@ -1,7 +1,7 @@
 import {
-  IdQuerySchema,
   SharedFamilyTreeArrayResponseSchema,
   SharedFamilyTreeCreateRequestSchema,
+  SharedFamilyTreeIdParamSchema,
   SharedFamilyTreeUsersArrayResponseSchema,
 } from '@family-tree/shared';
 import { createZodDto } from 'nestjs-zod';
@@ -12,7 +12,7 @@ class SharedFamilyTreeCreateRequestDto extends createZodDto(
 ) {}
 
 // param
-class SharedFamilyTreeIdParamDto extends createZodDto(IdQuerySchema) {}
+class SharedFamilyTreeIdParamDto extends createZodDto(SharedFamilyTreeIdParamSchema) {}
 
 // response
 class SharedFamilyTreeArrayResponseDto extends createZodDto(

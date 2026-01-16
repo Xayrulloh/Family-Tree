@@ -79,6 +79,7 @@ export class SharedFamilyTreeService {
     });
 
     if (!familyTree) {
+      // TODO: 403 Forbidden
       throw new BadRequestException(`You don't have a permission`);
     }
 
