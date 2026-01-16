@@ -51,10 +51,10 @@ export class SharedFamilyTreeController {
   }
 
   // Find the users which is shared with
-  @Get(':id/shared-users')
+  @Get(':familyTreeId/shared-users')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiParam({ name: 'id', required: true, type: String })
+  @ApiParam({ name: 'familyTreeId', required: true, type: String })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: SharedFamilyTreeUsersArrayResponseDto })
   @ZodSerializerDto(SharedFamilyTreeUsersArrayResponseSchema)
@@ -64,7 +64,7 @@ export class SharedFamilyTreeController {
   ): Promise<SharedFamilyTreeUsersArrayResponseDto> {
     return this.sharedFamilyTreeService.getSharedFamilyTreeUsersById(
       req.user.id,
-      param.id,
+      param.familyTreeId,
     );
   }
 }
