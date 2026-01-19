@@ -1,6 +1,7 @@
-import { editTrigger, mutated } from './model';
+import { $mutating, editTrigger, mutated } from './model';
 
-export const editTreeModel = {
+export const editSharedTreeModel = {
   editTrigger,
   mutated,
+  $mutating,
 };
