@@ -3,6 +3,8 @@ import {
   SharedFamilyTreeCreateRequestSchema,
   SharedFamilyTreeIdParamSchema,
   SharedFamilyTreeResponseSchema,
+  SharedFamilyTreeUpdateParamSchema,
+  SharedFamilyTreeUpdateRequestSchema,
   SharedFamilyTreeUsersArrayResponseSchema,
 } from '@family-tree/shared';
 import { createZodDto } from 'nestjs-zod';
@@ -12,9 +14,17 @@ class SharedFamilyTreeCreateRequestDto extends createZodDto(
   SharedFamilyTreeCreateRequestSchema,
 ) {}
 
+class SharedFamilyTreeUpdateRequestDto extends createZodDto(
+  SharedFamilyTreeUpdateRequestSchema,
+) {}
+
 // param
 class SharedFamilyTreeIdParamDto extends createZodDto(
   SharedFamilyTreeIdParamSchema,
+) {}
+
+class SharedFamilyTreeUpdateParamDto extends createZodDto(
+  SharedFamilyTreeUpdateParamSchema,
 ) {}
 
 // response
@@ -33,6 +43,8 @@ class SharedFamilyTreeUsersArrayResponseDto extends createZodDto(
 export {
   SharedFamilyTreeCreateRequestDto,
   SharedFamilyTreeIdParamDto,
+  SharedFamilyTreeUpdateParamDto,
+  SharedFamilyTreeUpdateRequestDto,
   SharedFamilyTreeResponseDto,
   SharedFamilyTreeArrayResponseDto,
   SharedFamilyTreeUsersArrayResponseDto,
