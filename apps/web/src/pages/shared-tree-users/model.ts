@@ -1,7 +1,7 @@
 import type { SharedFamilyTreeUsersArrayResponseType } from '@family-tree/shared';
 import { attach, createStore, sample } from 'effector';
 import { userModel } from '~/entities/user';
-import { editTreeModel } from '~/features/shared-tree-users/edit';
+import { editSharedTreeModel } from '~/features/shared-tree-users/edit';
 import { api } from '~/shared/api';
 import type { LazyPageFactoryParams } from '~/shared/lib/lazy-page';
 
@@ -23,7 +23,7 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
 
   // Samples
   sample({
-    clock: [authorizedRoute.opened, editTreeModel.mutated],
+    clock: [authorizedRoute.opened, editSharedTreeModel.mutated],
     target: fetchSharedTreeUsersFx,
   });
 
