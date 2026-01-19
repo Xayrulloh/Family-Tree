@@ -19,7 +19,7 @@ import {
 import { saveSvgAsPng } from 'save-svg-as-png';
 import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
-import { ShareTreeModal, shareTreeModel } from '~/features/trees-detail/share';
+import { ShareTreeModal, shareTreeModel } from '~/features/tree-detail/share';
 import { routes } from '~/shared/config/routing';
 import {
   calculatePositions,

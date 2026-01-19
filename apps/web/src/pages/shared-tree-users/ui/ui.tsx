@@ -29,6 +29,26 @@ const SharedTreeUsers: React.FC<Props> = ({ model }) => {
       dataIndex: 'email',
       key: 'email',
     },
+    {
+      title: 'Add Member',
+      dataIndex: 'canAddMembers',
+      key: 'canAddMembers',
+    },
+    {
+      title: 'Edit Member',
+      dataIndex: 'canEditMembers',
+      key: 'canEditMembers',
+    },
+    {
+      title: 'Delete Member',
+      dataIndex: 'canDeleteMembers',
+      key: 'canDeleteMembers',
+    },
+    {
+      title: 'Block',
+      dataIndex: 'isBlocked',
+      key: 'isBlocked',
+    },
   ];
 
   return (

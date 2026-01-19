@@ -38,6 +38,8 @@ export class SharedFamilyTreeService {
           familyTree: true,
         },
         columns: {
+          familyTreeId: true,
+          userId: true,
           canAddMembers: true,
           canEditMembers: true,
           canDeleteMembers: true,
@@ -67,6 +69,8 @@ export class SharedFamilyTreeService {
           familyTree: true,
         },
         columns: {
+          familyTreeId: true,
+          userId: true,
           canAddMembers: true,
           canEditMembers: true,
           canDeleteMembers: true,
@@ -133,6 +137,14 @@ export class SharedFamilyTreeService {
         where: eq(schema.sharedFamilyTreesSchema.familyTreeId, familyTreeId),
         with: {
           sharedWithUser: true,
+        },
+        columns: {
+          userId: true,
+          familyTreeId: true,
+          canAddMembers: true,
+          canEditMembers: true,
+          canDeleteMembers: true,
+          isBlocked: true,
         },
       });
 
