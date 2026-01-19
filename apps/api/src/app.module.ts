@@ -4,6 +4,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { HttpExceptionFilter } from './common/filters/http.filter';
+import { ZodValidationExceptionFilter } from './common/filters/zod.filter';
 import { ZodSerializerInterceptorCustom } from './common/interceptors/zod.response.interceptor';
 import { RedisCacheModule } from './config/cache/cache.module';
 import { CookiesModule } from './config/cookies/cookies.module';
@@ -17,7 +18,6 @@ import { FileModule } from './modules/file/file.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { SharedFamilyTreeModule } from './modules/shared-family-tree/shared-family-tree.module';
 import { UserModule } from './modules/user/user.module';
-import { ZodValidationExceptionFilter } from './common/filters/zod.filter';
 
 @Module({
   imports: [
