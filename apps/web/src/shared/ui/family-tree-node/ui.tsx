@@ -15,7 +15,7 @@ type FamilyTreeNodeProps = {
   onAddGirlClick: (member: FamilyTreeMemberGetResponseType) => void;
   onAddSpouseClick: (member: FamilyTreeMemberGetResponseType) => void;
   onAddParentClick: (member: FamilyTreeMemberGetResponseType) => void;
-  isOwner?: boolean;
+  canAddMembers?: boolean;
 };
 
 const getGenderColor = (gender: string) => {
@@ -34,7 +34,7 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
   onAddGirlClick,
   onAddSpouseClick,
   onAddParentClick,
-  isOwner = false,
+  canAddMembers = false,
 }) => {
   const [hover, setHover] = useState(false);
   const hideTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -107,11 +107,8 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
       {/* ================================
           HOVER CHILDREN BUTTONS
          ================================ */}
-      {/* ================================
-          HOVER CHILDREN BUTTONS
-         ================================ */}
       {hover &&
-        isOwner &&
+        canAddMembers &&
         hasMarriage &&
         member.gender === UserGenderEnum.FEMALE && (
           <g>
@@ -147,10 +144,7 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
       {/* ================================
           HOVER: SPOUSE BUTTON (only if no marriage)
         ================================ */}
-      {/* ================================
-          HOVER: SPOUSE BUTTON (only if no marriage)
-        ================================ */}
-      {hover && isOwner && !hasMarriage && (
+      {hover && canAddMembers && !hasMarriage && (
         <rect
           x={nodeWidth + 6} // right side of node
           y={nodeHeight / 2 - 10} // vertically centered
@@ -167,15 +161,9 @@ export const FamilyTreeNode: React.FC<FamilyTreeNodeProps> = ({
         />
       )}
       {/* ================================
-          HOVER: PARENT BUTTON (if allowed)
-        ================================ */}
-      {/* ================================
       HOVER: PARENT BUTTON (rounded split)
    ================================ */}
-      {/* ================================
-      HOVER: PARENT BUTTON (rounded split)
-   ================================ */}
-      {hover && isOwner && !hasParents && (
+      {hover && canAddMembers && !hasParents && (
         <g
           style={{ cursor: 'pointer' }}
           onClick={() => onAddParentClick(member)}

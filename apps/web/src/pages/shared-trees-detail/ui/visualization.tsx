@@ -1,11 +1,6 @@
-import {
-  DownloadOutlined,
-  ShareAltOutlined,
-  TeamOutlined,
-} from '@ant-design/icons';
+import { DownloadOutlined, ShareAltOutlined } from '@ant-design/icons';
 import type { FamilyTreeMemberConnectionGetAllResponseType } from '@family-tree/shared';
 import { theme } from 'antd';
-import { Link } from 'atomic-router-react';
 import { useUnit } from 'effector-react';
 import {
   memo,
@@ -20,7 +15,6 @@ import { saveSvgAsPng } from 'save-svg-as-png';
 import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
 import { ShareTreeModal, shareTreeModel } from '~/features/trees-detail/share';
-import { routes } from '~/shared/config/routing';
 import {
   calculatePositions,
   type MemberMetadata,
@@ -45,11 +39,11 @@ const savedViews = new Map<
 >();
 
 export const Visualization: React.FC<Props> = ({ model }) => {
-  const [connections, members, id, tree] = useUnit([
+  const [connections, members, id, sharedTree] = useUnit([
     model.$connections,
     model.$members,
     model.$id,
-    model.$tree,
+    model.$sharedTree,
   ]);
   const { token } = theme.useToken();
 
@@ -162,7 +156,9 @@ export const Visualization: React.FC<Props> = ({ model }) => {
 
   const handleDownloadImage = useCallback(() => {
     if (svgRef.current) {
-      const filename = tree?.name ? `${tree.name}-famtree.png` : 'famtree.png';
+      const filename = sharedTree?.name
+        ? `${sharedTree.name}-famtree.png`
+        : 'famtree.png';
 
       saveSvgAsPng(svgRef.current, filename, {
         backgroundColor: 'rgba(249, 250, 251, 0.9)',
@@ -174,7 +170,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
         }),
       });
     }
-  }, [tree, treeBounds]);
+  }, [sharedTree, treeBounds]);
 
   useLayoutEffect(() => {
     if (isCenteredRef.current || positions.size === 0 || !id) return;
@@ -337,14 +333,6 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     >
       <ShareTreeModal />
       <div className="absolute top-8 right-8 z-10 flex gap-2">
-        <Link
-          to={routes.sharedTreeUsers}
-          params={{ id: id ?? '' }}
-          className="p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors border border-gray-200 cursor-pointer flex items-center justify-center"
-          title="Shared Users"
-        >
-          <TeamOutlined style={{ fontSize: '24px', color: '#595959' }} />
-        </Link>
         <button
           type="button"
           onClick={() =>
@@ -425,7 +413,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
                     onAddGirlClick={addMemberModel.addGirlTrigger}
                     onAddSpouseClick={addMemberModel.addSpouseTrigger}
                     onAddParentClick={addMemberModel.addParentsTrigger}
-                    canAddMembers={true}
+                    canAddMembers={sharedTree?.canAddMembers}
                   />
                 );
               })}

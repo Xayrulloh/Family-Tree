@@ -184,7 +184,7 @@ export const SharedTreeCard: React.FC<TreeCardProps> = ({ tree }) => {
   const { token } = theme.useToken();
 
   return (
-    <Link to={routes.treesDetail} params={{ id: tree.id }}>
+    <Link to={routes.sharedTreesDetail} params={{ id: tree.id }}>
       {''}
       <Card
         hoverable

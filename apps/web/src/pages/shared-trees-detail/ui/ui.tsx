@@ -17,8 +17,8 @@ import { Visualization } from './visualization';
 type Model = ReturnType<typeof factory>;
 export type Props = LazyPageProps<Model>;
 
-export const FamilyTreeView: React.FC<Props> = ({ model }) => {
-  const [loading] = useUnit([model.$loading]);
+export const SharedFamilyTreeView: React.FC<Props> = ({ model }) => {
+  const [loading, sharedTree] = useUnit([model.$loading, model.$sharedTree]);
 
   if (loading) {
     return <PageLoading />;
@@ -28,21 +28,25 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
     <>
       <Visualization model={model} />
       <PreviewMemberModal
-        renderEditMemberSlot={(member) => (
-          <Button
-            type="text"
-            icon={<EditOutlined style={{ fontSize: 18 }} />}
-            onClick={() => editMemberModel.editTrigger(member)}
-          />
-        )}
-        renderDeleteMemberSlot={(member) => (
-          <Button
-            type="text"
-            danger
-            icon={<DeleteOutlined style={{ fontSize: 18 }} />}
-            onClick={() => deleteMemberModel.deleteTrigger(member)}
-          />
-        )}
+        renderEditMemberSlot={(member) =>
+          sharedTree?.canEditMembers && (
+            <Button
+              type="text"
+              icon={<EditOutlined style={{ fontSize: 18 }} />}
+              onClick={() => editMemberModel.editTrigger(member)}
+            />
+          )
+        }
+        renderDeleteMemberSlot={(member) =>
+          sharedTree?.canDeleteMembers && (
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined style={{ fontSize: 18 }} />}
+              onClick={() => deleteMemberModel.deleteTrigger(member)}
+            />
+          )
+        }
       />
       <EditMemberModal />
       <DeleteMemberModal />
@@ -50,5 +54,5 @@ export const FamilyTreeView: React.FC<Props> = ({ model }) => {
   );
 };
 
-export const component = FamilyTreeView;
+export const component = SharedFamilyTreeView;
 export const createModel = factory;

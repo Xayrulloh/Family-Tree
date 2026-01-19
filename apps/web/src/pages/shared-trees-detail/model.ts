@@ -1,7 +1,7 @@
 import type {
   FamilyTreeMemberConnectionGetAllResponseType,
   FamilyTreeMemberGetAllResponseType,
-  FamilyTreeResponseType,
+  SharedFamilyTreeResponseType,
 } from '@family-tree/shared';
 import { attach, createStore, sample } from 'effector';
 import { or } from 'patronum';
@@ -20,7 +20,7 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   const $members = createStore<FamilyTreeMemberGetAllResponseType>([]);
   const $connections =
     createStore<FamilyTreeMemberConnectionGetAllResponseType>([]);
-  const $tree = createStore<FamilyTreeResponseType | null>(null);
+  const $sharedTree = createStore<SharedFamilyTreeResponseType | null>(null);
 
   const $id = authorizedRoute.$params.map((params) => params.id ?? null);
 
@@ -36,23 +36,23 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
       api.treeMemberConnection.findAll({ familyTreeId }),
   });
 
-  const fetchTreeFx = attach({
+  const fetchSharedTreeFx = attach({
     source: $id,
-    effect: (familyTreeId: string) => api.tree.findById(familyTreeId),
+    effect: (familyTreeId: string) => api.sharedTree.findById({ familyTreeId }),
   });
 
   // Samples
-  // Trigger fetches when familyTreeId is set (first fetch tree)
+  // Trigger fetches when familyTreeId is set
   sample({
     clock: authorizedRoute.opened,
-    target: [fetchTreeFx],
+    target: [fetchSharedTreeFx],
   });
 
-  // Once tree is fetched, get others
+  // Once shared tree is fetched, get others
   sample({
-    clock: fetchTreeFx.doneData,
+    clock: fetchSharedTreeFx.doneData,
     fn: (response) => response.data,
-    target: [$tree, fetchMembersFx, fetchConnectionsFx],
+    target: [$sharedTree, fetchMembersFx, fetchConnectionsFx],
   });
 
   // Update stores with API responses
@@ -93,14 +93,18 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   // Delete unnecessary data
   sample({
     clock: authorizedRoute.closed,
-    target: [$members.reinit, $connections.reinit, $tree.reinit],
+    target: [$members.reinit, $connections.reinit, $sharedTree.reinit],
   });
 
   return {
     $members,
     $connections,
-    $tree,
+    $sharedTree,
     $id,
-    $loading: or(fetchMembersFx.pending, fetchConnectionsFx.pending),
+    $loading: or(
+      fetchMembersFx.pending,
+      fetchConnectionsFx.pending,
+      fetchSharedTreeFx.pending,
+    ),
   };
 };
