@@ -1,5 +1,4 @@
 import axios, { type AxiosError, type AxiosResponse } from 'axios';
-import type { ZodIssue } from 'zod';
 import { errorFx, successFx } from '~/shared/lib/message';
 
 const successMessages: Record<string, string> = {
@@ -12,7 +11,11 @@ const successMessages: Record<string, string> = {
 export interface ApiErrorResponse {
   statusCode: number;
   message: string;
-  errors?: ZodIssue[];
+  errors?: {
+    path: string;
+    message: string;
+    code: string;
+  }[];
   error?: string;
 }
 
@@ -44,7 +47,9 @@ base.interceptors.response.use(
     }
 
     if (res?.errors?.length) {
-      errorMsg = res.errors.map((err) => err.message).join('\n');
+      errorMsg = res.errors
+        .map((err) => `${err.path}: ${err.message}`)
+        .join('\n');
     } else if (res?.message) {
       errorMsg = res.message;
     } else if (error.message) {

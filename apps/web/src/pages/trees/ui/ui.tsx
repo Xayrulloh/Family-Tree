@@ -3,7 +3,10 @@ import {
   EditOutlined,
   EllipsisOutlined,
 } from '@ant-design/icons';
-import type { FamilyTreeSchemaType } from '@family-tree/shared';
+import type {
+  FamilyTreeResponseType,
+  SharedFamilyTreeResponseType,
+} from '@family-tree/shared';
 import {
   Button,
   Card,
@@ -31,7 +34,10 @@ import { factory } from '../model';
 type Model = ReturnType<typeof factory>;
 type Props = LazyPageProps<Model>;
 type TreeCardProps = {
-  tree: FamilyTreeSchemaType;
+  tree: FamilyTreeResponseType;
+};
+type SharedTreeCardProps = {
+  tree: SharedFamilyTreeResponseType;
 };
 
 // Tree Card Component for Already Created Tree
@@ -180,11 +186,11 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
 };
 
 // Shared Tree Card Component
-export const SharedTreeCard: React.FC<TreeCardProps> = ({ tree }) => {
+export const SharedTreeCard: React.FC<SharedTreeCardProps> = ({ tree }) => {
   const { token } = theme.useToken();
 
   return (
-    <Link to={routes.sharedTreesDetail} params={{ id: tree.id }}>
+    <Link to={routes.sharedTreesDetail} params={{ id: tree.familyTreeId }}>
       {''}
       <Card
         hoverable
@@ -322,7 +328,7 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
           <Row gutter={[16, 16]}>
             {/* Shared Trees */}
             {sharedTrees.map((tree) => (
-              <Col xs={12} sm={8} md={6} lg={6} xl={4} key={tree.id}>
+              <Col xs={12} sm={8} md={6} lg={6} xl={4} key={tree.familyTreeId}>
                 <SharedTreeCard tree={tree} />
               </Col>
             ))}

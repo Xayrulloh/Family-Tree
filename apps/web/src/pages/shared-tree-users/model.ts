@@ -1,6 +1,7 @@
 import type { SharedFamilyTreeUsersArrayResponseType } from '@family-tree/shared';
 import { attach, createStore, sample } from 'effector';
 import { userModel } from '~/entities/user';
+import { editTreeModel } from '~/features/shared-tree-users/edit';
 import { api } from '~/shared/api';
 import type { LazyPageFactoryParams } from '~/shared/lib/lazy-page';
 
@@ -10,17 +11,19 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   // Stores
   const $users = createStore<SharedFamilyTreeUsersArrayResponseType>([]);
 
-  const $id = authorizedRoute.$params.map((params) => params.id ?? null);
+  const $familyTreeId = authorizedRoute.$params.map(
+    (params) => params.id ?? null,
+  );
 
   // Effects
   const fetchSharedTreeUsersFx = attach({
-    source: $id,
+    source: $familyTreeId,
     effect: (familyTreeId) => api.sharedTree.findUsers({ familyTreeId }),
   });
 
   // Samples
   sample({
-    clock: authorizedRoute.opened,
+    clock: [authorizedRoute.opened, editTreeModel.mutated],
     target: fetchSharedTreeUsersFx,
   });
 
@@ -54,7 +57,7 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
 
   return {
     $users,
-    $id,
+    $familyTreeId,
     $loading: fetchSharedTreeUsersFx.pending,
   };
 };

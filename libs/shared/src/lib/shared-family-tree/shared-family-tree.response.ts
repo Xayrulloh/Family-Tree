@@ -5,8 +5,12 @@ import {
   UserSchema,
 } from '../schema';
 
-const SharedFamilyTreeResponseSchema = FamilyTreeSchema.merge(
+const SharedFamilyTreeResponseSchema = FamilyTreeSchema.omit({
+  id: true,
+}).merge(
   SharedFamilyTreeSchema.pick({
+    familyTreeId: true,
+    userId: true,
     canAddMembers: true,
     canEditMembers: true,
     canDeleteMembers: true,
@@ -17,14 +21,19 @@ const SharedFamilyTreeResponseSchema = FamilyTreeSchema.merge(
 const SharedFamilyTreeArrayResponseSchema =
   SharedFamilyTreeResponseSchema.array();
 
-const SharedFamilyTreeUsersArrayResponseSchema = UserSchema.merge(
+const SharedFamilyTreeUserResponseSchema = UserSchema.merge(
   SharedFamilyTreeSchema.pick({
+    familyTreeId: true,
+    userId: true,
     canAddMembers: true,
     canEditMembers: true,
     canDeleteMembers: true,
     isBlocked: true,
   }),
-).array();
+);
+
+const SharedFamilyTreeUsersArrayResponseSchema =
+  SharedFamilyTreeUserResponseSchema.array();
 
 type SharedFamilyTreeResponseType = z.infer<
   typeof SharedFamilyTreeResponseSchema
@@ -32,6 +41,10 @@ type SharedFamilyTreeResponseType = z.infer<
 
 type SharedFamilyTreeArrayResponseType = z.infer<
   typeof SharedFamilyTreeArrayResponseSchema
+>;
+
+type SharedFamilyTreeUserResponseType = z.infer<
+  typeof SharedFamilyTreeUserResponseSchema
 >;
 
 type SharedFamilyTreeUsersArrayResponseType = z.infer<
@@ -43,6 +56,8 @@ export {
   type SharedFamilyTreeResponseType,
   SharedFamilyTreeArrayResponseSchema,
   type SharedFamilyTreeArrayResponseType,
+  SharedFamilyTreeUserResponseSchema,
+  type SharedFamilyTreeUserResponseType,
   SharedFamilyTreeUsersArrayResponseSchema,
   type SharedFamilyTreeUsersArrayResponseType,
 };

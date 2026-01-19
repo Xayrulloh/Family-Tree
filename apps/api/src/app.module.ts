@@ -17,6 +17,7 @@ import { FileModule } from './modules/file/file.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { SharedFamilyTreeModule } from './modules/shared-family-tree/shared-family-tree.module';
 import { UserModule } from './modules/user/user.module';
+import { ZodValidationExceptionFilter } from './common/filters/zod.filter';
 
 @Module({
   imports: [
@@ -56,11 +57,15 @@ import { UserModule } from './modules/user/user.module';
       provide: APP_PIPE,
       useClass: ZodValidationPipe,
     },
-    { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptorCustom },
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
     },
+    {
+      provide: APP_FILTER,
+      useClass: ZodValidationExceptionFilter,
+    },
+    { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptorCustom },
   ],
 })
 export class AppModule {}
