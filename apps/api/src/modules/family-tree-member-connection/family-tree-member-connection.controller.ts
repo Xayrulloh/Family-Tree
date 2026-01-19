@@ -18,7 +18,10 @@ import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CacheService } from '~/config/cache/cache.service';
+import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
+// biome-ignore lint/style/useImportType: <throws an error if put type>
+import { SharedFamilyTreeService } from '../shared-family-tree/shared-family-tree.service';
 // biome-ignore lint/style/useImportType: <query/param doesn't work>
 import {
   FamilyTreeMemberConnectionGetAllParamDto,
@@ -27,9 +30,6 @@ import {
 } from './dto/family-tree-member-connection.dto';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { FamilyTreeMemberConnectionService } from './family-tree-member-connection.service';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { SharedFamilyTreeService } from '../shared-family-tree/shared-family-tree.service';
-import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 
 @ApiTags('Family Tree Member Connection')
 @ApiParam({ name: 'familyTreeId', required: true, type: String })

@@ -12,10 +12,10 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import { useUnit } from 'effector-react';
 import type React from 'react';
+import { editSharedTreeModel } from '~/features/shared-tree-users/edit';
 import type { LazyPageProps } from '~/shared/lib/lazy-page';
 import { PageLoading } from '~/shared/ui/loading';
 import { factory } from '../model';
-import { editSharedTreeModel } from '~/features/shared-tree-users/edit';
 
 const { Title, Text } = Typography;
 
