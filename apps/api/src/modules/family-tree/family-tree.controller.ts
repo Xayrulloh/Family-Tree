@@ -6,6 +6,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -32,8 +33,6 @@ import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { FamilyTreeMemberService } from '../family-tree-member/family-tree-member.service';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { SharedFamilyTreeService } from '../shared-family-tree/shared-family-tree.service';
 // biome-ignore lint/style/useImportType: <query/param doesn't work>
 import {
   FamilyTreeArrayResponseDto,
@@ -51,7 +50,6 @@ export class FamilyTreeController {
   constructor(
     private readonly familyTreeService: FamilyTreeService,
     private readonly familyTreeMemberService: FamilyTreeMemberService,
-    private readonly sharedFamilyTreeService: SharedFamilyTreeService,
     private readonly cacheService: CacheService,
   ) {}
 
@@ -100,23 +98,15 @@ export class FamilyTreeController {
     );
 
     if (cachedFamilyTree) {
-      if (req.user.id !== cachedFamilyTree.createdBy) {
-        await this.sharedFamilyTreeService.createSharedFamilyTree({
-          familyTreeId: param.id,
-          sharedWithUserId: req.user.id,
-        });
-      }
-
       return cachedFamilyTree;
     }
 
     const familyTree = await this.familyTreeService.getFamilyTreeById(param.id);
 
     if (req.user.id !== familyTree.createdBy) {
-      await this.sharedFamilyTreeService.createSharedFamilyTree({
-        familyTreeId: param.id,
-        sharedWithUserId: req.user.id,
-      });
+      throw new ForbiddenException(
+        'You are not allowed to access this family tree',
+      );
     }
 
     this.cacheService.set(`family-trees:${param.id}`, familyTree);

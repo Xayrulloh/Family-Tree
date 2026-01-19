@@ -10,6 +10,7 @@ export const routes = {
   registration: createRoute(),
   trees: createRoute(),
   treesDetail: createRoute<{ id: string }>(),
+  sharedTreesDetail: createRoute<{ id: string }>(),
   sharedTreeUsers: createRoute<{ id: string }>(),
 };
 
@@ -29,6 +30,10 @@ export const routesMap = [
   {
     path: '/family-trees/:id',
     route: routes.treesDetail,
+  },
+  {
+    path: '/family-trees/:id/shared',
+    route: routes.sharedTreesDetail,
   },
   {
     path: '/family-trees/:id/shared-users',

@@ -12,6 +12,7 @@ import * as schema from '~/database/schema';
 import type {
   SharedFamilyTreeArrayResponseDto,
   SharedFamilyTreeCreateRequestDto,
+  SharedFamilyTreeResponseDto,
   SharedFamilyTreeUsersArrayResponseDto,
 } from './dto/shared-family-tree.dto';
 
@@ -22,12 +23,15 @@ export class SharedFamilyTreeService {
     private db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async getSharedFamilyTreesOfUser(
+  async getSharedFamilyTreesWithUser(
     userId: string,
   ): Promise<SharedFamilyTreeArrayResponseDto> {
     const sharedFamilyTrees =
       await this.db.query.sharedFamilyTreesSchema.findMany({
-        where: eq(schema.sharedFamilyTreesSchema.sharedWithUserId, userId),
+        where: and(
+          eq(schema.sharedFamilyTreesSchema.sharedWithUserId, userId),
+          eq(schema.sharedFamilyTreesSchema.isBlocked, false),
+        ),
         orderBy: asc(schema.sharedFamilyTreesSchema.createdAt),
         with: {
           familyTree: true,
@@ -48,6 +52,46 @@ export class SharedFamilyTreeService {
     });
   }
 
+  async getSharedFamilyTreeWithUserById(
+    userId: string,
+    familyTreeId: string,
+  ): Promise<SharedFamilyTreeResponseDto> {
+    const sharedFamilyTree =
+      await this.db.query.sharedFamilyTreesSchema.findFirst({
+        where: and(
+          eq(schema.sharedFamilyTreesSchema.familyTreeId, familyTreeId),
+          eq(schema.sharedFamilyTreesSchema.sharedWithUserId, userId),
+        ),
+        with: {
+          familyTree: true,
+        },
+        columns: {
+          canAddMembers: true,
+          canEditMembers: true,
+          canDeleteMembers: true,
+          isBlocked: true,
+        },
+      });
+
+    if (sharedFamilyTree?.isBlocked) {
+      throw new ForbiddenException(`You don't have a permission`);
+    }
+
+    if (!sharedFamilyTree) {
+      await this.createSharedFamilyTree({
+        familyTreeId,
+        sharedWithUserId: userId,
+      });
+
+      return this.getSharedFamilyTreeWithUserById(userId, familyTreeId);
+    }
+
+    return {
+      ...sharedFamilyTree,
+      ...sharedFamilyTree.familyTree,
+    };
+  }
+
   async createSharedFamilyTree(
     body: SharedFamilyTreeCreateRequestDto,
   ): Promise<void> {
@@ -59,21 +103,6 @@ export class SharedFamilyTreeService {
       throw new BadRequestException(
         `Family tree with id ${body.familyTreeId} not found`,
       );
-    }
-
-    const isSharedFamilyTreeExist =
-      await this.db.query.sharedFamilyTreesSchema.findFirst({
-        where: and(
-          eq(schema.sharedFamilyTreesSchema.familyTreeId, body.familyTreeId),
-          eq(
-            schema.sharedFamilyTreesSchema.sharedWithUserId,
-            body.sharedWithUserId,
-          ),
-        ),
-      });
-
-    if (isSharedFamilyTreeExist) {
-      return;
     }
 
     await this.db.insert(schema.sharedFamilyTreesSchema).values({
