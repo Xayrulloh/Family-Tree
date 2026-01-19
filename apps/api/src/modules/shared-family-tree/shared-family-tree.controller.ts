@@ -4,16 +4,19 @@ import {
   SharedFamilyTreeUsersArrayResponseSchema,
 } from '@family-tree/shared';
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiCookieAuth,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiParam,
   ApiTags,
@@ -27,6 +30,8 @@ import {
   SharedFamilyTreeArrayResponseDto,
   SharedFamilyTreeIdParamDto,
   SharedFamilyTreeResponseDto,
+  SharedFamilyTreeUpdateParamDto,
+  SharedFamilyTreeUpdateRequestDto,
   SharedFamilyTreeUsersArrayResponseDto,
 } from './dto/shared-family-tree.dto';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
@@ -39,22 +44,20 @@ export class SharedFamilyTreeController {
     private readonly sharedFamilyTreeService: SharedFamilyTreeService,
   ) {}
 
-  // Find shared family trees with user (trees which is shared with user)
+  // Find the shared family trees with user (trees which is shared with user)
   @Get('shared')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: SharedFamilyTreeArrayResponseDto })
   @ZodSerializerDto(SharedFamilyTreeArrayResponseSchema)
-  async getSharedFamilyTreesWithUser(
+  async getSharedFamilyTrees(
     @Req() req: AuthenticatedRequest,
   ): Promise<SharedFamilyTreeArrayResponseDto> {
-    return this.sharedFamilyTreeService.getSharedFamilyTreesWithUser(
-      req.user.id,
-    );
+    return this.sharedFamilyTreeService.getSharedFamilyTrees(req.user.id);
   }
 
-  // Find single shared family tree with user (tree which is shared with user but singular)
+  // Find the single shared family tree with user (tree which is shared with user but singular)
   @Get(':familyTreeId/shared')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
@@ -62,11 +65,11 @@ export class SharedFamilyTreeController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: SharedFamilyTreeResponseDto })
   @ZodSerializerDto(SharedFamilyTreeResponseSchema)
-  async getSharedFamilyTreeWithUserById(
+  async getSharedFamilyTreeById(
     @Req() req: AuthenticatedRequest,
     @Param() param: SharedFamilyTreeIdParamDto,
   ): Promise<SharedFamilyTreeResponseDto> {
-    return this.sharedFamilyTreeService.getSharedFamilyTreeWithUserById(
+    return this.sharedFamilyTreeService.getSharedFamilyTreeById(
       req.user.id,
       param.familyTreeId,
     );
@@ -87,6 +90,38 @@ export class SharedFamilyTreeController {
     return this.sharedFamilyTreeService.getSharedFamilyTreeUsersById(
       req.user.id,
       param.familyTreeId,
+    );
+  }
+
+  // Update RBAC of the user which is shared with
+  @Put(':familyTreeId/shared-users/:userId')
+  @UseGuards(JWTAuthGuard)
+  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @ApiParam({ name: 'familyTreeId', required: true, type: String })
+  @ApiParam({ name: 'userId', required: true, type: String })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse()
+  async updateSharedFamilyTreeById(
+    @Req() req: AuthenticatedRequest,
+    @Param() param: SharedFamilyTreeUpdateParamDto,
+    @Body() body: SharedFamilyTreeUpdateRequestDto,
+  ): Promise<void> {
+    // check access (whether he can modify)
+    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
+      req.user.id,
+      param.familyTreeId,
+      {
+        // TODO: in future we might have another option smth like canEditRBAC, so we need to check that one
+        canEditMembers: true,
+        canAddMembers: true,
+        canDeleteMembers: true,
+      },
+    );
+
+    return this.sharedFamilyTreeService.updateSharedFamilyTreeById(
+      param.userId,
+      param.familyTreeId,
+      body,
     );
   }
 }

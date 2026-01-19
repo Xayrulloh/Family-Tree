@@ -13,6 +13,7 @@ import type {
   SharedFamilyTreeArrayResponseDto,
   SharedFamilyTreeCreateRequestDto,
   SharedFamilyTreeResponseDto,
+  SharedFamilyTreeUpdateRequestDto,
   SharedFamilyTreeUsersArrayResponseDto,
 } from './dto/shared-family-tree.dto';
 
@@ -23,13 +24,13 @@ export class SharedFamilyTreeService {
     private db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async getSharedFamilyTreesWithUser(
+  async getSharedFamilyTrees(
     userId: string,
   ): Promise<SharedFamilyTreeArrayResponseDto> {
     const sharedFamilyTrees =
       await this.db.query.sharedFamilyTreesSchema.findMany({
         where: and(
-          eq(schema.sharedFamilyTreesSchema.sharedWithUserId, userId),
+          eq(schema.sharedFamilyTreesSchema.userId, userId),
           eq(schema.sharedFamilyTreesSchema.isBlocked, false),
         ),
         orderBy: asc(schema.sharedFamilyTreesSchema.createdAt),
@@ -52,7 +53,7 @@ export class SharedFamilyTreeService {
     });
   }
 
-  async getSharedFamilyTreeWithUserById(
+  async getSharedFamilyTreeById(
     userId: string,
     familyTreeId: string,
   ): Promise<SharedFamilyTreeResponseDto> {
@@ -60,7 +61,7 @@ export class SharedFamilyTreeService {
       await this.db.query.sharedFamilyTreesSchema.findFirst({
         where: and(
           eq(schema.sharedFamilyTreesSchema.familyTreeId, familyTreeId),
-          eq(schema.sharedFamilyTreesSchema.sharedWithUserId, userId),
+          eq(schema.sharedFamilyTreesSchema.userId, userId),
         ),
         with: {
           familyTree: true,
@@ -80,10 +81,10 @@ export class SharedFamilyTreeService {
     if (!sharedFamilyTree) {
       await this.createSharedFamilyTree({
         familyTreeId,
-        sharedWithUserId: userId,
+        userId: userId,
       });
 
-      return this.getSharedFamilyTreeWithUserById(userId, familyTreeId);
+      return this.getSharedFamilyTreeById(userId, familyTreeId);
     }
 
     return {
@@ -107,7 +108,7 @@ export class SharedFamilyTreeService {
 
     await this.db.insert(schema.sharedFamilyTreesSchema).values({
       familyTreeId: body.familyTreeId,
-      sharedWithUserId: body.sharedWithUserId,
+      userId: body.userId,
     });
   }
 
@@ -136,7 +137,10 @@ export class SharedFamilyTreeService {
       });
 
     return sharedFamilyTrees.map((sharedFamilyTree) => {
-      return sharedFamilyTree.sharedWithUser;
+      return {
+        ...sharedFamilyTree.sharedWithUser,
+        ...sharedFamilyTree,
+      };
     });
   }
 
@@ -165,7 +169,7 @@ export class SharedFamilyTreeService {
       await this.db.query.sharedFamilyTreesSchema.findFirst({
         where: and(
           eq(schema.sharedFamilyTreesSchema.familyTreeId, familyTreeId),
-          eq(schema.sharedFamilyTreesSchema.sharedWithUserId, userId),
+          eq(schema.sharedFamilyTreesSchema.userId, userId),
         ),
         columns: {
           canAddMembers: true,
@@ -193,5 +197,21 @@ export class SharedFamilyTreeService {
     ) {
       throw new ForbiddenException(`You don't have a permission`);
     }
+  }
+
+  async updateSharedFamilyTreeById(
+    userId: string,
+    familyTreeId: string,
+    body: SharedFamilyTreeUpdateRequestDto,
+  ): Promise<void> {
+    await this.db
+      .update(schema.sharedFamilyTreesSchema)
+      .set(body)
+      .where(
+        and(
+          eq(schema.sharedFamilyTreesSchema.familyTreeId, familyTreeId),
+          eq(schema.sharedFamilyTreesSchema.userId, userId),
+        ),
+      );
   }
 }

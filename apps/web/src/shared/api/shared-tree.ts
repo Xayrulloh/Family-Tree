@@ -2,6 +2,7 @@ import type {
   SharedFamilyTreeArrayResponseType,
   SharedFamilyTreeIdParamType,
   SharedFamilyTreeResponseType,
+  SharedFamilyTreeUpdateRequestType,
   SharedFamilyTreeUsersArrayResponseType,
 } from '@family-tree/shared';
 import type { AxiosRequestConfig } from 'axios';
@@ -29,6 +30,17 @@ export const sharedTree = {
   ) => {
     return base.get<SharedFamilyTreeUsersArrayResponseType>(
       `/family-trees/${param.familyTreeId}/shared-users`,
+      config,
+    );
+  },
+  update: (
+    param: SharedFamilyTreeIdParamType,
+    body: SharedFamilyTreeUpdateRequestType,
+    config?: AxiosRequestConfig,
+  ) => {
+    return base.put<SharedFamilyTreeResponseType>(
+      `/family-trees/${param.familyTreeId}/shared-users`,
+      body,
       config,
     );
   },

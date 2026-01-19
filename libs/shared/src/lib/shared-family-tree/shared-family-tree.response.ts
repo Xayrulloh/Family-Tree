@@ -17,7 +17,14 @@ const SharedFamilyTreeResponseSchema = FamilyTreeSchema.merge(
 const SharedFamilyTreeArrayResponseSchema =
   SharedFamilyTreeResponseSchema.array();
 
-const SharedFamilyTreeUsersArrayResponseSchema = UserSchema.array();
+const SharedFamilyTreeUsersArrayResponseSchema = UserSchema.merge(
+  SharedFamilyTreeSchema.pick({
+    canAddMembers: true,
+    canEditMembers: true,
+    canDeleteMembers: true,
+    isBlocked: true,
+  }),
+).array();
 
 type SharedFamilyTreeResponseType = z.infer<
   typeof SharedFamilyTreeResponseSchema
