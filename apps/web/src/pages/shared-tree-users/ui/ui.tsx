@@ -24,8 +24,8 @@ type Model = ReturnType<typeof factory>;
 export type Props = LazyPageProps<Model>;
 
 const SharedTreeUsers: React.FC<Props> = ({ model }) => {
-  const [users, loading, mutating] = useUnit([
-    model.$users,
+  const [paginatedUsers, loading, mutating] = useUnit([
+    model.$paginatedUsers,
     model.$loading,
     editSharedTreeModel.$mutating,
   ]);
@@ -139,7 +139,7 @@ const SharedTreeUsers: React.FC<Props> = ({ model }) => {
         </div>
 
         <Table
-          dataSource={users}
+          dataSource={paginatedUsers.sharedFamilyTreeUsers}
           columns={columns}
           rowKey="userId"
           pagination={false}

@@ -1,18 +1,22 @@
 import type {
   SharedFamilyTreeIdParamType,
+  SharedFamilyTreePaginationAndSearchQueryType,
   SharedFamilyTreePaginationResponseType,
   SharedFamilyTreeResponseType,
   SharedFamilyTreeUpdateParamType,
   SharedFamilyTreeUpdateRequestType,
-  SharedFamilyTreeUsersArrayResponseType,
+  SharedFamilyTreeUsersPaginationResponseType,
 } from '@family-tree/shared';
 import type { AxiosRequestConfig } from 'axios';
 import { base } from './base';
 
 export const sharedTree = {
-  findAll: (config?: AxiosRequestConfig) => {
+  findAll: (
+    query: SharedFamilyTreePaginationAndSearchQueryType,
+    config?: AxiosRequestConfig,
+  ) => {
     return base.get<SharedFamilyTreePaginationResponseType>(
-      `/family-trees/shared`,
+      `/family-trees/shared?page=${query.page}&perPage=${query.perPage}${query.name ? `&name=${query.name}` : ''}`,
       config,
     );
   },
@@ -27,10 +31,11 @@ export const sharedTree = {
   },
   findUsers: (
     param: SharedFamilyTreeIdParamType,
+    query: SharedFamilyTreePaginationAndSearchQueryType,
     config?: AxiosRequestConfig,
   ) => {
-    return base.get<SharedFamilyTreeUsersArrayResponseType>(
-      `/family-trees/${param.familyTreeId}/shared-users`,
+    return base.get<SharedFamilyTreeUsersPaginationResponseType>(
+      `/family-trees/${param.familyTreeId}/shared-users?page=${query.page}&perPage=${query.perPage}${query.name ? `&name=${query.name}` : ''}`,
       config,
     );
   },
