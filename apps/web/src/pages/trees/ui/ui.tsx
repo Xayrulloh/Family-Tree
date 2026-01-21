@@ -277,7 +277,10 @@ export const SharedTreeCard: React.FC<SharedTreeCardProps> = ({ tree }) => {
 
 // Trees Grid Component => Already Created Trees Component
 const TreesGrid: React.FC<Props> = ({ model }) => {
-  const [trees, sharedTrees] = useUnit([model.$trees, model.$sharedTrees]);
+  const [paginatedTrees, paginatedSharedTrees] = useUnit([
+    model.$paginatedTrees,
+    model.$paginatedSharedTrees,
+  ]);
 
   return (
     <div style={{ padding: '0 16px' }}>
@@ -286,7 +289,7 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
 
         <Row gutter={[16, 16]}>
           {/* Own Trees */}
-          {trees.map((tree) => (
+          {paginatedTrees.familyTrees.map((tree) => (
             <Col xs={12} sm={8} md={6} lg={6} xl={4} key={tree.id}>
               <TreeCard tree={tree} />
             </Col>
@@ -322,14 +325,21 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
         </Row>
       </div>
 
-      {sharedTrees.length > 0 && (
+      {paginatedSharedTrees.sharedFamilyTrees.length > 0 && (
         <div style={{ marginBottom: 40 }}>
           <Typography.Title level={3}>Shared With Me</Typography.Title>
           <Row gutter={[16, 16]}>
             {/* Shared Trees */}
-            {sharedTrees.map((tree) => (
-              <Col xs={12} sm={8} md={6} lg={6} xl={4} key={tree.familyTreeId}>
-                <SharedTreeCard tree={tree} />
+            {paginatedSharedTrees.sharedFamilyTrees.map((sharedTree) => (
+              <Col
+                xs={12}
+                sm={8}
+                md={6}
+                lg={6}
+                xl={4}
+                key={sharedTree.familyTreeId}
+              >
+                <SharedTreeCard tree={sharedTree} />
               </Col>
             ))}
           </Row>

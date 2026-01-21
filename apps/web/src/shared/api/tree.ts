@@ -1,5 +1,6 @@
 import type {
   FamilyTreeCreateRequestType,
+  FamilyTreePaginationAndSearchQueryType,
   FamilyTreePaginationResponseType,
   FamilyTreeResponseType,
   FamilyTreeUpdateRequestType,
@@ -8,8 +9,14 @@ import type { AxiosRequestConfig } from 'axios';
 import { base } from './base';
 
 export const tree = {
-  findAll: (config?: AxiosRequestConfig) => {
-    return base.get<FamilyTreePaginationResponseType>(`/family-trees`, config);
+  findAll: (
+    query: FamilyTreePaginationAndSearchQueryType,
+    config?: AxiosRequestConfig,
+  ) => {
+    return base.get<FamilyTreePaginationResponseType>(
+      `/family-trees?page=${query.page}&perPage=${query.perPage}${query.name ? `&name=${query.name}` : ''}`,
+      config,
+    );
   },
   create: (body: FamilyTreeCreateRequestType, config?: AxiosRequestConfig) => {
     return base.post('/family-trees', body, config);

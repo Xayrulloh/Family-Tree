@@ -1,4 +1,4 @@
-import type { SharedFamilyTreeUsersArrayResponseType } from '@family-tree/shared';
+import type { SharedFamilyTreeUsersPaginationResponseType } from '@family-tree/shared';
 import { attach, createStore, sample } from 'effector';
 import { userModel } from '~/entities/user';
 import { editSharedTreeModel } from '~/features/shared-tree-users/edit';
@@ -9,7 +9,14 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   const authorizedRoute = userModel.chainAuthorized({ route });
 
   // Stores
-  const $users = createStore<SharedFamilyTreeUsersArrayResponseType>([]);
+  const $paginatedUsers =
+    createStore<SharedFamilyTreeUsersPaginationResponseType>({
+      page: 1,
+      perPage: 15,
+      totalCount: 0,
+      totalPages: 0,
+      sharedFamilyTreeUsers: [],
+    });
 
   const $familyTreeId = authorizedRoute.$params.map(
     (params) => params.id ?? null,
@@ -18,7 +25,8 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   // Effects
   const fetchSharedTreeUsersFx = attach({
     source: $familyTreeId,
-    effect: (familyTreeId) => api.sharedTree.findUsers({ familyTreeId }),
+    effect: (familyTreeId) =>
+      api.sharedTree.findUsers({ familyTreeId }, { page: 1, perPage: 15 }),
   });
 
   // Samples
@@ -30,7 +38,7 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   sample({
     clock: fetchSharedTreeUsersFx.doneData,
     fn: (response) => response.data,
-    target: $users,
+    target: $paginatedUsers,
   });
 
   sample({
@@ -52,11 +60,11 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   // Reset
   sample({
     clock: authorizedRoute.closed,
-    target: $users.reinit,
+    target: $paginatedUsers.reinit,
   });
 
   return {
-    $users,
+    $paginatedUsers,
     $familyTreeId,
     $loading: fetchSharedTreeUsersFx.pending,
   };
