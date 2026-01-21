@@ -24,7 +24,10 @@ const SharedFamilyTreePaginationResponseSchema =
     sharedFamilyTrees: SharedFamilyTreeResponseSchema.array(),
   });
 
-const SharedFamilyTreeUserResponseSchema = UserSchema.merge(
+const SharedFamilyTreeUserResponseSchema = UserSchema.omit({
+  id: true,
+  username: true,
+}).merge(
   SharedFamilyTreeSchema.pick({
     familyTreeId: true,
     userId: true,

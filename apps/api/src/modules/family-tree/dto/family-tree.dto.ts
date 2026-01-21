@@ -1,6 +1,6 @@
 import {
   FamilyTreeCreateRequestSchema,
-  FamilyTreePaginationQuerySchema,
+  FamilyTreePaginationAndSearchQuerySchema,
   FamilyTreePaginationResponseSchema,
   FamilyTreeResponseSchema,
   FamilyTreeUpdateRequestSchema,
@@ -21,8 +21,8 @@ class FamilyTreeUpdateRequestDto extends createZodDto(
 class FamilyTreeIdParamDto extends createZodDto(IdQuerySchema) {}
 
 // query
-class FamilyTreePaginationQueryDto extends createZodDto(
-  FamilyTreePaginationQuerySchema,
+class FamilyTreePaginationAndSearchQueryDto extends createZodDto(
+  FamilyTreePaginationAndSearchQuerySchema,
 ) {}
 
 // response
@@ -38,5 +38,5 @@ export {
   FamilyTreeIdParamDto,
   FamilyTreeResponseDto,
   FamilyTreePaginationResponseDto,
-  FamilyTreePaginationQueryDto,
+  FamilyTreePaginationAndSearchQueryDto,
 };

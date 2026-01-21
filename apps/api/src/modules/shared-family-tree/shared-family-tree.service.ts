@@ -5,13 +5,13 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { and, asc, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, ilike, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
 import type {
   SharedFamilyTreeCreateRequestDto,
-  SharedFamilyTreePaginationQueryDto,
+  SharedFamilyTreePaginationAndSearchQueryDto,
   SharedFamilyTreePaginationResponseDto,
   SharedFamilyTreeResponseDto,
   SharedFamilyTreeUpdateRequestDto,
@@ -27,40 +27,68 @@ export class SharedFamilyTreeService {
 
   async getSharedFamilyTrees(
     userId: string,
-    { page, perPage }: SharedFamilyTreePaginationQueryDto,
+    { page, perPage, name }: SharedFamilyTreePaginationAndSearchQueryDto,
   ): Promise<SharedFamilyTreePaginationResponseDto> {
     const offset = (page - 1) * perPage;
 
     const [sharedFamilyTrees, countResult] = await Promise.all([
-      this.db.query.sharedFamilyTreesSchema.findMany({
-        where: and(
-          eq(schema.sharedFamilyTreesSchema.userId, userId),
-          eq(schema.sharedFamilyTreesSchema.isBlocked, false),
-        ),
-        orderBy: asc(schema.sharedFamilyTreesSchema.createdAt),
-        with: {
-          familyTree: true,
-        },
-        columns: {
-          familyTreeId: true,
-          userId: true,
-          canAddMembers: true,
-          canEditMembers: true,
-          canDeleteMembers: true,
-          isBlocked: true,
-        },
-        limit: perPage,
-        offset,
-      }),
+      this.db
+        .select({
+          // shared family tree part
+          familyTreeId: schema.sharedFamilyTreesSchema.familyTreeId,
+          userId: schema.sharedFamilyTreesSchema.userId,
+          canAddMembers: schema.sharedFamilyTreesSchema.canAddMembers,
+          canEditMembers: schema.sharedFamilyTreesSchema.canEditMembers,
+          canDeleteMembers: schema.sharedFamilyTreesSchema.canDeleteMembers,
+          isBlocked: schema.sharedFamilyTreesSchema.isBlocked,
+
+          // family tree part
+          createdBy: schema.familyTreesSchema.createdBy,
+          name: schema.familyTreesSchema.name,
+          image: schema.familyTreesSchema.image,
+          createdAt: schema.familyTreesSchema.createdAt,
+          updatedAt: schema.familyTreesSchema.updatedAt,
+          deletedAt: schema.familyTreesSchema.deletedAt,
+        })
+        .from(schema.sharedFamilyTreesSchema)
+        .innerJoin(
+          schema.familyTreesSchema,
+          eq(
+            schema.sharedFamilyTreesSchema.familyTreeId,
+            schema.familyTreesSchema.id,
+          ),
+        )
+        .where(
+          and(
+            eq(schema.sharedFamilyTreesSchema.userId, userId),
+            eq(schema.sharedFamilyTreesSchema.isBlocked, false),
+            name
+              ? ilike(schema.familyTreesSchema.name, `%${name}%`)
+              : undefined,
+          ),
+        )
+        .orderBy(asc(schema.sharedFamilyTreesSchema.createdAt))
+        .limit(perPage)
+        .offset(offset),
       this.db
         .select({
           totalCount: sql<number>`COUNT(*)::int`,
         })
         .from(schema.sharedFamilyTreesSchema)
+        .innerJoin(
+          schema.familyTreesSchema,
+          eq(
+            schema.sharedFamilyTreesSchema.familyTreeId,
+            schema.familyTreesSchema.id,
+          ),
+        )
         .where(
           and(
             eq(schema.sharedFamilyTreesSchema.userId, userId),
             eq(schema.sharedFamilyTreesSchema.isBlocked, false),
+            name
+              ? ilike(schema.familyTreesSchema.name, `%${name}%`)
+              : undefined,
           ),
         ),
     ]);
@@ -69,12 +97,7 @@ export class SharedFamilyTreeService {
     const totalPages = Math.ceil(totalCount / perPage);
 
     return {
-      sharedFamilyTrees: sharedFamilyTrees.map((sharedFamilyTree) => {
-        return {
-          ...sharedFamilyTree,
-          ...sharedFamilyTree.familyTree,
-        };
-      }),
+      sharedFamilyTrees,
       page,
       perPage,
       totalCount,
@@ -146,7 +169,7 @@ export class SharedFamilyTreeService {
   async getSharedFamilyTreeUsersById(
     userId: string,
     familyTreeId: string,
-    { page, perPage }: SharedFamilyTreePaginationQueryDto,
+    { page, perPage, name }: SharedFamilyTreePaginationAndSearchQueryDto,
   ): Promise<SharedFamilyTreeUsersPaginationResponseDto> {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
       where: and(
@@ -163,40 +186,64 @@ export class SharedFamilyTreeService {
     const offset = (page - 1) * perPage;
 
     const [sharedFamilyTreeUsers, countResult] = await Promise.all([
-      this.db.query.sharedFamilyTreesSchema.findMany({
-        where: eq(schema.sharedFamilyTreesSchema.familyTreeId, familyTreeId),
-        with: {
-          sharedWithUser: true,
-        },
-        columns: {
-          userId: true,
-          familyTreeId: true,
-          canAddMembers: true,
-          canEditMembers: true,
-          canDeleteMembers: true,
-          isBlocked: true,
-        },
-        limit: perPage,
-        offset,
-      }),
+      this.db
+        .select({
+          // shared family tree part
+          familyTreeId: schema.sharedFamilyTreesSchema.familyTreeId,
+          userId: schema.sharedFamilyTreesSchema.userId,
+          canAddMembers: schema.sharedFamilyTreesSchema.canAddMembers,
+          canEditMembers: schema.sharedFamilyTreesSchema.canEditMembers,
+          canDeleteMembers: schema.sharedFamilyTreesSchema.canDeleteMembers,
+          isBlocked: schema.sharedFamilyTreesSchema.isBlocked,
+
+          // user part
+          email: schema.usersSchema.email,
+          name: schema.usersSchema.name,
+          image: schema.usersSchema.image,
+          gender: schema.usersSchema.gender,
+          dod: schema.usersSchema.dod,
+          dob: schema.usersSchema.dob,
+          description: schema.usersSchema.description,
+          createdAt: schema.usersSchema.createdAt,
+          updatedAt: schema.usersSchema.updatedAt,
+          deletedAt: schema.usersSchema.deletedAt,
+        })
+        .from(schema.sharedFamilyTreesSchema)
+        .innerJoin(
+          schema.usersSchema,
+          eq(schema.sharedFamilyTreesSchema.userId, schema.usersSchema.id),
+        )
+        .where(
+          and(
+            eq(schema.sharedFamilyTreesSchema.familyTreeId, familyTreeId),
+            name ? ilike(schema.usersSchema.name, `%${name}%`) : undefined,
+          ),
+        )
+        .orderBy(asc(schema.sharedFamilyTreesSchema.createdAt))
+        .limit(perPage)
+        .offset(offset),
       this.db
         .select({
           totalCount: sql<number>`COUNT(*)::int`,
         })
         .from(schema.sharedFamilyTreesSchema)
-        .where(eq(schema.sharedFamilyTreesSchema.familyTreeId, familyTreeId)),
+        .innerJoin(
+          schema.usersSchema,
+          eq(schema.sharedFamilyTreesSchema.userId, schema.usersSchema.id),
+        )
+        .where(
+          and(
+            eq(schema.sharedFamilyTreesSchema.familyTreeId, familyTreeId),
+            name ? ilike(schema.usersSchema.name, `%${name}%`) : undefined,
+          ),
+        ),
     ]);
 
     const totalCount = countResult[0]?.totalCount ?? 0;
     const totalPages = Math.ceil(totalCount / perPage);
 
     return {
-      sharedFamilyTreeUsers: sharedFamilyTreeUsers.map((sharedFamilyTree) => {
-        return {
-          ...sharedFamilyTree.sharedWithUser,
-          ...sharedFamilyTree,
-        };
-      }),
+      sharedFamilyTreeUsers,
       page,
       perPage,
       totalCount,

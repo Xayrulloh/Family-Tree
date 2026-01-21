@@ -39,7 +39,7 @@ import { FamilyTreeMemberService } from '../family-tree-member/family-tree-membe
 import {
   FamilyTreeCreateRequestDto,
   FamilyTreeIdParamDto,
-  FamilyTreePaginationQueryDto,
+  FamilyTreePaginationAndSearchQueryDto,
   FamilyTreePaginationResponseDto,
   FamilyTreeResponseDto,
   FamilyTreeUpdateRequestDto,
@@ -62,12 +62,13 @@ export class FamilyTreeController {
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @ApiQuery({ name: 'page', required: false, type: Number, default: 1 })
   @ApiQuery({ name: 'perPage', required: false, type: Number, default: 15 })
+  @ApiQuery({ name: 'name', required: false, type: String })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: FamilyTreePaginationResponseDto })
   @ZodSerializerDto(FamilyTreePaginationResponseSchema)
   async getFamilyTreesOfUser(
     @Req() req: AuthenticatedRequest,
-    @Query() query: FamilyTreePaginationQueryDto,
+    @Query() query: FamilyTreePaginationAndSearchQueryDto,
   ): Promise<FamilyTreePaginationResponseDto> {
     // const cachedUserFamilyTrees =
     //   await this.cacheService.get<FamilyTreePaginationResponseDto>(
