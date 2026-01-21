@@ -30,7 +30,7 @@ import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 // biome-ignore lint/style/useImportType: <query/param doesn't work>
 import {
   SharedFamilyTreeIdParamDto,
-  SharedFamilyTreePaginationQueryDto,
+  SharedFamilyTreePaginationAndSearchQueryDto,
   SharedFamilyTreePaginationResponseDto,
   SharedFamilyTreeResponseDto,
   SharedFamilyTreeUpdateParamDto,
@@ -53,12 +53,13 @@ export class SharedFamilyTreeController {
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @ApiQuery({ name: 'page', required: false, type: Number, default: 1 })
   @ApiQuery({ name: 'perPage', required: false, type: Number, default: 15 })
+  @ApiQuery({ name: 'name', required: false, type: String })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: SharedFamilyTreePaginationResponseDto })
   @ZodSerializerDto(SharedFamilyTreePaginationResponseSchema)
   async getSharedFamilyTrees(
     @Req() req: AuthenticatedRequest,
-    @Query() query: SharedFamilyTreePaginationQueryDto,
+    @Query() query: SharedFamilyTreePaginationAndSearchQueryDto,
   ): Promise<SharedFamilyTreePaginationResponseDto> {
     return this.sharedFamilyTreeService.getSharedFamilyTrees(
       req.user.id,
@@ -91,13 +92,14 @@ export class SharedFamilyTreeController {
   @ApiParam({ name: 'familyTreeId', required: true, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number, default: 1 })
   @ApiQuery({ name: 'perPage', required: false, type: Number, default: 15 })
+  @ApiQuery({ name: 'name', required: false, type: String })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: SharedFamilyTreeUsersPaginationResponseDto })
   @ZodSerializerDto(SharedFamilyTreeUsersPaginationResponseSchema)
   async getSharedFamilyTreeUsersById(
     @Req() req: AuthenticatedRequest,
     @Param() param: SharedFamilyTreeIdParamDto,
-    @Query() query: SharedFamilyTreePaginationQueryDto,
+    @Query() query: SharedFamilyTreePaginationAndSearchQueryDto,
   ): Promise<SharedFamilyTreeUsersPaginationResponseDto> {
     return this.sharedFamilyTreeService.getSharedFamilyTreeUsersById(
       req.user.id,

@@ -1,8 +1,8 @@
 import {
   SharedFamilyTreeCreateRequestSchema,
   SharedFamilyTreeIdParamSchema,
+  SharedFamilyTreePaginationAndSearchQuerySchema,
   SharedFamilyTreePaginationResponseSchema,
-  SharedFamilyTreeQuerySchema,
   SharedFamilyTreeResponseSchema,
   SharedFamilyTreeUpdateParamSchema,
   SharedFamilyTreeUpdateRequestSchema,
@@ -30,8 +30,8 @@ class SharedFamilyTreeUpdateParamDto extends createZodDto(
 
 // query
 
-class SharedFamilyTreePaginationQueryDto extends createZodDto(
-  SharedFamilyTreeQuerySchema,
+class SharedFamilyTreePaginationAndSearchQueryDto extends createZodDto(
+  SharedFamilyTreePaginationAndSearchQuerySchema,
 ) {}
 
 // response
@@ -51,7 +51,7 @@ export {
   SharedFamilyTreeCreateRequestDto,
   SharedFamilyTreeIdParamDto,
   SharedFamilyTreeUpdateParamDto,
-  SharedFamilyTreePaginationQueryDto,
+  SharedFamilyTreePaginationAndSearchQueryDto,
   SharedFamilyTreeUpdateRequestDto,
   SharedFamilyTreeResponseDto,
   SharedFamilyTreePaginationResponseDto,

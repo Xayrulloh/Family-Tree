@@ -7,6 +7,7 @@ export * from './file';
 export * from './notification/index';
 export * from './pagination/index';
 export * from './schema/index';
+export * from './search/index';
 export * from './shared-family-tree/index';
 export * from './types/index';
 export * from './user/index';

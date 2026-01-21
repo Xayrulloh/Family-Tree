@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, asc, eq, notLike, sql } from 'drizzle-orm';
+import { and, asc, eq, ilike, notLike, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
@@ -13,7 +13,7 @@ import * as schema from '~/database/schema';
 import { DICEBEAR_URL } from '~/utils/constants';
 import type {
   FamilyTreeCreateRequestDto,
-  FamilyTreePaginationQueryDto,
+  FamilyTreePaginationAndSearchQueryDto,
   FamilyTreePaginationResponseDto,
   FamilyTreeResponseDto,
   FamilyTreeUpdateRequestDto,
@@ -29,13 +29,16 @@ export class FamilyTreeService {
 
   async getFamilyTreesOfUser(
     userId: string,
-    { page, perPage }: FamilyTreePaginationQueryDto,
+    { page, perPage, name }: FamilyTreePaginationAndSearchQueryDto,
   ): Promise<FamilyTreePaginationResponseDto> {
     const offset = (page - 1) * perPage;
 
     const [familyTrees, countResult] = await Promise.all([
       this.db.query.familyTreesSchema.findMany({
-        where: eq(schema.familyTreesSchema.createdBy, userId),
+        where: and(
+          eq(schema.familyTreesSchema.createdBy, userId),
+          name ? ilike(schema.familyTreesSchema.name, `%${name}%`) : undefined,
+        ),
         orderBy: asc(schema.familyTreesSchema.createdAt),
         limit: perPage,
         offset,
@@ -46,7 +49,14 @@ export class FamilyTreeService {
           totalCount: sql<number>`COUNT(*)::int`,
         })
         .from(schema.familyTreesSchema)
-        .where(eq(schema.familyTreesSchema.createdBy, userId)),
+        .where(
+          and(
+            eq(schema.familyTreesSchema.createdBy, userId),
+            name
+              ? ilike(schema.familyTreesSchema.name, `%${name}%`)
+              : undefined,
+          ),
+        ),
     ]);
 
     const totalCount = countResult[0]?.totalCount ?? 0;

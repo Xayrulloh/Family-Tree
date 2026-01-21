@@ -1,6 +1,7 @@
 import type { z } from 'zod';
 import { PaginationQuerySchema } from '../pagination';
 import { FamilyTreeSchema } from '../schema';
+import { SearchByNameQuerySchema } from '../search';
 
 const FamilyTreeCreateRequestSchema = FamilyTreeSchema.pick({
   image: true,
@@ -9,7 +10,9 @@ const FamilyTreeCreateRequestSchema = FamilyTreeSchema.pick({
 
 const FamilyTreeUpdateRequestSchema = FamilyTreeCreateRequestSchema.partial();
 
-const FamilyTreePaginationQuerySchema = PaginationQuerySchema;
+const FamilyTreePaginationAndSearchQuerySchema = PaginationQuerySchema.merge(
+  SearchByNameQuerySchema,
+);
 
 type FamilyTreeCreateRequestType = z.infer<
   typeof FamilyTreeCreateRequestSchema
@@ -19,15 +22,15 @@ type FamilyTreeUpdateRequestType = z.infer<
   typeof FamilyTreeUpdateRequestSchema
 >;
 
-type FamilyTreePaginationQueryType = z.infer<
-  typeof FamilyTreePaginationQuerySchema
+type FamilyTreePaginationAndSearchQueryType = z.infer<
+  typeof FamilyTreePaginationAndSearchQuerySchema
 >;
 
 export {
   FamilyTreeCreateRequestSchema,
   FamilyTreeUpdateRequestSchema,
-  FamilyTreePaginationQuerySchema,
+  FamilyTreePaginationAndSearchQuerySchema,
   type FamilyTreeCreateRequestType,
   type FamilyTreeUpdateRequestType,
-  type FamilyTreePaginationQueryType,
+  type FamilyTreePaginationAndSearchQueryType,
 };
