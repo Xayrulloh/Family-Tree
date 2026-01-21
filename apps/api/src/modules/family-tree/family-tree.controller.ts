@@ -1,5 +1,5 @@
 import {
-  FamilyTreeArrayResponseSchema,
+  FamilyTreePaginationResponseSchema,
   FamilyTreeResponseSchema,
 } from '@family-tree/shared';
 import {
@@ -13,6 +13,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -23,6 +24,7 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
@@ -35,9 +37,10 @@ import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 import { FamilyTreeMemberService } from '../family-tree-member/family-tree-member.service';
 // biome-ignore lint/style/useImportType: <query/param doesn't work>
 import {
-  FamilyTreeArrayResponseDto,
   FamilyTreeCreateRequestDto,
   FamilyTreeIdParamDto,
+  FamilyTreePaginationQueryDto,
+  FamilyTreePaginationResponseDto,
   FamilyTreeResponseDto,
   FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
@@ -57,28 +60,27 @@ export class FamilyTreeController {
   @Get()
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @ApiQuery({ name: 'page', required: false, type: Number, default: 1 })
+  @ApiQuery({ name: 'perPage', required: false, type: Number, default: 15 })
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ type: FamilyTreeArrayResponseDto })
-  @ZodSerializerDto(FamilyTreeArrayResponseSchema)
+  @ApiOkResponse({ type: FamilyTreePaginationResponseDto })
+  @ZodSerializerDto(FamilyTreePaginationResponseSchema)
   async getFamilyTreesOfUser(
     @Req() req: AuthenticatedRequest,
-  ): Promise<FamilyTreeArrayResponseDto> {
-    const cachedUserFamilyTrees =
-      await this.cacheService.get<FamilyTreeArrayResponseDto>(
-        `users:${req.user.id}:family-trees`,
-      );
+    @Query() query: FamilyTreePaginationQueryDto,
+  ): Promise<FamilyTreePaginationResponseDto> {
+    // const cachedUserFamilyTrees =
+    //   await this.cacheService.get<FamilyTreePaginationResponseDto>(
+    //     `users:${req.user.id}:family-trees`,
+    //   );
 
-    if (cachedUserFamilyTrees) {
-      return cachedUserFamilyTrees;
-    }
+    // if (cachedUserFamilyTrees) {
+    //   return cachedUserFamilyTrees;
+    // }
 
-    const trees = await this.familyTreeService.getFamilyTreesOfUser(
-      req.user.id,
-    );
+    return this.familyTreeService.getFamilyTreesOfUser(req.user.id, query);
 
-    this.cacheService.set(`users:${req.user.id}:family-trees`, trees);
-
-    return trees;
+    // this.cacheService.set(`users:${req.user.id}:family-trees`, trees);
   }
 
   // Find family tree by id
