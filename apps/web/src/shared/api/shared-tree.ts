@@ -1,6 +1,6 @@
 import type {
-  SharedFamilyTreeArrayResponseType,
   SharedFamilyTreeIdParamType,
+  SharedFamilyTreePaginationResponseType,
   SharedFamilyTreeResponseType,
   SharedFamilyTreeUpdateParamType,
   SharedFamilyTreeUpdateRequestType,
@@ -11,7 +11,7 @@ import { base } from './base';
 
 export const sharedTree = {
   findAll: (config?: AxiosRequestConfig) => {
-    return base.get<SharedFamilyTreeArrayResponseType>(
+    return base.get<SharedFamilyTreePaginationResponseType>(
       `/family-trees/shared`,
       config,
     );

@@ -1,7 +1,7 @@
 import {
-  SharedFamilyTreeArrayResponseSchema,
+  SharedFamilyTreePaginationResponseSchema,
   SharedFamilyTreeResponseSchema,
-  SharedFamilyTreeUsersArrayResponseSchema,
+  SharedFamilyTreeUsersPaginationResponseSchema,
 } from '@family-tree/shared';
 import {
   Body,
@@ -11,6 +11,7 @@ import {
   HttpStatus,
   Param,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -19,6 +20,7 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
@@ -27,12 +29,13 @@ import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 // biome-ignore lint/style/useImportType: <query/param doesn't work>
 import {
-  SharedFamilyTreeArrayResponseDto,
   SharedFamilyTreeIdParamDto,
+  SharedFamilyTreePaginationQueryDto,
+  SharedFamilyTreePaginationResponseDto,
   SharedFamilyTreeResponseDto,
   SharedFamilyTreeUpdateParamDto,
   SharedFamilyTreeUpdateRequestDto,
-  SharedFamilyTreeUsersArrayResponseDto,
+  SharedFamilyTreeUsersPaginationResponseDto,
 } from './dto/shared-family-tree.dto';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { SharedFamilyTreeService } from './shared-family-tree.service';
@@ -48,13 +51,19 @@ export class SharedFamilyTreeController {
   @Get('shared')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @ApiQuery({ name: 'page', required: false, type: Number, default: 1 })
+  @ApiQuery({ name: 'perPage', required: false, type: Number, default: 15 })
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ type: SharedFamilyTreeArrayResponseDto })
-  @ZodSerializerDto(SharedFamilyTreeArrayResponseSchema)
+  @ApiOkResponse({ type: SharedFamilyTreePaginationResponseDto })
+  @ZodSerializerDto(SharedFamilyTreePaginationResponseSchema)
   async getSharedFamilyTrees(
     @Req() req: AuthenticatedRequest,
-  ): Promise<SharedFamilyTreeArrayResponseDto> {
-    return this.sharedFamilyTreeService.getSharedFamilyTrees(req.user.id);
+    @Query() query: SharedFamilyTreePaginationQueryDto,
+  ): Promise<SharedFamilyTreePaginationResponseDto> {
+    return this.sharedFamilyTreeService.getSharedFamilyTrees(
+      req.user.id,
+      query,
+    );
   }
 
   // Find the single shared family tree with user (tree which is shared with user but singular)
@@ -80,16 +89,20 @@ export class SharedFamilyTreeController {
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @ApiParam({ name: 'familyTreeId', required: true, type: String })
+  @ApiQuery({ name: 'page', required: false, type: Number, default: 1 })
+  @ApiQuery({ name: 'perPage', required: false, type: Number, default: 15 })
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ type: SharedFamilyTreeUsersArrayResponseDto })
-  @ZodSerializerDto(SharedFamilyTreeUsersArrayResponseSchema)
+  @ApiOkResponse({ type: SharedFamilyTreeUsersPaginationResponseDto })
+  @ZodSerializerDto(SharedFamilyTreeUsersPaginationResponseSchema)
   async getSharedFamilyTreeUsersById(
     @Req() req: AuthenticatedRequest,
     @Param() param: SharedFamilyTreeIdParamDto,
-  ): Promise<SharedFamilyTreeUsersArrayResponseDto> {
+    @Query() query: SharedFamilyTreePaginationQueryDto,
+  ): Promise<SharedFamilyTreeUsersPaginationResponseDto> {
     return this.sharedFamilyTreeService.getSharedFamilyTreeUsersById(
       req.user.id,
       param.familyTreeId,
+      query,
     );
   }
 

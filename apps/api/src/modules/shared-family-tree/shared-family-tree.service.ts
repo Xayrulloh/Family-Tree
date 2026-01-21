@@ -5,16 +5,17 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
 import type {
-  SharedFamilyTreeArrayResponseDto,
   SharedFamilyTreeCreateRequestDto,
+  SharedFamilyTreePaginationQueryDto,
+  SharedFamilyTreePaginationResponseDto,
   SharedFamilyTreeResponseDto,
   SharedFamilyTreeUpdateRequestDto,
-  SharedFamilyTreeUsersArrayResponseDto,
+  SharedFamilyTreeUsersPaginationResponseDto,
 } from './dto/shared-family-tree.dto';
 
 @Injectable()
@@ -26,9 +27,12 @@ export class SharedFamilyTreeService {
 
   async getSharedFamilyTrees(
     userId: string,
-  ): Promise<SharedFamilyTreeArrayResponseDto> {
-    const sharedFamilyTrees =
-      await this.db.query.sharedFamilyTreesSchema.findMany({
+    { page, perPage }: SharedFamilyTreePaginationQueryDto,
+  ): Promise<SharedFamilyTreePaginationResponseDto> {
+    const offset = (page - 1) * perPage;
+
+    const [sharedFamilyTrees, countResult] = await Promise.all([
+      this.db.query.sharedFamilyTreesSchema.findMany({
         where: and(
           eq(schema.sharedFamilyTreesSchema.userId, userId),
           eq(schema.sharedFamilyTreesSchema.isBlocked, false),
@@ -45,14 +49,37 @@ export class SharedFamilyTreeService {
           canDeleteMembers: true,
           isBlocked: true,
         },
-      });
+        limit: perPage,
+        offset,
+      }),
+      this.db
+        .select({
+          totalCount: sql<number>`COUNT(*)::int`,
+        })
+        .from(schema.sharedFamilyTreesSchema)
+        .where(
+          and(
+            eq(schema.sharedFamilyTreesSchema.userId, userId),
+            eq(schema.sharedFamilyTreesSchema.isBlocked, false),
+          ),
+        ),
+    ]);
 
-    return sharedFamilyTrees.map((sharedFamilyTree) => {
-      return {
-        ...sharedFamilyTree,
-        ...sharedFamilyTree.familyTree,
-      };
-    });
+    const totalCount = countResult[0]?.totalCount ?? 0;
+    const totalPages = Math.ceil(totalCount / perPage);
+
+    return {
+      sharedFamilyTrees: sharedFamilyTrees.map((sharedFamilyTree) => {
+        return {
+          ...sharedFamilyTree,
+          ...sharedFamilyTree.familyTree,
+        };
+      }),
+      page,
+      perPage,
+      totalCount,
+      totalPages,
+    };
   }
 
   async getSharedFamilyTreeById(
@@ -119,7 +146,8 @@ export class SharedFamilyTreeService {
   async getSharedFamilyTreeUsersById(
     userId: string,
     familyTreeId: string,
-  ): Promise<SharedFamilyTreeUsersArrayResponseDto> {
+    { page, perPage }: SharedFamilyTreePaginationQueryDto,
+  ): Promise<SharedFamilyTreeUsersPaginationResponseDto> {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
       where: and(
         eq(schema.familyTreesSchema.id, familyTreeId),
@@ -132,8 +160,10 @@ export class SharedFamilyTreeService {
       throw new BadRequestException(`You don't have a permission`);
     }
 
-    const sharedFamilyTrees =
-      await this.db.query.sharedFamilyTreesSchema.findMany({
+    const offset = (page - 1) * perPage;
+
+    const [sharedFamilyTreeUsers, countResult] = await Promise.all([
+      this.db.query.sharedFamilyTreesSchema.findMany({
         where: eq(schema.sharedFamilyTreesSchema.familyTreeId, familyTreeId),
         with: {
           sharedWithUser: true,
@@ -146,14 +176,32 @@ export class SharedFamilyTreeService {
           canDeleteMembers: true,
           isBlocked: true,
         },
-      });
+        limit: perPage,
+        offset,
+      }),
+      this.db
+        .select({
+          totalCount: sql<number>`COUNT(*)::int`,
+        })
+        .from(schema.sharedFamilyTreesSchema)
+        .where(eq(schema.sharedFamilyTreesSchema.familyTreeId, familyTreeId)),
+    ]);
 
-    return sharedFamilyTrees.map((sharedFamilyTree) => {
-      return {
-        ...sharedFamilyTree.sharedWithUser,
-        ...sharedFamilyTree,
-      };
-    });
+    const totalCount = countResult[0]?.totalCount ?? 0;
+    const totalPages = Math.ceil(totalCount / perPage);
+
+    return {
+      sharedFamilyTreeUsers: sharedFamilyTreeUsers.map((sharedFamilyTree) => {
+        return {
+          ...sharedFamilyTree.sharedWithUser,
+          ...sharedFamilyTree,
+        };
+      }),
+      page,
+      perPage,
+      totalCount,
+      totalPages,
+    };
   }
 
   async checkAccessSharedFamilyTree(

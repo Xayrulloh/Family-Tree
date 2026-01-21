@@ -1,6 +1,6 @@
 import type {
   FamilyTreeSchemaType,
-  SharedFamilyTreeArrayResponseType,
+  SharedFamilyTreePaginationResponseType,
 } from '@family-tree/shared';
 import { createEffect, createStore, sample } from 'effector';
 import { or } from 'patronum';
@@ -14,7 +14,7 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
   const authorizedRoute = userModel.chainAuthorized({ route });
 
   const $trees = createStore<FamilyTreeSchemaType[]>([]);
-  const $sharedTrees = createStore<SharedFamilyTreeArrayResponseType>([]);
+  const $sharedTrees = createStore<SharedFamilyTreePaginationResponseType>();
 
   const fetchTreesFx = createEffect(async () => api.tree.findAll());
   const fetchSharedTreesFx = createEffect(async () => api.sharedTree.findAll());
