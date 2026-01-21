@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, asc, eq, notLike } from 'drizzle-orm';
+import { and, asc, eq, notLike, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
@@ -12,8 +12,9 @@ import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
 import { DICEBEAR_URL } from '~/utils/constants';
 import type {
-  FamilyTreeArrayResponseDto,
   FamilyTreeCreateRequestDto,
+  FamilyTreePaginationQueryDto,
+  FamilyTreePaginationResponseDto,
   FamilyTreeResponseDto,
   FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
@@ -28,11 +29,36 @@ export class FamilyTreeService {
 
   async getFamilyTreesOfUser(
     userId: string,
-  ): Promise<FamilyTreeArrayResponseDto> {
-    return this.db.query.familyTreesSchema.findMany({
-      where: eq(schema.familyTreesSchema.createdBy, userId),
-      orderBy: asc(schema.familyTreesSchema.createdAt),
-    });
+    { page, perPage }: FamilyTreePaginationQueryDto,
+  ): Promise<FamilyTreePaginationResponseDto> {
+    const offset = (page - 1) * perPage;
+
+    const [familyTrees, countResult] = await Promise.all([
+      this.db.query.familyTreesSchema.findMany({
+        where: eq(schema.familyTreesSchema.createdBy, userId),
+        orderBy: asc(schema.familyTreesSchema.createdAt),
+        limit: perPage,
+        offset,
+      }),
+
+      this.db
+        .select({
+          totalCount: sql<number>`COUNT(*)::int`,
+        })
+        .from(schema.familyTreesSchema)
+        .where(eq(schema.familyTreesSchema.createdBy, userId)),
+    ]);
+
+    const totalCount = countResult[0]?.totalCount ?? 0;
+    const totalPages = Math.ceil(totalCount / perPage);
+
+    return {
+      familyTrees,
+      page,
+      perPage,
+      totalCount,
+      totalPages,
+    };
   }
 
   async getFamilyTreeById(id: string): Promise<FamilyTreeResponseDto> {
