@@ -1,5 +1,6 @@
 import type {
   FamilyTreeCreateRequestType,
+  FamilyTreePaginationResponseType,
   FamilyTreeResponseType,
   FamilyTreeUpdateRequestType,
 } from '@family-tree/shared';
@@ -8,7 +9,7 @@ import { base } from './base';
 
 export const tree = {
   findAll: (config?: AxiosRequestConfig) => {
-    return base.get<FamilyTreeResponseType[]>(`/family-trees`, config);
+    return base.get<FamilyTreePaginationResponseType>(`/family-trees`, config);
   },
   create: (body: FamilyTreeCreateRequestType, config?: AxiosRequestConfig) => {
     return base.post('/family-trees', body, config);
