@@ -53,20 +53,13 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
 
   const myTreesSearchChanged = createEvent<string>();
   const sharedTreesSearchChanged = createEvent<string>();
-  const myTreesSearchCleared = createEvent();
-  const sharedTreesSearchCleared = createEvent();
 
   $mode
     .on(myTreesTriggered, () => 'my-trees')
     .on(sharedTreesTriggered, () => 'shared-trees');
 
-  $myTreesSearchQuery
-    .on(myTreesSearchChanged, (_, query) => query)
-    .reset(myTreesSearchCleared);
-
-  $sharedTreesSearchQuery
-    .on(sharedTreesSearchChanged, (_, query) => query)
-    .reset(sharedTreesSearchCleared);
+  $myTreesSearchQuery.on(myTreesSearchChanged, (_, query) => query);
+  $sharedTreesSearchQuery.on(sharedTreesSearchChanged, (_, query) => query);
 
   // Debounce search queries
   sample({
@@ -76,18 +69,6 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
 
   sample({
     clock: debounce({ source: sharedTreesSearchChanged, timeout: 300 }),
-    target: $sharedTreesDebouncedSearchQuery,
-  });
-
-  sample({
-    clock: myTreesSearchCleared,
-    fn: () => '',
-    target: $myTreesDebouncedSearchQuery,
-  });
-
-  sample({
-    clock: sharedTreesSearchCleared,
-    fn: () => '',
     target: $sharedTreesDebouncedSearchQuery,
   });
 
@@ -235,7 +216,5 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
     sharedTreesPageChanged,
     myTreesSearchChanged,
     sharedTreesSearchChanged,
-    myTreesSearchCleared,
-    sharedTreesSearchCleared,
   };
 };
