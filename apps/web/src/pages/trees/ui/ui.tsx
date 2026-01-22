@@ -324,16 +324,6 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
       ),
       children: (
         <>
-          {/* Search Input */}
-          <Input
-            placeholder="Search family trees..."
-            prefix={<SearchOutlined />}
-            value={myTreesSearchQuery}
-            onChange={(e) => model.myTreesSearchChanged(e.target.value)}
-            allowClear
-            onClear={() => model.myTreesSearchCleared()}
-            style={{ marginBottom: 24, maxWidth: 400 }}
-          />
           <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
             {/* Create A New Tree - First Item */}
             <Col xs={12} sm={8} md={6} lg={6} xl={4}>
@@ -412,16 +402,6 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
       ),
       children: (
         <>
-          {/* Search Input */}
-          <Input
-            placeholder="Search shared trees..."
-            prefix={<SearchOutlined />}
-            value={sharedTreesSearchQuery}
-            onChange={(e) => model.sharedTreesSearchChanged(e.target.value)}
-            allowClear
-            onClear={() => model.sharedTreesSearchCleared()}
-            style={{ marginBottom: 24, maxWidth: 400 }}
-          />
           <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
             {/* Shared Trees */}
             {paginatedSharedTrees.sharedFamilyTrees.map((sharedTree) => (
@@ -471,9 +451,26 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
         }}
         items={tabItems}
         size="large"
-        style={{
-          marginBottom: 0,
-        }}
+        tabBarExtraContent={
+          <Input
+            placeholder="Search trees..."
+            prefix={<SearchOutlined />}
+            value={
+              mode === 'my-trees' ? myTreesSearchQuery : sharedTreesSearchQuery
+            }
+            onChange={(e) => {
+              if (mode === 'my-trees') {
+                model.myTreesSearchChanged(e.target.value);
+              } else {
+                model.sharedTreesSearchChanged(e.target.value);
+              }
+            }}
+            allowClear
+            style={{
+              width: 250,
+            }}
+          />
+        }
       />
     </div>
   );
