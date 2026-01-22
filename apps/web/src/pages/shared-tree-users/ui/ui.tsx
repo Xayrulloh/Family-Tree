@@ -1,8 +1,12 @@
+import { SearchOutlined } from '@ant-design/icons';
 import type { SharedFamilyTreeUserResponseType } from '@family-tree/shared';
 import {
   Avatar,
   Button,
   Card,
+  Flex,
+  Input,
+  Pagination,
   Space,
   Switch,
   Table,
@@ -24,10 +28,22 @@ type Model = ReturnType<typeof factory>;
 export type Props = LazyPageProps<Model>;
 
 const SharedTreeUsers: React.FC<Props> = ({ model }) => {
-  const [paginatedUsers, loading, mutating] = useUnit([
+  const [
+    paginatedUsers,
+    loading,
+    mutating,
+    page,
+    searchQuery,
+    pageChanged,
+    searchChanged,
+  ] = useUnit([
     model.$paginatedUsers,
     model.$loading,
     editSharedTreeModel.$mutating,
+    model.$page,
+    model.$searchQuery,
+    model.pageChanged,
+    model.searchChanged,
   ]);
 
   if (loading) {
@@ -129,22 +145,66 @@ const SharedTreeUsers: React.FC<Props> = ({ model }) => {
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <Card variant="outlined" className="shadow-sm">
-        <div className="mb-6">
-          <Title level={3} style={{ margin: 0 }}>
-            Shared Users
-          </Title>
-          <Text type="secondary">
-            Manage permissions for users who have access to this family tree.
-          </Text>
-        </div>
+        <Flex
+          justify="space-between"
+          align="center"
+          style={{ marginBottom: 32 }}
+        >
+          <div>
+            <Flex align="center" gap={8}>
+              <Title level={3} style={{ margin: 0 }}>
+                Shared Users
+              </Title>
+              <Tag
+                bordered={false}
+                style={{
+                  margin: 0,
+                  borderRadius: '12px',
+                  padding: '0 8px',
+                  backgroundColor: '#f0f0f0',
+                  color: '#666',
+                  fontWeight: 600,
+                }}
+              >
+                {paginatedUsers.totalCount}
+              </Tag>
+            </Flex>
+            <Text type="secondary">
+              Manage permissions for users who have access to this family tree.
+            </Text>
+          </div>
+          <Input
+            placeholder="Search users..."
+            prefix={<SearchOutlined />}
+            value={searchQuery}
+            onChange={(e) => searchChanged(e.target.value)}
+            allowClear
+            style={{ width: 300 }}
+          />
+        </Flex>
 
         <Table
           dataSource={paginatedUsers.sharedFamilyTreeUsers}
           columns={columns}
           rowKey="userId"
           pagination={false}
-          className="border border-gray-100 rounded-lg overflow-hidden"
+          className="border border-gray-100 rounded-lg overflow-hidden mb-6"
         />
+
+        {paginatedUsers.totalPages > 1 && (
+          <Flex justify="center">
+            <Pagination
+              current={page}
+              total={paginatedUsers.totalCount}
+              pageSize={paginatedUsers.perPage}
+              onChange={pageChanged}
+              showSizeChanger={false}
+              showTotal={(total, range) =>
+                `${range[0]}-${range[1]} of ${total} users`
+              }
+            />
+          </Flex>
+        )}
       </Card>
     </div>
   );

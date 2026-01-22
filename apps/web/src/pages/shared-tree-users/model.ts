@@ -1,5 +1,6 @@
 import type { SharedFamilyTreeUsersPaginationResponseType } from '@family-tree/shared';
-import { attach, createStore, sample } from 'effector';
+import { attach, createEvent, createStore, sample } from 'effector';
+import { debounce } from 'patronum';
 import { userModel } from '~/entities/user';
 import { editSharedTreeModel } from '~/features/shared-tree-users/edit';
 import { api } from '~/shared/api';
@@ -18,21 +19,61 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
       sharedFamilyTreeUsers: [],
     });
 
+  const $page = createStore<number>(1);
+  const $searchQuery = createStore<string>('');
+  const $debouncedSearchQuery = createStore<string>('');
+
   const $familyTreeId = authorizedRoute.$params.map(
     (params) => params.id ?? null,
   );
 
+  // Events
+  const pageChanged = createEvent<number>();
+  const searchChanged = createEvent<string>();
+
+  $page.on(pageChanged, (_, page) => page);
+
+  $searchQuery.on(searchChanged, (_, query) => query);
+
   // Effects
   const fetchSharedTreeUsersFx = attach({
-    source: $familyTreeId,
-    effect: (familyTreeId) =>
-      api.sharedTree.findUsers({ familyTreeId }, { page: 1, perPage: 15 }),
+    source: {
+      familyTreeId: $familyTreeId,
+      page: $page,
+      search: $debouncedSearchQuery,
+    },
+    effect: ({ familyTreeId, page, search }) => {
+      if (!familyTreeId) {
+        throw new Error('Local: no familyTreeId');
+      }
+
+      return api.sharedTree.findUsers(
+        { familyTreeId },
+        { page, perPage: 15, name: search || undefined },
+      );
+    },
   });
 
   // Samples
   sample({
-    clock: [authorizedRoute.opened, editSharedTreeModel.mutated],
+    clock: [
+      authorizedRoute.opened,
+      $page,
+      $debouncedSearchQuery,
+      editSharedTreeModel.mutated,
+    ],
     target: fetchSharedTreeUsersFx,
+  });
+
+  sample({
+    clock: $debouncedSearchQuery,
+    fn: () => 1,
+    target: $page,
+  });
+
+  sample({
+    clock: debounce({ source: searchChanged, timeout: 300 }),
+    target: $debouncedSearchQuery,
   });
 
   sample({
@@ -43,16 +84,12 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
 
   sample({
     clock: fetchSharedTreeUsersFx.failData,
-    // FIXME: Xikmat pls help
-    fn: async (response: any) => {
-      console.log('🚀 ~ factory ~ response:', response.status);
-      // FIXME: Xikmat pls help
-      if (response.status >= 400 && response.status < 500) {
-        await Promise.resolve(() => {
-          setTimeout(() => {
-            window.location.replace('/family-trees');
-          }, 2000);
-        });
+    fn: async (response: unknown) => {
+      const error = response as { status?: number };
+      if (error.status && error.status >= 400 && error.status < 500) {
+        setTimeout(() => {
+          window.location.replace('/family-trees');
+        }, 2000);
       }
     },
   });
@@ -60,12 +97,21 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   // Reset
   sample({
     clock: authorizedRoute.closed,
-    target: $paginatedUsers.reinit,
+    target: [
+      $paginatedUsers.reinit,
+      $page.reinit,
+      $searchQuery.reinit,
+      $debouncedSearchQuery.reinit,
+    ],
   });
 
   return {
     $paginatedUsers,
     $familyTreeId,
+    $page,
+    $searchQuery,
     $loading: fetchSharedTreeUsersFx.pending,
+    pageChanged,
+    searchChanged,
   };
 };
