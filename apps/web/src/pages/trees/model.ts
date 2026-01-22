@@ -5,7 +5,7 @@ import type {
   SharedFamilyTreePaginationResponseType,
 } from '@family-tree/shared';
 import { createEffect, createEvent, createStore, sample } from 'effector';
-import { or } from 'patronum';
+import { debounce, or } from 'patronum';
 import { userModel } from '~/entities/user';
 import { createEditTreeModel } from '~/features/tree/create-edit';
 import { deleteTreeModel } from '~/features/tree/delete';
@@ -40,25 +40,70 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
   const $myTreesPage = createStore<number>(1);
   const $sharedTreesPage = createStore<number>(1);
 
+  const $myTreesSearchQuery = createStore<string>('');
+  const $sharedTreesSearchQuery = createStore<string>('');
+  const $myTreesDebouncedSearchQuery = createStore<string>('');
+  const $sharedTreesDebouncedSearchQuery = createStore<string>('');
+
   // Events
   const myTreesTriggered = createEvent();
   const sharedTreesTriggered = createEvent();
   const myTreesPageChanged = createEvent<number>();
   const sharedTreesPageChanged = createEvent<number>();
 
+  const myTreesSearchChanged = createEvent<string>();
+  const sharedTreesSearchChanged = createEvent<string>();
+  const myTreesSearchCleared = createEvent();
+  const sharedTreesSearchCleared = createEvent();
+
   $mode
     .on(myTreesTriggered, () => 'my-trees')
     .on(sharedTreesTriggered, () => 'shared-trees');
 
+  $myTreesSearchQuery
+    .on(myTreesSearchChanged, (_, query) => query)
+    .reset(myTreesSearchCleared);
+
+  $sharedTreesSearchQuery
+    .on(sharedTreesSearchChanged, (_, query) => query)
+    .reset(sharedTreesSearchCleared);
+
+  // Debounce search queries
+  sample({
+    clock: debounce({ source: myTreesSearchChanged, timeout: 300 }),
+    target: $myTreesDebouncedSearchQuery,
+  });
+
+  sample({
+    clock: debounce({ source: sharedTreesSearchChanged, timeout: 300 }),
+    target: $sharedTreesDebouncedSearchQuery,
+  });
+
+  sample({
+    clock: myTreesSearchCleared,
+    fn: () => '',
+    target: $myTreesDebouncedSearchQuery,
+  });
+
+  sample({
+    clock: sharedTreesSearchCleared,
+    fn: () => '',
+    target: $sharedTreesDebouncedSearchQuery,
+  });
+
   // Effects
   const fetchTreesFx = createEffect(
-    async ({ page, perPage }: FamilyTreePaginationAndSearchQueryType) =>
-      api.tree.findAll({ page, perPage }),
+    async ({ page, perPage, name }: FamilyTreePaginationAndSearchQueryType) =>
+      api.tree.findAll({ page, perPage, name }),
   );
 
   const fetchSharedTreesFx = createEffect(
-    async ({ page, perPage }: SharedFamilyTreePaginationAndSearchQueryType) =>
-      api.sharedTree.findAll({ page, perPage }),
+    async ({
+      page,
+      perPage,
+      name,
+    }: SharedFamilyTreePaginationAndSearchQueryType) =>
+      api.sharedTree.findAll({ page, perPage, name }),
   );
 
   // Samples
@@ -71,14 +116,58 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
 
   sample({
     clock: myTreesPageChanged,
-    fn: (page) => ({ page, perPage: 15 }),
+    source: $myTreesDebouncedSearchQuery,
+    fn: (searchQuery, page) => ({
+      page,
+      perPage: 15,
+      name: searchQuery,
+    }),
     target: fetchTreesFx,
   });
 
   sample({
     clock: sharedTreesPageChanged,
-    fn: (page) => ({ page, perPage: 15 }),
+    source: $sharedTreesDebouncedSearchQuery,
+    fn: (searchQuery, page) => ({
+      page,
+      perPage: 15,
+      name: searchQuery,
+    }),
     target: fetchSharedTreesFx,
+  });
+
+  // Fetch when search query changes (reset to page 1)
+  sample({
+    clock: $myTreesDebouncedSearchQuery,
+    fn: (searchQuery) => ({
+      page: 1,
+      perPage: 15,
+      name: searchQuery,
+    }),
+    target: fetchTreesFx,
+  });
+
+  sample({
+    clock: $sharedTreesDebouncedSearchQuery,
+    fn: (searchQuery) => ({
+      page: 1,
+      perPage: 15,
+      name: searchQuery,
+    }),
+    target: fetchSharedTreesFx,
+  });
+
+  // Reset page to 1 when search query changes
+  sample({
+    clock: $myTreesDebouncedSearchQuery,
+    fn: () => 1,
+    target: $myTreesPage,
+  });
+
+  sample({
+    clock: $sharedTreesDebouncedSearchQuery,
+    fn: () => 1,
+    target: $sharedTreesPage,
   });
 
   sample({
@@ -99,8 +188,24 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
 
   sample({
     clock: [createEditTreeModel.mutated, deleteTreeModel.mutated],
-    fn: () => ({ page: 1, perPage: 15 }),
-    target: [fetchTreesFx, fetchSharedTreesFx],
+    source: $myTreesDebouncedSearchQuery,
+    fn: (searchQuery) => ({
+      page: 1,
+      perPage: 15,
+      name: searchQuery,
+    }),
+    target: fetchTreesFx,
+  });
+
+  sample({
+    clock: [createEditTreeModel.mutated, deleteTreeModel.mutated],
+    source: $sharedTreesDebouncedSearchQuery,
+    fn: (searchQuery) => ({
+      page: 1,
+      perPage: 15,
+      name: searchQuery,
+    }),
+    target: fetchSharedTreesFx,
   });
 
   sample({
@@ -119,6 +224,8 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
     $mode,
     $myTreesPage,
     $sharedTreesPage,
+    $myTreesSearchQuery,
+    $sharedTreesSearchQuery,
     $paginatedTrees,
     $paginatedSharedTrees,
     $fetching: or(fetchTreesFx.pending, fetchSharedTreesFx.pending),
@@ -126,5 +233,9 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
     sharedTreesTriggered,
     myTreesPageChanged,
     sharedTreesPageChanged,
+    myTreesSearchChanged,
+    sharedTreesSearchChanged,
+    myTreesSearchCleared,
+    sharedTreesSearchCleared,
   };
 };
