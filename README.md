@@ -22,14 +22,15 @@ Family Tree is a comprehensive digital platform designed to help families create
 
 ### Key Features
 
-- **Quick Member Addition** - Add any family member in just seconds with intuitive buttons
-- **Unlimited Members** - Create as many members as you want with no limitations
-- **Interactive Family Tree Visualization** - Dynamic, zoomable tree views with D3.js
-- **Multi-generational Support** - Track unlimited generations and family connections
-- **Memory Preservation** - Upload photos, documents, and stories for each family member
-- **Collaborative Family Building** - Multiple family members can contribute to the same tree
-- **Secure & Private** - OAuth authentication and role-based access control
-- **Cloud Storage** - Reliable Cloudflare R2 integration for media storage
+- **Quick Member Addition** - Add family members instantly with an intuitive interface
+- **Unlimited Tree Size** - Build comprehensive trees with 1000+ members and no limitations
+- **Interactive Visualization** - Stunning, zoomable family tree views powered by D3.js
+- **Share & Export** - Share your tree via link or export high-quality PNG for printing
+- **Centralized Shared Access** - View and manage all trees shared with you in one place
+- **Granular Permissions** - Control access with advanced rules (block, edit, add, delete)
+- **Memory Preservation** - Enrich branches with photos, stories, and historical dates
+- **Secure & Private** - Google OAuth and role-based access control for total privacy
+- **Cloud Storage** - Reliable media storage using Cloudflare R2 integration
 
 ### Coming Soon
 
@@ -75,6 +76,7 @@ This project is built with modern, scalable technologies:
 - **D3.js** - Interactive family tree visualizations
 - **Vite** - Lightning-fast build tooling
 - **TailwindCSS** - Utility-first styling
+- **Sentry** - Error tracking and monitoring
 
 ### Backend
 - **NestJS** - Enterprise-grade Node.js framework
@@ -126,6 +128,9 @@ Family-Tree/
 ```bash
 # Run linting
 pnpm check:lint
+
+# Run format
+pnpm check:format
 
 # Run security scan
 pnpm scan
