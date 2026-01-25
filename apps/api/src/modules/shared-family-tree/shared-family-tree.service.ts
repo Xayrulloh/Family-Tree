@@ -1,9 +1,9 @@
 import type { SharedFamilyTreeSchemaType } from '@family-tree/shared';
 import {
-  BadRequestException,
   ForbiddenException,
   Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { and, asc, eq, ilike, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -155,7 +155,7 @@ export class SharedFamilyTreeService {
     });
 
     if (!isFamilyTreeExist) {
-      throw new BadRequestException(
+      throw new NotFoundException(
         `Family tree with id ${body.familyTreeId} not found`,
       );
     }
@@ -179,8 +179,7 @@ export class SharedFamilyTreeService {
     });
 
     if (!familyTree) {
-      // TODO: 403 Forbidden
-      throw new BadRequestException(`You don't have a permission`);
+      throw new ForbiddenException(`You don't have a permission`);
     }
 
     const offset = (page - 1) * perPage;
