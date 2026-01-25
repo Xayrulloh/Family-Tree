@@ -10,6 +10,7 @@
     "drizzle:push": "nx run api:db:push",
     "drizzle:studio": "nx run api:db:studio",
     "check:lint": "nx affected --target=lint",
+    "check:format": "nx affected --target=format",
     "scan": "nx affected -t scan"
   },
   "private": true,
