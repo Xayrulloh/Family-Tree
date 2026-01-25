@@ -85,7 +85,7 @@ export class FamilyTreeMemberService {
       .insert(schema.familyTreeMembersSchema)
       .values({
         gender: body.gender,
-        name: body.gender === UserGenderEnum.MALE ? 'Boy' : 'Girl',
+        name: body.gender === UserGenderEnum.MALE ? 'Son' : 'Daughter',
         image: generateRandomAvatar(body.gender),
         familyTreeId,
       })
