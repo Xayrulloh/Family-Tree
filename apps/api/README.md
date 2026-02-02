@@ -62,6 +62,13 @@ Built with **Drizzle ORM** and **PostgreSQL**, the schema includes:
 - `toMemberId` → references `family_tree_members.id`
 - `familyTreeId` → references `family_trees.id`
 
+**`shared_family_trees`** - Tree sharing & permissions (RBAC)
+- `familyTreeId` → references `family_trees.id`
+- `userId` → references `users.id`
+- `isBlocked` - Boolean (default false)
+- `canEditMembers`, `canDeleteMembers`, `canAddMembers` - Boolean permissions
+- Unique constraint on `(familyTreeId, userId)`
+
 #### Supporting Tables
 
 **`fcm_tokens`** - Firebase Cloud Messaging tokens
@@ -110,6 +117,9 @@ erDiagram
     
     family_trees ||--o{ family_tree_members : "contains"
     family_trees ||--o{ family_tree_member_connections : "has"
+    family_trees ||--o{ shared_family_trees : "shared_via"
+    
+    users ||--o{ shared_family_trees : "has_access"
     
     family_tree_members ||--o{ family_tree_member_connections : "from"
     family_tree_members ||--o{ family_tree_member_connections : "to"
@@ -163,6 +173,17 @@ erDiagram
         timestamp updatedAt
         timestamp deletedAt
     }
+
+    shared_family_trees {
+        uuid familyTreeId FK
+        uuid userId FK
+        boolean isBlocked
+        boolean canEditMembers
+        boolean canDeleteMembers
+        boolean canAddMembers
+        timestamp createdAt
+        timestamp updatedAt
+    }
     
     fcm_tokens {
         uuid id PK
@@ -193,62 +214,48 @@ erDiagram
 
 ---
 
-## ⚡ Redis Caching Strategy
+### Interceptor-Based Caching
 
-### Cost Efficiency & Performance
+The API uses **NestJS Interceptors** (`FamilyTreeCacheInterceptor`, `UserCacheInterceptor`) to automatically manage cache hits and invalidations across the HTTP request lifecycle.
 
-To optimize **cost efficiency** and reduce load on the Neon PostgreSQL database, the API implements **Redis caching** for frequently accessed data.
+### Features
 
-### Why Redis?
-
-- **Reduce Database Hits** - Minimize queries to Neon, staying within free tier limits
-- **Cost Optimization** - Lower database costs by caching expensive queries
-- **Improved Performance** - Sub-millisecond response times for cached data
-- **Reduced Latency** - Faster API responses for end users
+- **Query-Aware Caching** - Pagination and search results are cached based on their query parameters (`page`, `perPage`, `name`).
+- **Automatic Invalidation** - Cache is cleared automatically when data mutations (`POST`, `PUT`, `DELETE`, `PATCH`) occur in related modules.
+- **Improved Performance** - Move logic from services to the interceptor layer for cleaner code and faster lookups.
 
 ### Caching Implementation
 
-The API uses **@nestjs/cache-manager** with **Redis** as the backing store:
+The API uses **@nestjs/cache-manager** with **Redis**. Interceptors handle the logic:
 
 ```typescript
-// Example: Caching family tree members
-const cachedMembers = await this.cacheService.get(
-  `family-trees:${familyTreeId}:members`
-);
+// Example: FamilyTreeCacheInterceptor logic
+const { method, user, query, params } = request;
 
-if (cachedMembers) {
-  return cachedMembers; // Return from cache
+if (method === 'GET' && path === '/api/family-trees') {
+  const cached = await this.cacheService.getUserFamilyTrees(user.id, query);
+
+  if (cached) return of(cached);
 }
-
-// Fetch from database if not cached
-const members = await this.db.query(...);
-
-// Store in cache for future requests
-this.cacheService.set(
-  `family-trees:${familyTreeId}:members`,
-  members
-);
 ```
 
 ### Cached Endpoints
 
-The following endpoints utilize Redis caching:
+The following endpoints utilize Interceptor-based caching:
 
 - **Users**
-  - `GET /users/me` - Current user profile
-  - `GET /users/:id` - User by ID
+  - `GET /users/me` - Profile cache
+  - `GET /users/:id` - User cache by ID
 
 - **Family Trees**
-  - `GET /family-trees` - User's family trees
-  - `GET /family-trees/:id` - Tree by ID
+  - `GET /family-trees` - Paginated family trees list (supports `name` search)
+  - `GET /family-trees/:id` - Single tree metadata
 
 - **Family Tree Members**
-  - `GET /family-trees/:familyTreeId/members` - All members
-  - `GET /family-trees/:familyTreeId/members/:id` - Member by ID
+  - `GET /family-trees/:familyTreeId/members` - Full member list cache
 
 - **Member Connections**
-  - `GET /family-trees/:familyTreeId/members/connections` - All connections
-  - `GET /family-trees/:familyTreeId/members/:memberUserId/connections` - Member connections
+  - `GET /family-trees/:familyTreeId/members/connections` - Full connection list cache
 
 ### Cache Invalidation
 
@@ -256,12 +263,7 @@ Cache is automatically invalidated on data mutations:
 
 ```typescript
 // On update/delete operations
-await this.cacheService.delMultiple([
-  `family-trees:${treeId}`,
-  `family-trees:${treeId}:members`,
-  `family-trees:${treeId}:members:connections`,
-  `users:${userId}:family-trees`,
-]);
+await this.cacheService.delByPattern('family-trees:*');
 ```
 
 ### Cache Configuration
@@ -342,11 +344,18 @@ await this.cacheService.delMultiple([
 
 ### Family Trees (`/family-trees`)
 
-- `GET /family-trees` - Get all trees of current user
+- `GET /family-trees` - Get user's trees (Supports pagination: `page`, `perPage`, search: `name`)
 - `GET /family-trees/:id` - Get tree by ID
 - `POST /family-trees` - Create new family tree
 - `PUT /family-trees/:id` - Update tree
 - `DELETE /family-trees/:id` - Delete tree
+
+### Shared Family Trees (`/family-trees`)
+
+- `GET /family-trees/shared` - Trees shared **with** you (Supports pagination & search)
+- `GET /family-trees/:familyTreeId/shared` - Single shared tree detail
+- `GET /family-trees/:familyTreeId/shared-users` - Users who have access to your tree (Supports pagination & search)
+- `PUT /family-trees/:familyTreeId/shared-users/:userId` - Update access (RBAC) for a specific user
 
 ### Family Tree Members (`/family-trees/:familyTreeId/members`)
 
@@ -455,6 +464,8 @@ All environment variable examples are stored in `apps/api/.env.example`.
 | `JWT_SECRET` | Secret for signing JWT tokens | Random secure string |
 | **Cookies** | | |
 | `COOKIES_SECRET` | Secret for cookie encryption | Random secure string |
+| `COOKIE_DOMAIN` | Cookie domain | `localhost` |
+| `COOKIE_CLIENT_URL` | Cookie client URL | `http://localhost:${PORT}` |
 | **Cloudflare R2** | | |
 | `CLOUDFLARE_URL` | Public R2 bucket URL | `https://pub-xxxxx.r2.dev` |
 | `CLOUDFLARE_ACCESS_KEY_ID` | R2 access key ID | From Cloudflare |
@@ -573,6 +584,7 @@ apps/api/
 │   │   ├── auth/             # Authentication (Google OAuth, JWT)
 │   │   ├── user/             # User management
 │   │   ├── family-tree/      # Family tree CRUD
+│   │   ├── shared-family-tree/ # Tree sharing & Access Management (RBAC)
 │   │   ├── family-tree-member/           # Member management
 │   │   ├── family-tree-member-connection/ # Relationship management
 │   │   ├── file/             # File upload (Cloudflare R2)

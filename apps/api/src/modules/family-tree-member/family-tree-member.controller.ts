@@ -14,6 +14,7 @@ import {
   Put,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -26,10 +27,11 @@ import {
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { CacheService } from '~/config/cache/cache.service';
+import { FamilyTreeCacheInterceptor } from '~/common/interceptors/family-tree.cache.interceptor';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
+// biome-ignore lint/style/useImportType: <throws an error if put type>
+import { SharedFamilyTreeService } from '../shared-family-tree/shared-family-tree.service';
 // biome-ignore lint/style/useImportType: <query/param doesn't work>
 import {
   FamilyTreeMemberCreateChildRequestDto,
@@ -47,10 +49,11 @@ import { FamilyTreeMemberService } from './family-tree-member.service';
 @ApiTags('Family Tree Member')
 @ApiParam({ name: 'familyTreeId', required: true, type: String })
 @Controller('family-trees/:familyTreeId/members')
+@UseInterceptors(FamilyTreeCacheInterceptor)
 export class FamilyTreeMemberController {
   constructor(
-    private readonly FamilyTreeMemberService: FamilyTreeMemberService,
-    private readonly cacheService: CacheService,
+    private readonly familyTreeMemberService: FamilyTreeMemberService,
+    private readonly sharedFamilyTreeService: SharedFamilyTreeService,
   ) {}
 
   // add member create (child)
@@ -66,13 +69,16 @@ export class FamilyTreeMemberController {
     @Body() body: FamilyTreeMemberCreateChildRequestDto,
     @Param() param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
-    await this.cacheService.delMultiple([
-      `family-trees:${param.familyTreeId}:members`,
-      `family-trees:${param.familyTreeId}:members:connections`,
-    ]);
-
-    return this.FamilyTreeMemberService.createFamilyTreeMemberChild(
+    // check access
+    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
       req.user.id,
+      param.familyTreeId,
+      {
+        canAddMembers: true,
+      },
+    );
+
+    return this.familyTreeMemberService.createFamilyTreeMemberChild(
       param.familyTreeId,
       body,
     );
@@ -91,13 +97,16 @@ export class FamilyTreeMemberController {
     @Body() body: FamilyTreeMemberCreateSpouseRequestDto,
     @Param() param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
-    await this.cacheService.delMultiple([
-      `family-trees:${param.familyTreeId}:members`,
-      `family-trees:${param.familyTreeId}:members:connections`,
-    ]);
-
-    return this.FamilyTreeMemberService.createFamilyTreeMemberSpouse(
+    // check access
+    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
       req.user.id,
+      param.familyTreeId,
+      {
+        canAddMembers: true,
+      },
+    );
+
+    return this.familyTreeMemberService.createFamilyTreeMemberSpouse(
       param.familyTreeId,
       body,
     );
@@ -116,13 +125,16 @@ export class FamilyTreeMemberController {
     @Body() body: FamilyTreeMemberCreateParentsRequestDto,
     @Param() param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
-    await this.cacheService.delMultiple([
-      `family-trees:${param.familyTreeId}:members`,
-      `family-trees:${param.familyTreeId}:members:connections`,
-    ]);
-
-    return this.FamilyTreeMemberService.createFamilyTreeMemberParents(
+    // check access
+    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
       req.user.id,
+      param.familyTreeId,
+      {
+        canAddMembers: true,
+      },
+    );
+
+    return this.familyTreeMemberService.createFamilyTreeMemberParents(
       param.familyTreeId,
       body,
     );
@@ -141,16 +153,16 @@ export class FamilyTreeMemberController {
     @Param() param: FamilyTreeMemberGetParamDto,
     @Body() body: FamilyTreeMemberUpdateRequestDto,
   ): Promise<void> {
-    await this.cacheService.delMultiple([
-      `family-trees:${param.familyTreeId}:members`,
-      `family-trees:${param.familyTreeId}:members:connections`,
-    ]);
-
-    return this.FamilyTreeMemberService.updateFamilyTreeMember(
+    // check access
+    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
       req.user.id,
-      param,
-      body,
+      param.familyTreeId,
+      {
+        canEditMembers: true,
+      },
     );
+
+    return this.familyTreeMemberService.updateFamilyTreeMember(param, body);
   }
 
   // delete member user
@@ -164,15 +176,16 @@ export class FamilyTreeMemberController {
     @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeMemberGetParamDto,
   ): Promise<void> {
-    await this.cacheService.delMultiple([
-      `family-trees:${param.familyTreeId}:members`,
-      `family-trees:${param.familyTreeId}:members:connections`,
-    ]);
-
-    return this.FamilyTreeMemberService.deleteFamilyTreeMember(
+    // check access
+    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
       req.user.id,
-      param,
+      param.familyTreeId,
+      {
+        canDeleteMembers: true,
+      },
     );
+
+    return this.familyTreeMemberService.deleteFamilyTreeMember(param);
   }
 
   // get all nodes of tree
@@ -183,26 +196,16 @@ export class FamilyTreeMemberController {
   @ApiOkResponse({ type: FamilyTreeMemberGetAllResponseDto })
   @ZodSerializerDto(FamilyTreeMemberGetAllResponseSchema)
   async getAllFamilyTreeMembers(
+    @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetAllResponseDto> {
-    const cachedFamilyTreeMembers =
-      await this.cacheService.get<FamilyTreeMemberGetAllResponseDto>(
-        `family-trees:${param.familyTreeId}:members`,
-      );
-
-    if (cachedFamilyTreeMembers) {
-      return cachedFamilyTreeMembers;
-    }
-
-    const familyTreeMembers =
-      await this.FamilyTreeMemberService.getAllFamilyTreeMembers(param);
-
-    this.cacheService.set(
-      `family-trees:${param.familyTreeId}:members`,
-      familyTreeMembers,
+    // check access
+    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
+      req.user.id,
+      param.familyTreeId,
     );
 
-    return familyTreeMembers;
+    return this.familyTreeMemberService.getAllFamilyTreeMembers(param);
   }
 
   // get node by id and tree
@@ -214,25 +217,15 @@ export class FamilyTreeMemberController {
   @ApiOkResponse({ type: FamilyTreeMemberGetResponseDto })
   @ZodSerializerDto(FamilyTreeMemberGetResponseSchema)
   async getFamilyTreeMember(
+    @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeMemberGetParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
-    const cachedFamilyTreeMember =
-      await this.cacheService.get<FamilyTreeMemberGetResponseDto>(
-        `family-trees:${param.familyTreeId}:members:${param.id}`,
-      );
-
-    if (cachedFamilyTreeMember) {
-      return cachedFamilyTreeMember;
-    }
-
-    const familyTreeMember =
-      await this.FamilyTreeMemberService.getFamilyTreeMember(param);
-
-    this.cacheService.set(
-      `family-trees:${param.familyTreeId}:members:${param.id}`,
-      familyTreeMember,
+    // check access
+    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
+      req.user.id,
+      param.familyTreeId,
     );
 
-    return familyTreeMember;
+    return this.familyTreeMemberService.getFamilyTreeMember(param);
   }
 }

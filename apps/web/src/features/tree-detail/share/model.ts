@@ -19,7 +19,7 @@ sample({
   clock: copyTrigger,
   source: $shareUrl,
   fn: (url) => {
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(`${url}/shared`);
 
     infoFx('Link copied to clipboard');
   },

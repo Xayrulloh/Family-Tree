@@ -1,22 +1,71 @@
 import type { z } from 'zod';
-import { FamilyTreeSchema } from '../schema';
+import { PaginationResponseSchema } from '../pagination';
+import {
+  FamilyTreeSchema,
+  SharedFamilyTreeSchema,
+  UserSchema,
+} from '../schema';
 
-const SharedFamilyTreeResponseSchema = FamilyTreeSchema;
+const SharedFamilyTreeResponseSchema = FamilyTreeSchema.omit({
+  id: true,
+}).merge(
+  SharedFamilyTreeSchema.pick({
+    familyTreeId: true,
+    userId: true,
+    canAddMembers: true,
+    canEditMembers: true,
+    canDeleteMembers: true,
+    isBlocked: true,
+  }),
+);
 
-const SharedFamilyTreeArrayResponseSchema =
-  SharedFamilyTreeResponseSchema.array();
+const SharedFamilyTreePaginationResponseSchema =
+  PaginationResponseSchema.extend({
+    sharedFamilyTrees: SharedFamilyTreeResponseSchema.array(),
+  });
+
+const SharedFamilyTreeUserResponseSchema = UserSchema.omit({
+  id: true,
+  username: true,
+}).merge(
+  SharedFamilyTreeSchema.pick({
+    familyTreeId: true,
+    userId: true,
+    canAddMembers: true,
+    canEditMembers: true,
+    canDeleteMembers: true,
+    isBlocked: true,
+  }),
+);
+
+const SharedFamilyTreeUsersPaginationResponseSchema =
+  PaginationResponseSchema.extend({
+    sharedFamilyTreeUsers: SharedFamilyTreeUserResponseSchema.array(),
+  });
 
 type SharedFamilyTreeResponseType = z.infer<
   typeof SharedFamilyTreeResponseSchema
 >;
 
-type SharedFamilyTreeArrayResponseType = z.infer<
-  typeof SharedFamilyTreeArrayResponseSchema
+type SharedFamilyTreePaginationResponseType = z.infer<
+  typeof SharedFamilyTreePaginationResponseSchema
+>;
+
+type SharedFamilyTreeUserResponseType = z.infer<
+  typeof SharedFamilyTreeUserResponseSchema
+>;
+
+type SharedFamilyTreeUsersPaginationResponseType = z.infer<
+  typeof SharedFamilyTreeUsersPaginationResponseSchema
 >;
 
 export {
   SharedFamilyTreeResponseSchema,
   type SharedFamilyTreeResponseType,
-  SharedFamilyTreeArrayResponseSchema,
-  type SharedFamilyTreeArrayResponseType,
+  SharedFamilyTreePaginationResponseSchema,
+  type SharedFamilyTreePaginationResponseType,
+  SharedFamilyTreeUserResponseSchema,
+  type SharedFamilyTreeUserResponseType,
+  SharedFamilyTreeUsersPaginationResponseSchema,
+  type SharedFamilyTreeUsersPaginationResponseType,
 };
