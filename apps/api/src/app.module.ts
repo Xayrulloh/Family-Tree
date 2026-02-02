@@ -4,6 +4,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { HttpExceptionFilter } from './common/filters/http.filter';
+import { ZodValidationExceptionFilter } from './common/filters/zod.filter';
 import { ZodSerializerInterceptorCustom } from './common/interceptors/zod.response.interceptor';
 import { RedisCacheModule } from './config/cache/cache.module';
 import { CookiesModule } from './config/cookies/cookies.module';
@@ -20,6 +21,7 @@ import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
+    EnvModule,
     SentryModule.forRoot(),
     ThrottlerModule.forRoot({
       throttlers: [
@@ -32,11 +34,10 @@ import { UserModule } from './modules/user/user.module';
     RedisCacheModule,
     AuthModule,
     UserModule,
-    EnvModule,
     CookiesModule,
     FCMTokenModule,
-    FamilyTreeModule,
     SharedFamilyTreeModule,
+    FamilyTreeModule,
     FamilyTreeMemberConnectionModule,
     FamilyTreeMemberModule,
     FileModule,
@@ -56,11 +57,15 @@ import { UserModule } from './modules/user/user.module';
       provide: APP_PIPE,
       useClass: ZodValidationPipe,
     },
-    { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptorCustom },
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
     },
+    {
+      provide: APP_FILTER,
+      useClass: ZodValidationExceptionFilter,
+    },
+    { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptorCustom },
   ],
 })
 export class AppModule {}

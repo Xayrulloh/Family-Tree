@@ -1,19 +1,22 @@
 import type { z } from 'zod';
+import { PaginationResponseSchema } from '../pagination';
 import { FamilyTreeSchema } from '../schema/family-tree.schema';
 
 const FamilyTreeResponseSchema = FamilyTreeSchema;
 
-const FamilyTreeArrayResponseSchema = FamilyTreeResponseSchema.array();
+const FamilyTreePaginationResponseSchema = PaginationResponseSchema.extend({
+  familyTrees: FamilyTreeResponseSchema.array(),
+});
 
 type FamilyTreeResponseType = z.infer<typeof FamilyTreeResponseSchema>;
 
-type FamilyTreeArrayResponseType = z.infer<
-  typeof FamilyTreeArrayResponseSchema
+type FamilyTreePaginationResponseType = z.infer<
+  typeof FamilyTreePaginationResponseSchema
 >;
 
 export {
   FamilyTreeResponseSchema,
   type FamilyTreeResponseType,
-  FamilyTreeArrayResponseSchema,
-  type FamilyTreeArrayResponseType,
+  FamilyTreePaginationResponseSchema,
+  type FamilyTreePaginationResponseType,
 };

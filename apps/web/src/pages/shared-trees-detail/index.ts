@@ -1,0 +1,1 @@
+export { SharedTreesDetail } from './ui';
