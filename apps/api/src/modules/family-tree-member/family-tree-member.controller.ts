@@ -14,6 +14,7 @@ import {
   Put,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -26,8 +27,7 @@ import {
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { CacheService } from '~/config/cache/cache.service';
+import { FamilyTreeCacheInterceptor } from '~/common/interceptors/family-tree.cache.interceptor';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
@@ -49,11 +49,11 @@ import { FamilyTreeMemberService } from './family-tree-member.service';
 @ApiTags('Family Tree Member')
 @ApiParam({ name: 'familyTreeId', required: true, type: String })
 @Controller('family-trees/:familyTreeId/members')
+@UseInterceptors(FamilyTreeCacheInterceptor)
 export class FamilyTreeMemberController {
   constructor(
     private readonly familyTreeMemberService: FamilyTreeMemberService,
     private readonly sharedFamilyTreeService: SharedFamilyTreeService,
-    private readonly cacheService: CacheService,
   ) {}
 
   // add member create (child)
@@ -77,11 +77,6 @@ export class FamilyTreeMemberController {
         canAddMembers: true,
       },
     );
-
-    await this.cacheService.delMultiple([
-      `family-trees:${param.familyTreeId}:members`,
-      `family-trees:${param.familyTreeId}:members:connections`,
-    ]);
 
     return this.familyTreeMemberService.createFamilyTreeMemberChild(
       param.familyTreeId,
@@ -111,11 +106,6 @@ export class FamilyTreeMemberController {
       },
     );
 
-    await this.cacheService.delMultiple([
-      `family-trees:${param.familyTreeId}:members`,
-      `family-trees:${param.familyTreeId}:members:connections`,
-    ]);
-
     return this.familyTreeMemberService.createFamilyTreeMemberSpouse(
       param.familyTreeId,
       body,
@@ -143,11 +133,6 @@ export class FamilyTreeMemberController {
         canAddMembers: true,
       },
     );
-
-    await this.cacheService.delMultiple([
-      `family-trees:${param.familyTreeId}:members`,
-      `family-trees:${param.familyTreeId}:members:connections`,
-    ]);
 
     return this.familyTreeMemberService.createFamilyTreeMemberParents(
       param.familyTreeId,
@@ -177,11 +162,6 @@ export class FamilyTreeMemberController {
       },
     );
 
-    await this.cacheService.delMultiple([
-      `family-trees:${param.familyTreeId}:members`,
-      `family-trees:${param.familyTreeId}:members:connections`,
-    ]);
-
     return this.familyTreeMemberService.updateFamilyTreeMember(param, body);
   }
 
@@ -205,11 +185,6 @@ export class FamilyTreeMemberController {
       },
     );
 
-    await this.cacheService.delMultiple([
-      `family-trees:${param.familyTreeId}:members`,
-      `family-trees:${param.familyTreeId}:members:connections`,
-    ]);
-
     return this.familyTreeMemberService.deleteFamilyTreeMember(param);
   }
 
@@ -230,24 +205,7 @@ export class FamilyTreeMemberController {
       param.familyTreeId,
     );
 
-    const cachedFamilyTreeMembers =
-      await this.cacheService.get<FamilyTreeMemberGetAllResponseDto>(
-        `family-trees:${param.familyTreeId}:members`,
-      );
-
-    if (cachedFamilyTreeMembers) {
-      return cachedFamilyTreeMembers;
-    }
-
-    const familyTreeMembers =
-      await this.familyTreeMemberService.getAllFamilyTreeMembers(param);
-
-    this.cacheService.set(
-      `family-trees:${param.familyTreeId}:members`,
-      familyTreeMembers,
-    );
-
-    return familyTreeMembers;
+    return this.familyTreeMemberService.getAllFamilyTreeMembers(param);
   }
 
   // get node by id and tree
@@ -268,23 +226,6 @@ export class FamilyTreeMemberController {
       param.familyTreeId,
     );
 
-    const cachedFamilyTreeMember =
-      await this.cacheService.get<FamilyTreeMemberGetResponseDto>(
-        `family-trees:${param.familyTreeId}:members:${param.id}`,
-      );
-
-    if (cachedFamilyTreeMember) {
-      return cachedFamilyTreeMember;
-    }
-
-    const familyTreeMember =
-      await this.familyTreeMemberService.getFamilyTreeMember(param);
-
-    this.cacheService.set(
-      `family-trees:${param.familyTreeId}:members:${param.id}`,
-      familyTreeMember,
-    );
-
-    return familyTreeMember;
+    return this.familyTreeMemberService.getFamilyTreeMember(param);
   }
 }

@@ -4,8 +4,11 @@ import {
   CheckCircleOutlined,
   FileImageOutlined,
   GoogleOutlined,
+  LockOutlined,
   PlusCircleOutlined,
   SearchOutlined,
+  ShareAltOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 import { Button, Card } from 'antd';
 import { type FC, useState } from 'react';
@@ -146,7 +149,7 @@ const HomePage: FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {[
               {
                 icon: <PlusCircleOutlined className="text-4xl" />,
@@ -157,28 +160,44 @@ const HomePage: FC = () => {
                   'Create family members with just a few clicks. Add unlimited members in seconds, not minutes.',
               },
               {
-                icon: <BranchesOutlined className="text-4xl" />,
+                icon: <ShareAltOutlined className="text-4xl" />,
+                color: 'from-indigo-400 to-indigo-600',
+                bgColor: 'from-indigo-50 to-indigo-100',
+                title: 'Share & Export',
+                description:
+                  'Share your tree with family or export it as a high-quality PNG for printing and preserving.',
+              },
+              {
+                icon: <TeamOutlined className="text-4xl" />,
                 color: 'from-purple-400 to-purple-600',
                 bgColor: 'from-purple-50 to-purple-100',
-                title: 'Beautiful Visualization',
+                title: 'Shared with You',
                 description:
-                  'See your family connections come to life with stunning, interactive tree views and layouts.',
+                  'Find all shared trees in one place. No more hunting for links in your inbox.',
+              },
+              {
+                icon: <LockOutlined className="text-4xl" />,
+                color: 'from-rose-400 to-rose-600',
+                bgColor: 'from-rose-50 to-rose-100',
+                title: 'Granular Access',
+                description:
+                  'Control who can see, edit, or add to your tree with advanced permission management.',
               },
               {
                 icon: <FileImageOutlined className="text-4xl" />,
-                color: 'from-rose-400 to-rose-600',
-                bgColor: 'from-rose-50 to-rose-100',
+                color: 'from-emerald-400 to-emerald-600',
+                bgColor: 'from-emerald-50 to-emerald-100',
                 title: 'Preserve Memories',
                 description:
-                  'Store unlimited photos, stories, and important dates to keep your heritage alive forever.',
+                  'Store photos and stories to keep your family heritage alive for future generations.',
               },
               {
                 icon: <SearchOutlined className="text-4xl" />,
-                color: 'from-emerald-400 to-emerald-600',
-                bgColor: 'from-emerald-50 to-emerald-100',
-                title: 'Discover Connections',
+                color: 'from-amber-400 to-amber-600',
+                bgColor: 'from-amber-50 to-amber-100',
+                title: 'Smart Search',
                 description:
-                  'Explore relationships and uncover fascinating stories about your ancestors with smart insights.',
+                  'Quickly find relatives and trace connections across complex family structures.',
               },
             ].map((feature, index) => (
               <Card

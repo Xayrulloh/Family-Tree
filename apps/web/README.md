@@ -131,10 +131,15 @@ const CONNECTION = {
 - Automatically centers tree on load
 - Calculates optimal viewBox based on node positions
 
-**Memoization**
-- React.memo for node components
-- useMemo for expensive calculations
-- Optimized re-renders for large trees
+**Image Export**
+- SVG to PNG conversion via `save-svg-as-png`
+- Preserves layout, colors, and connections in a high-quality image
+- Customizable background and bounds calculation
+
+**Sharing & Collaboration**
+- Copy unique links to share your family tree with others.
+- Dedicated page to view and browse trees shared with you.
+- Manage granular permissions (edit, delete, add) for users who have access to your tree.
 
 ### Visualization Code Structure
 
@@ -253,6 +258,10 @@ const addMember = useUnit(treeMemberModel.addMemberTrigger);
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `VITE_API_URL` | Backend API base URL | `http://localhost:${PORT}` |
+| `VITE_CLOUDFLARE_URL` | Cloudflare R2 base URL | `http://localhost:${PORT}` |
+| `VITE_SENTRY_DSN` | Sentry DSN | `http://{SENTRY_DSN}` |
+| `VITE_SENTRY_ENVIRONMENT` | Sentry environment | `http://localhost:${PORT}` |
+| `VITE_DOMAIN_URL` | Domain URL | `http://localhost:${PORT}` |
 
 > **Note**: All Vite environment variables must be prefixed with `VITE_` to be exposed to the client.
 
@@ -322,11 +331,15 @@ apps/web/
 │   ├── app/              # App initialization, routing, providers
 │   ├── pages/            # Page-level components
 │   │   ├── trees-detail/ # Family tree visualization page
+│   │   ├── shared-tree-detail/ # Shared view of a family tree
+│   │   ├── shared-tree-users/ # Access management page
 │   │   ├── home/         # Landing page
 │   │   └── ...
 │   ├── widgets/          # Complex UI blocks (header, sidebar)
 │   ├── features/         # Business logic features
 │   │   ├── auth/         # Authentication
+│   │   ├── shared-tree-users/ # Shared access logic
+│   │   ├── tree-detail/  # Tree detail operations (share, etc.)
 │   │   ├── tree-member/  # Member CRUD operations
 │   │   └── ...
 │   ├── entities/         # Business entities

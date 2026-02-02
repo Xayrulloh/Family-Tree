@@ -36,6 +36,13 @@
         "cwd": "apps/api"
       }
     },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "biome check --write --unsafe",
+        "cwd": "apps/api"
+      }
+    },
     "serve": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
