@@ -1,6 +1,12 @@
 import {
-  SharedFamilyTreeArrayResponseSchema,
   SharedFamilyTreeCreateRequestSchema,
+  SharedFamilyTreeIdParamSchema,
+  SharedFamilyTreePaginationAndSearchQuerySchema,
+  SharedFamilyTreePaginationResponseSchema,
+  SharedFamilyTreeResponseSchema,
+  SharedFamilyTreeUpdateParamSchema,
+  SharedFamilyTreeUpdateRequestSchema,
+  SharedFamilyTreeUsersPaginationResponseSchema,
 } from '@family-tree/shared';
 import { createZodDto } from 'nestjs-zod';
 
@@ -9,9 +15,45 @@ class SharedFamilyTreeCreateRequestDto extends createZodDto(
   SharedFamilyTreeCreateRequestSchema,
 ) {}
 
-// response
-class SharedFamilyTreeArrayResponseDto extends createZodDto(
-  SharedFamilyTreeArrayResponseSchema,
+class SharedFamilyTreeUpdateRequestDto extends createZodDto(
+  SharedFamilyTreeUpdateRequestSchema,
 ) {}
 
-export { SharedFamilyTreeCreateRequestDto, SharedFamilyTreeArrayResponseDto };
+// param
+class SharedFamilyTreeIdParamDto extends createZodDto(
+  SharedFamilyTreeIdParamSchema,
+) {}
+
+class SharedFamilyTreeUpdateParamDto extends createZodDto(
+  SharedFamilyTreeUpdateParamSchema,
+) {}
+
+// query
+
+class SharedFamilyTreePaginationAndSearchQueryDto extends createZodDto(
+  SharedFamilyTreePaginationAndSearchQuerySchema,
+) {}
+
+// response
+class SharedFamilyTreeResponseDto extends createZodDto(
+  SharedFamilyTreeResponseSchema,
+) {}
+
+class SharedFamilyTreePaginationResponseDto extends createZodDto(
+  SharedFamilyTreePaginationResponseSchema,
+) {}
+
+class SharedFamilyTreeUsersPaginationResponseDto extends createZodDto(
+  SharedFamilyTreeUsersPaginationResponseSchema,
+) {}
+
+export {
+  SharedFamilyTreeCreateRequestDto,
+  SharedFamilyTreeIdParamDto,
+  SharedFamilyTreeUpdateParamDto,
+  SharedFamilyTreePaginationAndSearchQueryDto,
+  SharedFamilyTreeUpdateRequestDto,
+  SharedFamilyTreeResponseDto,
+  SharedFamilyTreePaginationResponseDto,
+  SharedFamilyTreeUsersPaginationResponseDto,
+};

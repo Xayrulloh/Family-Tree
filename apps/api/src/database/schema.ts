@@ -5,6 +5,7 @@ import {
 } from '@family-tree/shared';
 import { relations } from 'drizzle-orm';
 import {
+  boolean,
   date,
   pgEnum,
   pgTable,
@@ -85,15 +86,19 @@ export const sharedFamilyTreesSchema = pgTable(
     familyTreeId: uuid('family_tree_id')
       .references(() => familyTreesSchema.id, { onDelete: 'cascade' })
       .notNull(),
-    sharedWithUserId: uuid('shared_with_user_id')
+    userId: uuid('user_id')
       .references(() => usersSchema.id, { onDelete: 'cascade' })
       .notNull(),
+    isBlocked: boolean('is_blocked').notNull().default(false),
+    canEditMembers: boolean('can_edit_members').notNull().default(false),
+    canDeleteMembers: boolean('can_delete_members').notNull().default(false),
+    canAddMembers: boolean('can_add_members').notNull().default(false),
     ...baseSchema,
   },
   (table) => ({
     familyTreeAndUserIdx: unique('family_tree_and_user_idx').on(
       table.familyTreeId,
-      table.sharedWithUserId,
+      table.userId,
     ),
   }),
 );
@@ -212,7 +217,7 @@ export const sharedFamilyTreesRelations = relations(
       relationName: 'shared_family_trees',
     }),
     sharedWithUser: one(usersSchema, {
-      fields: [sharedFamilyTreesSchema.sharedWithUserId],
+      fields: [sharedFamilyTreesSchema.userId],
       references: [usersSchema.id],
       relationName: 'shared_family_trees',
     }),

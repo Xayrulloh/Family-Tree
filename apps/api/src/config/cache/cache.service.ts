@@ -1,3 +1,10 @@
+import type {
+  FamilyTreeMemberConnectionGetAllResponseType,
+  FamilyTreeMemberGetAllResponseType,
+  FamilyTreePaginationAndSearchQueryType,
+  FamilyTreePaginationResponseType,
+  UserResponseType,
+} from '@family-tree/shared';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { Cache } from 'cache-manager';
@@ -35,11 +42,110 @@ export class CacheService {
     }
   }
 
-  async delMultiple(keys: string[]): Promise<void> {
+  async delByPattern(pattern: string): Promise<void> {
     try {
-      await Promise.all(keys.map((key) => this.cache.del(key)));
+      const store = this.cache.stores[0];
+
+      const client =
+        // biome-ignore lint/suspicious/noExplicitAny: <I'd no choice, sry future me>
+        (store as any).opts?.store?.client || (store as any).client;
+
+      if (!client || typeof client.keys !== 'function') {
+        this.logger.warn(
+          'Redis client not found or does not support pattern matching',
+        );
+
+        return;
+      }
+
+      const keys: string[] = await client.keys(pattern);
+
+      if (keys && keys.length > 0) {
+        await this.cache.mdel(keys);
+
+        this.logger.log(
+          `Successfully deleted ${keys.length} keys for pattern: ${pattern}`,
+        );
+      }
     } catch (err) {
-      this.logger.error(`Redis DEL failed: ${keys}`, err);
+      this.logger.error(`Failed to delete keys by pattern: ${pattern}`, err);
     }
+  }
+
+  // User Family Trees
+  async getUserFamilyTrees(
+    userId: string,
+    query: FamilyTreePaginationAndSearchQueryType,
+  ): Promise<FamilyTreePaginationResponseType | null> {
+    const key = `users:${userId}:family-trees:${JSON.stringify(query)}`;
+
+    return this.get<FamilyTreePaginationResponseType>(key);
+  }
+
+  async setUserFamilyTrees(
+    userId: string,
+    query: FamilyTreePaginationAndSearchQueryType,
+    data: FamilyTreePaginationResponseType,
+  ): Promise<void> {
+    const key = `users:${userId}:family-trees:${JSON.stringify(query)}`;
+
+    await this.set(key, data);
+  }
+
+  async cleanUserFamilyTrees(userId: string): Promise<void> {
+    await this.delByPattern(`users:${userId}:family-trees:*`);
+  }
+
+  // User Family Trees Members
+  async getFamilyTreeMembers(
+    treeId: string,
+  ): Promise<FamilyTreeMemberGetAllResponseType | null> {
+    return this.get<FamilyTreeMemberGetAllResponseType>(
+      `family-trees:${treeId}:members`,
+    );
+  }
+
+  async setFamilyTreeMembers(
+    treeId: string,
+    data: FamilyTreeMemberGetAllResponseType,
+  ): Promise<void> {
+    await this.set(`family-trees:${treeId}:members`, data);
+  }
+
+  async cleanFamilyTreeMembers(treeId: string): Promise<void> {
+    await this.del(`family-trees:${treeId}:members`);
+  }
+
+  // User Family Trees Members Connections
+  async getFamilyTreeMemberConnections(
+    treeId: string,
+  ): Promise<FamilyTreeMemberConnectionGetAllResponseType | null> {
+    return this.get<FamilyTreeMemberConnectionGetAllResponseType>(
+      `family-trees:${treeId}:members:connections`,
+    );
+  }
+
+  async setFamilyTreeMemberConnections(
+    treeId: string,
+    data: FamilyTreeMemberConnectionGetAllResponseType,
+  ): Promise<void> {
+    await this.set(`family-trees:${treeId}:members:connections`, data);
+  }
+
+  async cleanFamilyTreeMemberConnections(treeId: string): Promise<void> {
+    await this.del(`family-trees:${treeId}:members:connections`);
+  }
+
+  // User
+  async getUser(userId: string): Promise<UserResponseType | null> {
+    return this.get<UserResponseType>(`users:${userId}`);
+  }
+
+  async setUser(userId: string, data: UserResponseType): Promise<void> {
+    await this.set(`users:${userId}`, data);
+  }
+
+  async cleanUser(userId: string): Promise<void> {
+    await this.del(`users:${userId}`);
   }
 }

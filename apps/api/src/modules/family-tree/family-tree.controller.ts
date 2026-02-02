@@ -1,19 +1,22 @@
 import {
-  FamilyTreeArrayResponseSchema,
+  FamilyTreePaginationResponseSchema,
   FamilyTreeResponseSchema,
 } from '@family-tree/shared';
 import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
   Param,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -22,23 +25,22 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { CacheService } from '~/config/cache/cache.service';
+import { FamilyTreeCacheInterceptor } from '~/common/interceptors/family-tree.cache.interceptor';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { FamilyTreeMemberService } from '../family-tree-member/family-tree-member.service';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { SharedFamilyTreeService } from '../shared-family-tree/shared-family-tree.service';
 // biome-ignore lint/style/useImportType: <query/param doesn't work>
 import {
-  FamilyTreeArrayResponseDto,
   FamilyTreeCreateRequestDto,
   FamilyTreeIdParamDto,
+  FamilyTreePaginationAndSearchQueryDto,
+  FamilyTreePaginationResponseDto,
   FamilyTreeResponseDto,
   FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
@@ -47,40 +49,28 @@ import { FamilyTreeService } from './family-tree.service';
 
 @ApiTags('Family Tree')
 @Controller('family-trees')
+@UseInterceptors(FamilyTreeCacheInterceptor)
 export class FamilyTreeController {
   constructor(
     private readonly familyTreeService: FamilyTreeService,
     private readonly familyTreeMemberService: FamilyTreeMemberService,
-    private readonly sharedFamilyTreeService: SharedFamilyTreeService,
-    private readonly cacheService: CacheService,
   ) {}
 
   // Find family trees of user
   @Get()
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @ApiQuery({ name: 'page', required: false, type: Number, default: 1 })
+  @ApiQuery({ name: 'perPage', required: false, type: Number, default: 15 })
+  @ApiQuery({ name: 'name', required: false, type: String })
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({ type: FamilyTreeArrayResponseDto })
-  @ZodSerializerDto(FamilyTreeArrayResponseSchema)
+  @ApiOkResponse({ type: FamilyTreePaginationResponseDto })
+  @ZodSerializerDto(FamilyTreePaginationResponseSchema)
   async getFamilyTreesOfUser(
     @Req() req: AuthenticatedRequest,
-  ): Promise<FamilyTreeArrayResponseDto> {
-    const cachedUserFamilyTrees =
-      await this.cacheService.get<FamilyTreeArrayResponseDto>(
-        `users:${req.user.id}:family-trees`,
-      );
-
-    if (cachedUserFamilyTrees) {
-      return cachedUserFamilyTrees;
-    }
-
-    const trees = await this.familyTreeService.getFamilyTreesOfUser(
-      req.user.id,
-    );
-
-    this.cacheService.set(`users:${req.user.id}:family-trees`, trees);
-
-    return trees;
+    @Query() query: FamilyTreePaginationAndSearchQueryDto,
+  ): Promise<FamilyTreePaginationResponseDto> {
+    return this.familyTreeService.getFamilyTreesOfUser(req.user.id, query);
   }
 
   // Find family tree by id
@@ -95,31 +85,13 @@ export class FamilyTreeController {
     @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeIdParamDto,
   ): Promise<FamilyTreeResponseDto> {
-    const cachedFamilyTree = await this.cacheService.get<FamilyTreeResponseDto>(
-      `family-trees:${param.id}`,
-    );
-
-    if (cachedFamilyTree) {
-      if (req.user.id !== cachedFamilyTree.createdBy) {
-        await this.sharedFamilyTreeService.createSharedFamilyTree({
-          familyTreeId: param.id,
-          sharedWithUserId: req.user.id,
-        });
-      }
-
-      return cachedFamilyTree;
-    }
-
     const familyTree = await this.familyTreeService.getFamilyTreeById(param.id);
 
     if (req.user.id !== familyTree.createdBy) {
-      await this.sharedFamilyTreeService.createSharedFamilyTree({
-        familyTreeId: param.id,
-        sharedWithUserId: req.user.id,
-      });
+      throw new ForbiddenException(
+        'You are not allowed to access this family tree',
+      );
     }
-
-    this.cacheService.set(`family-trees:${param.id}`, familyTree);
 
     return familyTree;
   }
@@ -147,8 +119,6 @@ export class FamilyTreeController {
       familyTree.id,
     );
 
-    await this.cacheService.del(`users:${req.user.id}:family-trees`);
-
     return familyTree;
   }
 
@@ -165,13 +135,6 @@ export class FamilyTreeController {
     @Param() param: FamilyTreeIdParamDto,
     @Body() body: FamilyTreeUpdateRequestDto,
   ): Promise<void> {
-    await this.cacheService.delMultiple([
-      `family-trees:${param.id}`,
-      `family-trees:${param.id}:members`,
-      `family-trees:${param.id}:members:connections`,
-      `users:${req.user.id}:family-trees`,
-    ]);
-
     return this.familyTreeService.updateFamilyTree(req.user.id, param.id, body);
   }
 
@@ -186,13 +149,6 @@ export class FamilyTreeController {
     @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeIdParamDto,
   ): Promise<void> {
-    await this.cacheService.delMultiple([
-      `family-trees:${param.id}`,
-      `family-trees:${param.id}:members`,
-      `family-trees:${param.id}:members:connections`,
-      `users:${req.user.id}:family-trees`,
-    ]);
-
     return this.familyTreeService.deleteFamilyTree(req.user.id, param.id);
   }
 }

@@ -2,16 +2,23 @@ import {
   DeleteOutlined,
   EditOutlined,
   EllipsisOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
-import type { FamilyTreeSchemaType } from '@family-tree/shared';
+import type {
+  FamilyTreeResponseType,
+  SharedFamilyTreeResponseType,
+} from '@family-tree/shared';
 import {
   Button,
   Card,
   Col,
   Dropdown,
   Flex,
+  Input,
   type MenuProps,
+  Pagination,
   Row,
+  Tabs,
   Typography,
   theme,
 } from 'antd';
@@ -31,7 +38,10 @@ import { factory } from '../model';
 type Model = ReturnType<typeof factory>;
 type Props = LazyPageProps<Model>;
 type TreeCardProps = {
-  tree: FamilyTreeSchemaType;
+  tree: FamilyTreeResponseType;
+};
+type SharedTreeCardProps = {
+  tree: SharedFamilyTreeResponseType;
 };
 
 // Tree Card Component for Already Created Tree
@@ -180,11 +190,11 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
 };
 
 // Shared Tree Card Component
-export const SharedTreeCard: React.FC<TreeCardProps> = ({ tree }) => {
+export const SharedTreeCard: React.FC<SharedTreeCardProps> = ({ tree }) => {
   const { token } = theme.useToken();
 
   return (
-    <Link to={routes.treesDetail} params={{ id: tree.id }}>
+    <Link to={routes.sharedTreesDetail} params={{ id: tree.familyTreeId }}>
       {''}
       <Card
         hoverable
@@ -271,64 +281,209 @@ export const SharedTreeCard: React.FC<TreeCardProps> = ({ tree }) => {
 
 // Trees Grid Component => Already Created Trees Component
 const TreesGrid: React.FC<Props> = ({ model }) => {
-  const [trees, sharedTrees] = useUnit([model.$trees, model.$sharedTrees]);
+  const [
+    mode,
+    paginatedTrees,
+    paginatedSharedTrees,
+    myTreesPage,
+    sharedTreesPage,
+    myTreesSearchQuery,
+    sharedTreesSearchQuery,
+  ] = useUnit([
+    model.$mode,
+    model.$paginatedTrees,
+    model.$paginatedSharedTrees,
+    model.$myTreesPage,
+    model.$sharedTreesPage,
+    model.$myTreesSearchQuery,
+    model.$sharedTreesSearchQuery,
+  ]);
 
-  return (
-    <div style={{ padding: '0 16px' }}>
-      <div style={{ marginBottom: 40 }}>
-        <Typography.Title level={3}>My Family Trees</Typography.Title>
+  const { token } = theme.useToken();
 
-        <Row gutter={[16, 16]}>
-          {/* Own Trees */}
-          {trees.map((tree) => (
-            <Col xs={12} sm={8} md={6} lg={6} xl={4} key={tree.id}>
-              <TreeCard tree={tree} />
-            </Col>
-          ))}
-
-          {/* Create A New Tree */}
-          <Col xs={12} sm={8} md={6} lg={6} xl={4}>
-            <Card
-              hoverable
-              onClick={() => createEditTreeModel.createTrigger()}
-              style={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                border: '1px dashed #ccc',
-              }}
-            >
-              <span
-                role="img"
-                aria-label="tree"
-                style={{ fontSize: 40, position: 'relative', left: 22 }}
+  const tabItems = [
+    {
+      key: 'my-trees',
+      label: (
+        <span>
+          My Family Trees{' '}
+          <span
+            style={{
+              marginLeft: 6,
+              padding: '2px 8px',
+              borderRadius: 12,
+              backgroundColor: token.colorFillSecondary,
+              color: token.colorTextSecondary,
+              fontSize: 12,
+              fontWeight: 'normal',
+            }}
+          >
+            {paginatedTrees.totalCount}
+          </span>
+        </span>
+      ),
+      children: (
+        <>
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            {/* Create A New Tree - First Item */}
+            <Col xs={12} sm={8} md={6} lg={6} xl={4}>
+              <Card
+                hoverable
+                onClick={() => createEditTreeModel.createTrigger()}
+                style={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  border: '1px dashed #ccc',
+                  minHeight: 200,
+                }}
               >
-                🌲
-              </span>
-              <br />
-              <Typography.Text style={{ fontSize: 15 }}>
-                Create A New Tree
-              </Typography.Text>
-            </Card>
-          </Col>
-        </Row>
-      </div>
+                <span
+                  role="img"
+                  aria-label="tree"
+                  style={{ fontSize: 40, position: 'relative', left: 22 }}
+                >
+                  🌲
+                </span>
+                <br />
+                <Typography.Text style={{ fontSize: 15 }}>
+                  Create A New Tree
+                </Typography.Text>
+              </Card>
+            </Col>
 
-      {sharedTrees.length > 0 && (
-        <div style={{ marginBottom: 40 }}>
-          <Typography.Title level={3}>Shared With Me</Typography.Title>
-          <Row gutter={[16, 16]}>
-            {/* Shared Trees */}
-            {sharedTrees.map((tree) => (
+            {/* Own Trees */}
+            {paginatedTrees.familyTrees.map((tree) => (
               <Col xs={12} sm={8} md={6} lg={6} xl={4} key={tree.id}>
-                <SharedTreeCard tree={tree} />
+                <TreeCard tree={tree} />
               </Col>
             ))}
           </Row>
-        </div>
-      )}
+
+          {/* Pagination for My Trees */}
+          {paginatedTrees.totalPages > 1 && (
+            <Flex justify="center" style={{ marginTop: 24 }}>
+              <Pagination
+                current={myTreesPage}
+                total={paginatedTrees.totalCount}
+                pageSize={paginatedTrees.perPage}
+                onChange={(page) => model.myTreesPageChanged(page)}
+                showSizeChanger={false}
+                showTotal={(total, range) =>
+                  `${range[0]}-${range[1]} of ${total} trees`
+                }
+              />
+            </Flex>
+          )}
+        </>
+      ),
+    },
+    {
+      key: 'shared-trees',
+      label: (
+        <span>
+          Shared With Me{' '}
+          <span
+            style={{
+              marginLeft: 6,
+              padding: '2px 8px',
+              borderRadius: 12,
+              backgroundColor: token.colorFillSecondary,
+              color: token.colorTextSecondary,
+              fontSize: 12,
+              fontWeight: 'normal',
+            }}
+          >
+            {paginatedSharedTrees.totalCount}
+          </span>
+        </span>
+      ),
+      children: (
+        <>
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            {/* Shared Trees */}
+            {paginatedSharedTrees.sharedFamilyTrees.map((sharedTree) => (
+              <Col
+                xs={12}
+                sm={8}
+                md={6}
+                lg={6}
+                xl={4}
+                key={sharedTree.familyTreeId}
+              >
+                <SharedTreeCard tree={sharedTree} />
+              </Col>
+            ))}
+          </Row>
+
+          {/* Pagination for Shared Trees */}
+          {paginatedSharedTrees.totalPages > 1 && (
+            <Flex justify="center" style={{ marginTop: 24 }}>
+              <Pagination
+                current={sharedTreesPage}
+                total={paginatedSharedTrees.totalCount}
+                pageSize={paginatedSharedTrees.perPage}
+                onChange={(page) => model.sharedTreesPageChanged(page)}
+                showSizeChanger={false}
+                showTotal={(total, range) =>
+                  `${range[0]}-${range[1]} of ${total} trees`
+                }
+              />
+            </Flex>
+          )}
+        </>
+      ),
+    },
+  ];
+
+  return (
+    <div style={{ padding: '0 16px' }}>
+      <Tabs
+        activeKey={mode}
+        onChange={(key) => {
+          if (key === 'my-trees') {
+            model.myTreesTriggered();
+          } else {
+            model.sharedTreesTriggered();
+          }
+        }}
+        items={tabItems}
+        size="large"
+        tabBarExtraContent={
+          <Input
+            placeholder="Search trees..."
+            prefix={<SearchOutlined />}
+            value={
+              mode === 'my-trees' ? myTreesSearchQuery : sharedTreesSearchQuery
+            }
+            onChange={(e) => {
+              if (mode === 'my-trees') {
+                model.myTreesSearchChanged(e.target.value);
+              } else {
+                model.sharedTreesSearchChanged(e.target.value);
+              }
+            }}
+            status={
+              (mode === 'my-trees'
+                ? myTreesSearchQuery
+                : sharedTreesSearchQuery
+              ).length > 0 &&
+              (mode === 'my-trees'
+                ? myTreesSearchQuery
+                : sharedTreesSearchQuery
+              ).length < 3
+                ? 'error'
+                : undefined
+            }
+            allowClear
+            style={{
+              width: 250,
+            }}
+          />
+        }
+      />
     </div>
   );
 };

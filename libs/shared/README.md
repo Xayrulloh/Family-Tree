@@ -39,6 +39,7 @@ libs/shared/src/lib/
 - **base** - Common base schemas (ID, timestamps)
 - **user** - User authentication and profile
 - **family-tree** - Family tree entities
+- **shared-family-tree** - Shared family tree entities
 - **family-tree-member** - Individual family members
 - **family-tree-member-connection** - Relationships (spouse, parent-child)
 - **file** - File upload and management
@@ -76,7 +77,7 @@ type BaseSchemaType = z.infer<typeof BaseSchema>;
 Authenticated user data from Google OAuth:
 
 ```typescript
-import { UserSchema, UserGenderEnum } from '@family-tree/shared';
+import { UserGenderEnum } from '@family-tree/shared';
 
 const UserSchema = z.object({
   email: z.string().email(),       // Google email
@@ -99,22 +100,76 @@ type UserSchemaType = z.infer<typeof UserSchema>;
 
 ---
 
+### Family Tree Schema
+
+Family tree data:
+
+```typescript
+import { FamilyTreeSchema } from '@family-tree/shared';
+
+const FamilyTreeSchema = z
+  .object({
+    createdBy: z.string().min(1).describe('User who created this family tree'),
+    name: z.string().min(3).max(20).describe('Name of family tree'),
+    image: z
+      .string()
+      .nullable()
+      .describe(
+        'Image url which comes only from client side but may delete from back on updates',
+      ),
+  })
+  .merge(BaseSchema)
+  .describe('Family tree');
+```
+
+---
+
+### Shared Family Tree Schema
+
+Family tree data shared between users:
+
+```typescript
+const SharedFamilyTreeSchema = z
+  .object({
+    familyTreeId: z.string().describe('Id of family tree'),
+    userId: z.string().describe('Id of user who accessed this family tree'),
+    isBlocked: z.boolean().describe('Is blocked'),
+    canEditMembers: z.boolean().describe('Can edit members'),
+    canDeleteMembers: z.boolean().describe('Can delete members'),
+    canAddMembers: z.boolean().describe('Can add members'),
+  })
+  .merge(BaseSchema)
+  .describe('Shared family tree');
+```
+
+---
+
 ### Family Tree Member Schema
 
 Individual family tree members:
 
 ```typescript
-import { FamilyTreeMemberSchema } from '@family-tree/shared';
-
-const FamilyTreeMemberSchema = z.object({
-  name: z.string().min(3),         // Member name
-  image: z.string().nullable(),    // Profile image URL
-  gender: z.enum(['MALE', 'FEMALE']),
-  dob: z.string().date().nullable(), // Date of birth
-  dod: z.string().date().nullable(), // Date of death
-  description: z.string().nullable(),
-  familyTreeId: z.string().uuid(), // Parent tree reference
-}).merge(BaseSchema);
+const FamilyTreeMemberSchema = z
+  .object({
+    name: z.string().min(3).describe('Member name'),
+    image: z
+      .string()
+      .nullable()
+      .describe(
+        'Image url which comes only from client side but may delete from back on updates',
+      ),
+    gender: z
+      .enum([UserGenderEnum.MALE, UserGenderEnum.FEMALE])
+      .describe(
+        "Only male or female and for the beginning as we don't know we put unknown",
+      ),
+    dod: z.string().date().nullable().describe('Date of death'),
+    dob: z.string().date().nullable().describe('Date of birth'),
+    description: z.string().nullable().describe('Description of user'),
+    familyTreeId: z.string().uuid().describe('The family tree id'),
+  })
+  .merge(BaseSchema)
+  .describe('Member of family tree');
 
 type FamilyTreeMemberSchemaType = z.infer<typeof FamilyTreeMemberSchema>;
 ```
@@ -127,16 +182,22 @@ Relationships between family members:
 
 ```typescript
 import { 
-  FamilyTreeMemberConnectionSchema,
   FamilyTreeMemberConnectionEnum 
 } from '@family-tree/shared';
 
-const FamilyTreeMemberConnectionSchema = z.object({
-  type: z.enum(['SPOUSE', 'PARENT']), // Connection type
-  fromMemberId: z.string().uuid(),    // Source member
-  toMemberId: z.string().uuid(),      // Target member
-  familyTreeId: z.string().uuid(),    // Parent tree reference
-}).merge(BaseSchema);
+const FamilyTreeMemberConnectionSchema = z
+  .object({
+    fromMemberId: z.string().uuid().describe('The id of the from member'),
+    toMemberId: z.string().uuid().describe('The id of the to member'),
+    type: z
+      .enum([
+        FamilyTreeMemberConnectionEnum.SPOUSE,
+        FamilyTreeMemberConnectionEnum.PARENT,
+      ])
+      .describe('The type of the family tree connection'),
+  })
+  .merge(BaseSchema)
+  .describe('Family tree member connection');
 
 type FamilyTreeMemberConnectionSchemaType = z.infer<typeof FamilyTreeMemberConnectionSchema>;
 ```

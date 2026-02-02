@@ -4,5 +4,7 @@ export * from './family-tree-member.schema';
 export * from './family-tree-member-connection.schema';
 export * from './fcm-token.schema';
 export * from './notification.schema';
+export * from './pagination.schema';
+export * from './search.schema';
 export * from './shared-family-tree.schema';
 export * from './user.schema';
