@@ -39,7 +39,7 @@
     "axios": "^1.11.0",
     "cache-manager": "^7.2.5",
     "cookie-parser": "^1.4.7",
-    "cors": "^2.8.5",
+    "cors": "^2.8.6",
     "d3": "^7.9.0",
     "d3-hierarchy": "^3.1.2",
     "d3-shape": "^3.2.0",
