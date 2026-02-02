@@ -1,6 +1,6 @@
 {
   "name": "@family-tree/source",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "license": "MIT",
   "scripts": {
     "start:all": "concurrently -n \"DOCKER,BACKEND,FRONTEND\" -c \"bgBlue.bold,bgGreen.bold,bgMagenta.bold\" \"cd apps/api && docker compose up redis\" \"pnpm start:backend\" \"pnpm start:frontend\"",
