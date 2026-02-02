@@ -64,11 +64,13 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
   // Debounce search queries
   sample({
     clock: debounce({ source: myTreesSearchChanged, timeout: 300 }),
+    filter: (query) => query.length === 0 || query.length >= 3,
     target: $myTreesDebouncedSearchQuery,
   });
 
   sample({
     clock: debounce({ source: sharedTreesSearchChanged, timeout: 300 }),
+    filter: (query) => query.length === 0 || query.length >= 3,
     target: $sharedTreesDebouncedSearchQuery,
   });
 

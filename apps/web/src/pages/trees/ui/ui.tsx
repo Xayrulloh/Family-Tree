@@ -465,6 +465,18 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
                 model.sharedTreesSearchChanged(e.target.value);
               }
             }}
+            status={
+              (mode === 'my-trees'
+                ? myTreesSearchQuery
+                : sharedTreesSearchQuery
+              ).length > 0 &&
+              (mode === 'my-trees'
+                ? myTreesSearchQuery
+                : sharedTreesSearchQuery
+              ).length < 3
+                ? 'error'
+                : undefined
+            }
             allowClear
             style={{
               width: 250,
