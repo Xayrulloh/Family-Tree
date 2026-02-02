@@ -16,6 +16,9 @@ export const drizzleProvider = [
         configService.getOrThrow<EnvType['DATABASE_URL']>('DATABASE_URL');
       const pool = new Pool({
         connectionString,
+        connectionTimeoutMillis: 10000,
+        idleTimeoutMillis: 10000,
+        max: 20,
       });
 
       Logger.log(`Database connected to ${process.env.DATABASE_URL}`);
