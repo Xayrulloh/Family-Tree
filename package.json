@@ -106,7 +106,7 @@
     "@vitest/ui": "^3.2.4",
     "autoprefixer": "10.4.21",
     "concurrently": "^9.2.0",
-    "drizzle-kit": "^0.31.4",
+    "drizzle-kit": "^0.31.8",
     "jest": "^30.0.5",
     "jest-environment-node": "^30.0.5",
     "jsdom": "~26.1.0",
