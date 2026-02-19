@@ -112,7 +112,7 @@
     "jsdom": "~26.1.0",
     "nx": "21.3.2",
     "postcss": "8.5.6",
-    "tailwindcss": "4.1.11",
+    "tailwindcss": "4.1.18",
     "ts-jest": "^29.4.0",
     "ts-node": "10.9.2",
     "tslib": "^2.8.1",
