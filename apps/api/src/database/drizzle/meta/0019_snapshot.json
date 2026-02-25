@@ -61,12 +61,8 @@
           "name": "fcm_tokens_user_id_users_id_fk",
           "tableFrom": "fcm_tokens",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -140,12 +136,8 @@
           "name": "family_tree_member_connections_family_tree_id_family_trees_id_fk",
           "tableFrom": "family_tree_member_connections",
           "tableTo": "family_trees",
-          "columnsFrom": [
-            "family_tree_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["family_tree_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -153,12 +145,8 @@
           "name": "family_tree_member_connections_from_member_id_family_tree_members_id_fk",
           "tableFrom": "family_tree_member_connections",
           "tableTo": "family_tree_members",
-          "columnsFrom": [
-            "from_member_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["from_member_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -166,12 +154,8 @@
           "name": "family_tree_member_connections_to_member_id_family_tree_members_id_fk",
           "tableFrom": "family_tree_member_connections",
           "tableTo": "family_tree_members",
-          "columnsFrom": [
-            "to_member_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["to_member_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -263,12 +247,8 @@
           "name": "family_tree_members_family_tree_id_family_trees_id_fk",
           "tableFrom": "family_tree_members",
           "tableTo": "family_trees",
-          "columnsFrom": [
-            "family_tree_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["family_tree_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -342,12 +322,8 @@
           "name": "family_trees_created_by_users_id_fk",
           "tableFrom": "family_trees",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -357,10 +333,7 @@
         "name_and_user_idx": {
           "name": "name_and_user_idx",
           "nullsNotDistinct": false,
-          "columns": [
-            "name",
-            "created_by"
-          ]
+          "columns": ["name", "created_by"]
         }
       },
       "policies": {},
@@ -391,12 +364,8 @@
           "name": "notification_reads_user_id_users_id_fk",
           "tableFrom": "notification_reads",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -463,12 +432,8 @@
           "name": "notifications_receiver_user_id_users_id_fk",
           "tableFrom": "notifications",
           "tableTo": "users",
-          "columnsFrom": [
-            "receiver_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["receiver_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -476,12 +441,8 @@
           "name": "notifications_sender_user_id_users_id_fk",
           "tableFrom": "notifications",
           "tableTo": "users",
-          "columnsFrom": [
-            "sender_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["sender_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -570,12 +531,8 @@
           "name": "shared_family_trees_family_tree_id_family_trees_id_fk",
           "tableFrom": "shared_family_trees",
           "tableTo": "family_trees",
-          "columnsFrom": [
-            "family_tree_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["family_tree_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -583,12 +540,8 @@
           "name": "shared_family_trees_user_id_users_id_fk",
           "tableFrom": "shared_family_trees",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -598,10 +551,7 @@
         "family_tree_and_user_idx": {
           "name": "family_tree_and_user_idx",
           "nullsNotDistinct": false,
-          "columns": [
-            "family_tree_id",
-            "user_id"
-          ]
+          "columns": ["family_tree_id", "user_id"]
         }
       },
       "policies": {},
@@ -696,9 +646,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -710,36 +658,22 @@
     "public.fcm_token_device_type": {
       "name": "fcm_token_device_type",
       "schema": "public",
-      "values": [
-        "ANDROID",
-        "IOS",
-        "WEB"
-      ]
+      "values": ["ANDROID", "IOS", "WEB"]
     },
     "public.family_tree_member_connection": {
       "name": "family_tree_member_connection",
       "schema": "public",
-      "values": [
-        "SPOUSE",
-        "PARENT"
-      ]
+      "values": ["SPOUSE", "PARENT"]
     },
     "public.member_gender": {
       "name": "member_gender",
       "schema": "public",
-      "values": [
-        "MALE",
-        "FEMALE"
-      ]
+      "values": ["MALE", "FEMALE"]
     },
     "public.user_gender": {
       "name": "user_gender",
       "schema": "public",
-      "values": [
-        "MALE",
-        "FEMALE",
-        "UNKNOWN"
-      ]
+      "values": ["MALE", "FEMALE", "UNKNOWN"]
     }
   },
   "schemas": {},
