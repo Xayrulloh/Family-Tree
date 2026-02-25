@@ -73,6 +73,7 @@ export const familyTreesSchema = pgTable(
       })
       .notNull(),
     image: text('image'),
+    isPublic: boolean('is_public').notNull().default(false),
     ...baseSchema,
   },
   (table) => ({

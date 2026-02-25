@@ -1,17 +1,18 @@
 import type { z } from 'zod';
 import { PaginationQuerySchema } from '../pagination';
 import { FamilyTreeSchema } from '../schema';
-import { SearchByNameQuerySchema } from '../search';
+import { SearchByNameQuerySchema, SearchByPublicQuerySchema } from '../search';
 
 const FamilyTreeCreateRequestSchema = FamilyTreeSchema.pick({
   image: true,
   name: true,
+  isPublic: true,
 });
 
 const FamilyTreeUpdateRequestSchema = FamilyTreeCreateRequestSchema.partial();
 
 const FamilyTreePaginationAndSearchQuerySchema = PaginationQuerySchema.merge(
-  SearchByNameQuerySchema,
+  SearchByNameQuerySchema.merge(SearchByPublicQuerySchema),
 );
 
 type FamilyTreeCreateRequestType = z.infer<

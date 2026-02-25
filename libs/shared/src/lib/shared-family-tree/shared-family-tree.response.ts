@@ -8,6 +8,7 @@ import {
 
 const SharedFamilyTreeResponseSchema = FamilyTreeSchema.omit({
   id: true,
+  isPublic: true,
 }).merge(
   SharedFamilyTreeSchema.pick({
     familyTreeId: true,
