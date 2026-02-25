@@ -60,6 +60,7 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
           values: {
             image: tree.image,
             name: tree.name,
+            isPublic: tree.isPublic,
           },
         });
       },
@@ -189,6 +190,97 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
   );
 };
 
+// Public Tree Card Component
+export const PublicTreeeCard: React.FC<TreeCardProps> = ({ tree }) => {
+  const { token } = theme.useToken();
+
+  return (
+    <Link to={routes.treesDetail} params={{ id: tree.id }}>
+      {''}
+      {/* ← Wrap with Link */}
+      <Card
+        hoverable
+        styles={{
+          body: {
+            padding: '12px 16px 16px',
+            height: 'calc(100% - 140px)',
+          },
+        }}
+        style={{
+          height: '100%',
+          position: 'relative',
+          borderRadius: 12,
+          overflow: 'hidden',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          transition: 'all 0.2s ease',
+          display: 'flex',
+          flexDirection: 'column',
+          cursor: 'pointer',
+        }}
+        cover={
+          <div
+            style={{
+              height: 140,
+              background: token.colorFillContent,
+              display: 'flex',
+              overflow: 'hidden',
+              position: 'relative',
+              ...(tree.image
+                ? {}
+                : {
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: token.colorFillSecondary,
+                  }),
+            }}
+          >
+            {tree.image ? (
+              <img
+                src={tree.image}
+                loading="eager"
+                alt={tree.name}
+                style={{
+                  height: '100%',
+                  width: '100%',
+                  objectFit: 'cover',
+                  objectPosition: 'center',
+                  transition: 'transform 0.3s',
+                }}
+              />
+            ) : (
+              <span
+                role="img"
+                aria-label="tree"
+                style={{
+                  fontSize: 48,
+                  lineHeight: 1,
+                  color: token.colorTextDescription,
+                }}
+              >
+                🌲
+              </span>
+            )}
+          </div>
+        }
+      >
+        <Typography.Title
+          level={5}
+          style={{
+            marginBottom: 4,
+            marginTop: 0,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+          title={tree.name}
+        >
+          {tree.name}
+        </Typography.Title>
+      </Card>
+    </Link>
+  );
+};
+
 // Shared Tree Card Component
 export const SharedTreeCard: React.FC<SharedTreeCardProps> = ({ tree }) => {
   const { token } = theme.useToken();
@@ -285,18 +377,24 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
     mode,
     paginatedTrees,
     paginatedSharedTrees,
+    paginatedPublicTrees,
     myTreesPage,
     sharedTreesPage,
+    publicTreesPage,
     myTreesSearchQuery,
     sharedTreesSearchQuery,
+    publicTreesSearchQuery,
   ] = useUnit([
     model.$mode,
-    model.$paginatedTrees,
+    model.$paginatedUserTrees,
     model.$paginatedSharedTrees,
+    model.$paginatedPublicTrees,
     model.$myTreesPage,
     model.$sharedTreesPage,
+    model.$publicTreesPage,
     model.$myTreesSearchQuery,
     model.$sharedTreesSearchQuery,
+    model.$publicTreesSearchQuery,
   ]);
 
   const { token } = theme.useToken();
@@ -436,6 +534,55 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
         </>
       ),
     },
+    {
+      key: 'public-trees',
+      label: (
+        <span>
+          Public Family Trees{' '}
+          <span
+            style={{
+              marginLeft: 6,
+              padding: '2px 8px',
+              borderRadius: 12,
+              backgroundColor: token.colorFillSecondary,
+              color: token.colorTextSecondary,
+              fontSize: 12,
+              fontWeight: 'normal',
+            }}
+          >
+            {paginatedPublicTrees.totalCount}
+          </span>
+        </span>
+      ),
+      children: (
+        <>
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            {/* Public Trees */}
+            {paginatedPublicTrees.familyTrees.map((publicTree) => (
+              <Col xs={12} sm={8} md={6} lg={6} xl={4} key={publicTree.id}>
+                <PublicTreeeCard tree={publicTree} />
+              </Col>
+            ))}
+          </Row>
+
+          {/* Pagination for Public Trees */}
+          {paginatedPublicTrees.totalPages > 1 && (
+            <Flex justify="center" style={{ marginTop: 24 }}>
+              <Pagination
+                current={publicTreesPage}
+                total={paginatedPublicTrees.totalCount}
+                pageSize={paginatedPublicTrees.perPage}
+                onChange={(page) => model.publicTreesPageChanged(page)}
+                showSizeChanger={false}
+                showTotal={(total, range) =>
+                  `${range[0]}-${range[1]} of ${total} trees`
+                }
+              />
+            </Flex>
+          )}
+        </>
+      ),
+    },
   ];
 
   return (
@@ -445,8 +592,10 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
         onChange={(key) => {
           if (key === 'my-trees') {
             model.myTreesTriggered();
-          } else {
+          } else if (key === 'shared-trees') {
             model.sharedTreesTriggered();
+          } else {
+            model.publicTreesTriggered();
           }
         }}
         items={tabItems}
@@ -456,23 +605,33 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
             placeholder="Search trees..."
             prefix={<SearchOutlined />}
             value={
-              mode === 'my-trees' ? myTreesSearchQuery : sharedTreesSearchQuery
+              mode === 'my-trees'
+                ? myTreesSearchQuery
+                : mode === 'shared-trees'
+                  ? sharedTreesSearchQuery
+                  : publicTreesSearchQuery
             }
             onChange={(e) => {
               if (mode === 'my-trees') {
                 model.myTreesSearchChanged(e.target.value);
-              } else {
+              } else if (mode === 'shared-trees') {
                 model.sharedTreesSearchChanged(e.target.value);
+              } else {
+                model.publicTreesSearchChanged(e.target.value);
               }
             }}
             status={
               (mode === 'my-trees'
                 ? myTreesSearchQuery
-                : sharedTreesSearchQuery
+                : mode === 'shared-trees'
+                  ? sharedTreesSearchQuery
+                  : publicTreesSearchQuery
               ).length > 0 &&
               (mode === 'my-trees'
                 ? myTreesSearchQuery
-                : sharedTreesSearchQuery
+                : mode === 'shared-trees'
+                  ? sharedTreesSearchQuery
+                  : publicTreesSearchQuery
               ).length < 3
                 ? 'error'
                 : undefined

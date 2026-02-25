@@ -11,7 +11,7 @@ export const copyTrigger = createEvent();
 
 sample({
   clock: shareTrigger,
-  fn: ({ url }) => url,
+  fn: ({ url }) => `${url}/shared`,
   target: [$shareUrl, disclosure.opened],
 });
 
@@ -19,7 +19,7 @@ sample({
   clock: copyTrigger,
   source: $shareUrl,
   fn: (url) => {
-    navigator.clipboard.writeText(`${url}/shared`);
+    navigator.clipboard.writeText(url);
 
     infoFx('Link copied to clipboard');
   },

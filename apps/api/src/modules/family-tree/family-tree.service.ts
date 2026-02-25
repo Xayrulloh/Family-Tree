@@ -71,6 +71,51 @@ export class FamilyTreeService {
     };
   }
 
+  async getPublicFamilyTrees({
+    page,
+    perPage,
+    name,
+  }: FamilyTreePaginationAndSearchQueryDto): Promise<FamilyTreePaginationResponseDto> {
+    const offset = (page - 1) * perPage;
+
+    const [familyTrees, countResult] = await Promise.all([
+      this.db.query.familyTreesSchema.findMany({
+        where: and(
+          name ? ilike(schema.familyTreesSchema.name, `%${name}%`) : undefined,
+          eq(schema.familyTreesSchema.isPublic, true),
+        ),
+        orderBy: asc(schema.familyTreesSchema.createdAt),
+        limit: perPage,
+        offset,
+      }),
+
+      this.db
+        .select({
+          totalCount: sql<number>`COUNT(*)::int`,
+        })
+        .from(schema.familyTreesSchema)
+        .where(
+          and(
+            name
+              ? ilike(schema.familyTreesSchema.name, `%${name}%`)
+              : undefined,
+            eq(schema.familyTreesSchema.isPublic, true),
+          ),
+        ),
+    ]);
+
+    const totalCount = countResult[0]?.totalCount ?? 0;
+    const totalPages = Math.ceil(totalCount / perPage);
+
+    return {
+      familyTrees,
+      page,
+      perPage,
+      totalCount,
+      totalPages,
+    };
+  }
+
   async getFamilyTreeById(id: string): Promise<FamilyTreeResponseDto> {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
       where: eq(schema.familyTreesSchema.id, id),
@@ -106,6 +151,7 @@ export class FamilyTreeService {
         createdBy: userId,
         name: body.name,
         image: body.image,
+        isPublic: body.isPublic,
       })
       .returning();
 
@@ -137,6 +183,7 @@ export class FamilyTreeService {
       .set({
         name: body.name,
         image: body.image,
+        isPublic: body.isPublic,
       })
       .where(eq(schema.familyTreesSchema.id, id));
   }

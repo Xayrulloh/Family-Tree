@@ -5,6 +5,25 @@ const SearchByNameQuerySchema = SearchSchema.pick({
   name: true,
 });
 
+const SearchByEmailQuerySchema = SearchSchema.pick({
+  email: true,
+});
+
+const SearchByPublicQuerySchema = SearchSchema.pick({
+  isPublic: true,
+});
+
 type SearchByNameQueryType = z.infer<typeof SearchByNameQuerySchema>;
 
-export { SearchByNameQuerySchema, type SearchByNameQueryType };
+type SearchByEmailQueryType = z.infer<typeof SearchByEmailQuerySchema>;
+
+type SearchByPublicQueryType = z.infer<typeof SearchByPublicQuerySchema>;
+
+export {
+  SearchByNameQuerySchema,
+  SearchByEmailQuerySchema,
+  SearchByPublicQuerySchema,
+  type SearchByNameQueryType,
+  type SearchByEmailQueryType,
+  type SearchByPublicQueryType,
+};
