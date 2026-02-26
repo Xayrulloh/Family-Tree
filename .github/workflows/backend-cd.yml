@@ -5,7 +5,10 @@ on:
     branches: ["main"]
     paths:
       - "apps/api/**"
-      - "libs/shared/**"
+      - "libs/**"
+      - "pnpm-lock.yaml"
+      - "nx.json"
+      - ".github/workflows/backend-cd.yml"
 
 env:
   REGISTRY: ghcr.io
