@@ -64,7 +64,7 @@ reviews:
         - Ensure Google OAuth2 callback validates state parameter to prevent CSRF.
         - Flag hardcoded secrets or credentials of any kind.
         - Verify cookie settings: httpOnly, secure, sameSite flags on JWT cookies.
-        - Check that passport strategies return null (not throw) for invalid credentials.
+        - Check that passport strategies handle invalid credentials consistently (return null/false or throw UnauthorizedException, per project convention).
 
     - path: "apps/api/**/schema*"
       instructions: |
