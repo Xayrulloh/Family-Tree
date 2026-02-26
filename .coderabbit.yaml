@@ -32,7 +32,6 @@ reviews:
   # ── Ignore generated / non-reviewable files ──
   path_filters:
     - "!**/*.lock"
-    - "!**/pnpm-lock.yaml"
     - "!**/dist/**"
     - "!**/build/**"
     - "!**/.next/**"
@@ -41,7 +40,6 @@ reviews:
     - "!**/*.min.js"
     - "!**/*.min.css"
     - "!**/__snapshots__/**"
-    - "!**/drizzle/migrations/**" # Auto-generated Drizzle migration files
     - "!**/*.generated.ts"
     - "!**/biome.json" # Biome config, no need to review
 
