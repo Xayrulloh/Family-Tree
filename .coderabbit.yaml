@@ -164,6 +164,6 @@ chat:
 # ─────────────────────────────────────────────
 knowledge_base:
   learnings:
-    scope: global
+    scope: auto
   pull_requests:
-    scope: global
+    scope: auto
