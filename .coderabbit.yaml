@@ -141,6 +141,20 @@ reviews:
         - NEVER approve .env files containing real secrets committed to the repo.
         - Ensure .env.example exists and is kept in sync.
 
+    - path: "**"
+      instructions: |
+        This is a family-tree NX monorepo with two apps:
+        - `apps/api`: NestJS v11 REST API with Drizzle ORM + PostgreSQL, Redis cache (Keyv), AWS S3, Passport JWT + Google OAuth2, Swagger, Sentry, Throttler.
+        - `apps/web`: React 18 SPA with Effector state management, Ant Design + Tailwind v4 UI, atomic-router, react-hook-form + Zod, D3 for tree visualization, Rspack bundler.
+
+        General rules:
+        - Biome handles all formatting and basic linting — do NOT comment on formatting.
+        - All validation must use Zod schemas (nestjs-zod on backend, @hookform/resolvers on frontend).
+        - TypeScript strict mode is enabled — flag any `any`, non-null assertions without justification, or type casting without a comment.
+        - Nx affected commands are used for CI — do not suggest changes that break project boundaries.
+        - pnpm is the package manager — flag any npm/yarn usage in scripts.
+        - Security is a priority: JWT, OAuth2, S3 presigned URLs, rate limiting — review these areas carefully.
+
 # ─────────────────────────────────────────────
 # 3. CHAT
 # ─────────────────────────────────────────────
@@ -152,22 +166,6 @@ chat:
 # ─────────────────────────────────────────────
 knowledge_base:
   learnings:
-    scope: "global"
-  pull_request_summaries:
-    enabled: true
-
-# ─────────────────────────────────────────────
-# 5. GLOBAL INSTRUCTIONS
-# ─────────────────────────────────────────────
-instructions: |
-  This is a family-tree NX monorepo with two apps:
-  - `apps/api`: NestJS v11 REST API with Drizzle ORM + PostgreSQL, Redis cache (Keyv), AWS S3, Passport JWT + Google OAuth2, Swagger, Sentry, Throttler.
-  - `apps/web`: React 18 SPA with Effector state management, Ant Design + Tailwind v4 UI, atomic-router, react-hook-form + Zod, D3 for tree visualization, Rspack bundler.
-
-  General rules:
-  - Biome handles all formatting and basic linting — do NOT comment on formatting.
-  - All validation must use Zod schemas (nestjs-zod on backend, @hookform/resolvers on frontend).
-  - TypeScript strict mode is enabled — flag any `any`, non-null assertions without justification, or type casting without a comment.
-  - Nx affected commands are used for CI — do not suggest changes that break project boundaries.
-  - pnpm is the package manager — flag any npm/yarn usage in scripts.
-  - Security is a priority: JWT, OAuth2, S3 presigned URLs, rate limiting — review these areas carefully.
+    scope: global
+  pull_requests:
+    scope: global
