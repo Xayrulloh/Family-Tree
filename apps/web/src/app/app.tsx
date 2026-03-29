@@ -1,9 +1,9 @@
-import { RouterProvider } from 'atomic-router-react';
-import { router } from '~/shared/config/routing';
-import { appStarted } from '~/shared/config/system';
 import { ConfigProvider, theme } from 'antd';
+import { RouterProvider } from 'atomic-router-react';
 import { useUnit } from 'effector-react';
 import { Routing } from '~/pages';
+import { router } from '~/shared/config/routing';
+import { appStarted } from '~/shared/config/system';
 import { useMessageApi } from '~/shared/lib/message';
 import { $theme } from './model';
 

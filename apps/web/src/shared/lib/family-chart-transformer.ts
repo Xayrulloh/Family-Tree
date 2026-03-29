@@ -35,10 +35,19 @@ export interface F3UpdateTreeOptions {
 }
 
 export interface F3CardHtml {
-  setCardDim: (dim: { w: number; h: number; img_w: number; img_h: number; img_x: number; img_y: number }) => F3CardHtml;
+  setCardDim: (dim: {
+    w: number;
+    h: number;
+    img_w: number;
+    img_h: number;
+    img_x: number;
+    img_y: number;
+  }) => F3CardHtml;
   setCardDisplay: (fns: Array<(d: F3Datum) => string>) => F3CardHtml;
   setCardImageField: (field: string) => F3CardHtml;
-  setOnCardUpdate: (fn: (this: HTMLElement, d: F3NodeDatum) => void) => F3CardHtml;
+  setOnCardUpdate: (
+    fn: (this: HTMLElement, d: F3NodeDatum) => void,
+  ) => F3CardHtml;
 }
 
 export interface F3Chart {

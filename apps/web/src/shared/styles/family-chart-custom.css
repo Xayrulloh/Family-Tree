@@ -2,8 +2,8 @@
    Override family-chart CSS variables to match our design
    ============================================================ */
 .f3 {
-  --male-color: #dbeafe;     /* blue-100  */
-  --female-color: #fce7f3;   /* pink-100  */
+  --male-color: #dbeafe; /* blue-100  */
+  --female-color: #fce7f3; /* pink-100  */
   --text-color: #111827;
 }
 
@@ -49,7 +49,9 @@
   line-height: 1;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.15s, transform 0.1s;
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
   z-index: 20;
   padding: 0;
 }
