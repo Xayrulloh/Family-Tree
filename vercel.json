@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npx nx build web",
+  "buildCommand": "npx nx build web --skip-nx-cache",
   "installCommand": "pnpm install --frozen-lockfile",
   "outputDirectory": "dist/apps/web",
   "framework": "vite",
