@@ -1,7 +1,6 @@
 import { RouterProvider } from 'atomic-router-react';
 import { router } from '~/shared/config/routing';
 import { appStarted } from '~/shared/config/system';
-import './model';
 import { ConfigProvider, theme } from 'antd';
 import { useUnit } from 'effector-react';
 import { Routing } from '~/pages';

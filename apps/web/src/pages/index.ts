@@ -1,4 +1,5 @@
 import { createRoutesView } from 'atomic-router-react';
+import { FullscreenLoading } from '~/shared/ui/loading';
 import { Home } from './home';
 import { NotFound } from './not-found';
 import { Registration } from './registration';
@@ -17,4 +18,5 @@ export const Routing = createRoutesView({
     SharedTreeUsers,
     NotFound,
   ],
+  otherwise: FullscreenLoading,
 });
