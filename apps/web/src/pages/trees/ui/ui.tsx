@@ -146,7 +146,6 @@ const BaseTreeCard: React.FC<BaseTreeCardProps> = ({
   if (linkTo && linkParams) {
     return (
       <Link to={linkTo} params={linkParams}>
-        {''}
         {cardContent}
       </Link>
     );

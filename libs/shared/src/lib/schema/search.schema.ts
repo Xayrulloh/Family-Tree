@@ -4,10 +4,11 @@ const SearchSchema = z.object({
   name: z.string().min(3).optional(),
   email: z.string().min(3).optional(),
   isPublic: z
-    .preprocess(
-      (value) => (typeof value === 'string' ? value === 'true' : value),
-      z.boolean(),
-    )
+    .preprocess((value) => {
+      if (typeof value === 'string') return value === 'true';
+      if (typeof value === 'boolean') return value;
+      return false;
+    }, z.boolean())
     .default(false)
     .optional(),
 });

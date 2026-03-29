@@ -16,16 +16,18 @@ import type {
 } from '~/shared/lib/family-chart-transformer';
 import { toF3Data } from '~/shared/lib/family-chart-transformer';
 import '~/shared/styles/family-chart-custom.css';
+import { errorFx } from '~/shared/lib/message';
 import type { Props } from './ui';
 
 /** family-chart ships without TS declarations; cast to our minimal interface. */
 type F3Module = { createChart: (el: HTMLElement, data: F3Datum[]) => F3Chart };
 
 export const Visualization: React.FC<Props> = ({ model }) => {
-  const [connections, members, sharedTree] = useUnit([
+  const [connections, members, sharedTree, lastAddedMemberId] = useUnit([
     model.$connections,
     model.$members,
     model.$sharedTree,
+    addMemberModel.$lastAddedMemberId,
   ]);
   const { token } = theme.useToken();
 
@@ -37,10 +39,12 @@ export const Visualization: React.FC<Props> = ({ model }) => {
   const hasFirstDataRef = useRef(false);
   const canAddMembersRef = useRef(false);
   const treeNameRef = useRef<string | null>(null);
+  const lastAddedMemberIdRef = useRef<string | null>(null);
 
   // Sync refs with latest render values so stale closures always read current data
   canAddMembersRef.current = sharedTree?.canAddMembers ?? false;
   treeNameRef.current = sharedTree?.name ?? null;
+  lastAddedMemberIdRef.current = lastAddedMemberId;
 
   useEffect(() => {
     membersMapRef.current = new Map(
@@ -178,7 +182,8 @@ export const Visualization: React.FC<Props> = ({ model }) => {
   useEffect(() => {
     if (!chartRef.current || members.length === 0) return;
 
-    const data = toF3Data(members, connections);
+    const focusId = lastAddedMemberIdRef.current;
+    const data = toF3Data(members, connections, focusId);
 
     chartRef.current.updateData(data);
 
@@ -188,6 +193,16 @@ export const Visualization: React.FC<Props> = ({ model }) => {
 
       requestAnimationFrame(() => {
         chartRef.current?.updateTree({ initial: true, transition_time: 0 });
+      });
+    } else if (focusId) {
+      // After adding a member: fly to the newly created one
+      addMemberModel.lastAddedMemberIdTrigger();
+
+      requestAnimationFrame(() => {
+        chartRef.current?.updateTree({
+          tree_position: 'main_to_middle',
+          transition_time: 400,
+        });
       });
     } else {
       chartRef.current.updateTree({
@@ -276,8 +291,8 @@ export const Visualization: React.FC<Props> = ({ model }) => {
       link.download = filename;
       link.href = canvas.toDataURL('image/png');
       link.click();
-    } catch (err) {
-      console.error('Failed to export image:', err);
+    } catch {
+      errorFx('Failed to export image');
     }
   }, []);
 

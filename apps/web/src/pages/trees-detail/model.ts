@@ -3,7 +3,7 @@ import type {
   FamilyTreeMemberGetAllResponseType,
   FamilyTreeResponseType,
 } from '@family-tree/shared';
-import { attach, createStore, sample } from 'effector';
+import { attach, combine, createStore, sample } from 'effector';
 import { or } from 'patronum';
 import { userModel } from '~/entities/user';
 import { addMemberModel } from '~/features/tree-member/add';
@@ -23,6 +23,10 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
   const $tree = createStore<FamilyTreeResponseType | null>(null);
 
   const $id = authorizedRoute.$params.map((params) => params.id ?? null);
+
+  const $isOwner = combine($tree, userModel.$user, (tree, user) =>
+    tree !== null && user !== null && tree.createdBy === user.id,
+  );
 
   // Effects
   const fetchMembersFx = attach({
@@ -101,6 +105,7 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
     $connections,
     $tree,
     $id,
+    $isOwner,
     $loading: or(fetchMembersFx.pending, fetchConnectionsFx.pending),
   };
 };

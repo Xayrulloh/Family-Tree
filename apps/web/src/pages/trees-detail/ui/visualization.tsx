@@ -15,6 +15,7 @@ import { ShareTreeModal, shareTreeModel } from '~/features/tree-detail/share';
 import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
 import { routes } from '~/shared/config/routing';
+import { errorFx } from '~/shared/lib/message';
 import type {
   F3Chart,
   F3Datum,
@@ -28,11 +29,12 @@ import type { Props } from './ui';
 type F3Module = { createChart: (el: HTMLElement, data: F3Datum[]) => F3Chart };
 
 export const Visualization: React.FC<Props> = ({ model }) => {
-  const [connections, members, id, tree, lastAddedMemberId] = useUnit([
+  const [connections, members, id, tree, isOwner, lastAddedMemberId] = useUnit([
     model.$connections,
     model.$members,
     model.$id,
     model.$tree,
+    model.$isOwner,
     addMemberModel.$lastAddedMemberId,
   ]);
   const { token } = theme.useToken();
@@ -43,10 +45,12 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     new Map<string, FamilyTreeMemberGetResponseType>(),
   );
   const hasFirstDataRef = useRef(false);
+  const isOwnerRef = useRef(false);
   const lastAddedMemberIdRef = useRef<string | null>(null);
   const treeNameRef = useRef<string | null>(null);
 
   // Sync refs with latest render values so stale closures always read current data
+  isOwnerRef.current = isOwner;
   lastAddedMemberIdRef.current = lastAddedMemberId;
   treeNameRef.current = tree?.name ?? null;
 
@@ -127,7 +131,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
           aria-label="View details"
         >👁</button>`;
 
-        if (!hasParents) {
+        if (isOwnerRef.current && !hasParents) {
           actions.innerHTML += `<button
             class="ft-btn ft-btn-parents"
             data-action="add-parents"
@@ -137,7 +141,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
           >⬆</button>`;
         }
 
-        if (!hasSpouse) {
+        if (isOwnerRef.current && !hasSpouse) {
           actions.innerHTML += `<button
             class="ft-btn ft-btn-spouse"
             data-action="add-spouse"
@@ -148,7 +152,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
           >+</button>`;
         }
 
-        if (hasSpouse && !isMale) {
+        if (isOwnerRef.current && hasSpouse && !isMale) {
           actions.innerHTML += `<button
             class="ft-btn ft-btn-boy"
             data-action="add-boy"
@@ -293,8 +297,8 @@ export const Visualization: React.FC<Props> = ({ model }) => {
       link.download = filename;
       link.href = canvas.toDataURL('image/png');
       link.click();
-    } catch (err) {
-      console.error('Failed to export image:', err);
+    } catch {
+      errorFx('Failed to export image');
     }
   }, []);
 

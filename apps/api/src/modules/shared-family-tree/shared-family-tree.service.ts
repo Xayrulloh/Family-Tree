@@ -260,14 +260,27 @@ export class SharedFamilyTreeService {
       >
     >,
   ): Promise<void> {
-    const isOwner = await this.db.query.familyTreesSchema.findFirst({
-      where: and(
-        eq(schema.familyTreesSchema.id, familyTreeId),
-        eq(schema.familyTreesSchema.createdBy, userId),
-      ),
+    const familyTree = await this.db.query.familyTreesSchema.findFirst({
+      where: eq(schema.familyTreesSchema.id, familyTreeId),
+      columns: { createdBy: true, isPublic: true },
     });
 
-    if (isOwner) {
+    if (!familyTree) {
+      throw new NotFoundException(
+        `Family tree with id ${familyTreeId} not found`,
+      );
+    }
+
+    if (familyTree.createdBy === userId) {
+      return;
+    }
+
+    // public trees: anyone can read, only the owner can write
+    if (familyTree.isPublic) {
+      console.log('what the fuck');
+      if (access) {
+        throw new ForbiddenException(`You don't have a permission`);
+      }
       return;
     }
 
