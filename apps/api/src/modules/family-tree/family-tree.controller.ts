@@ -63,6 +63,7 @@ export class FamilyTreeController {
   @ApiQuery({ name: 'page', required: false, type: Number, default: 1 })
   @ApiQuery({ name: 'perPage', required: false, type: Number, default: 15 })
   @ApiQuery({ name: 'name', required: false, type: String })
+  @ApiQuery({ name: 'isPublic', required: false, type: Boolean })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: FamilyTreePaginationResponseDto })
   @ZodSerializerDto(FamilyTreePaginationResponseSchema)
@@ -70,6 +71,11 @@ export class FamilyTreeController {
     @Req() req: AuthenticatedRequest,
     @Query() query: FamilyTreePaginationAndSearchQueryDto,
   ): Promise<FamilyTreePaginationResponseDto> {
+    // for public trees userId not needed
+    if (query.isPublic) {
+      return this.familyTreeService.getPublicFamilyTrees(query);
+    }
+
     return this.familyTreeService.getFamilyTreesOfUser(req.user.id, query);
   }
 
@@ -87,7 +93,7 @@ export class FamilyTreeController {
   ): Promise<FamilyTreeResponseDto> {
     const familyTree = await this.familyTreeService.getFamilyTreeById(param.id);
 
-    if (req.user.id !== familyTree.createdBy) {
+    if (req.user.id !== familyTree.createdBy && !familyTree.isPublic) {
       throw new ForbiddenException(
         'You are not allowed to access this family tree',
       );

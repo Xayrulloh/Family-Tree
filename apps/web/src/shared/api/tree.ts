@@ -14,7 +14,7 @@ export const tree = {
     config?: AxiosRequestConfig,
   ) => {
     return base.get<FamilyTreePaginationResponseType>(
-      `/family-trees?page=${query.page}&perPage=${query.perPage}${query.name ? `&name=${query.name}` : ''}`,
+      `/family-trees?page=${query.page}&perPage=${query.perPage}${query.name ? `&name=${query.name}` : ''}${query.isPublic ? `&isPublic=${query.isPublic}` : ''}`,
       config,
     );
   },
