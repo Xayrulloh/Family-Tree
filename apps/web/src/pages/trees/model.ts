@@ -227,7 +227,7 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
   sample({
     clock: [createEditTreeModel.mutated, deleteTreeModel.mutated],
     fn: () => 1,
-    target: [$myTreesPage, $sharedTreesPage],
+    target: [$myTreesPage, $sharedTreesPage, $publicTreesPage],
   });
 
   sample({
