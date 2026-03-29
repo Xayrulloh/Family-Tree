@@ -1,0 +1,169 @@
+# CodeRabbit AI Code Review Configuration
+# Stack: NestJS (API) + React/Effector (Web) + Nx Monorepo + Drizzle ORM + PostgreSQL
+# Tooling: Biome, Vitest, Jest, Tailwind v4, Rspack, Zod, Passport, Sentry
+# Place this file at the root of your repository as `.coderabbit.yaml`
+
+# ─────────────────────────────────────────────
+# 1. LANGUAGE & TONE
+# ─────────────────────────────────────────────
+language: "en-US"
+tone_instructions: "Be concise and constructive. Focus on correctness, security, and maintainability. Skip stylistic nitpicks — Biome handles formatting."
+
+# ─────────────────────────────────────────────
+# 2. REVIEWS
+# ─────────────────────────────────────────────
+reviews:
+  profile: "assertive" # Thorough reviews — this is a full-stack monorepo
+  request_changes_workflow: false
+  poem: false
+  collapse_walkthrough: false
+
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+      - "develop"
+      - "feature/.*" # PRs targeting a feature branch (e.g. sub-feature merges)
+      - "bugfix/.*"
+      - "hotfix/.*"
+      - "test/.*"
+
+  # ── Ignore generated / non-reviewable files ──
+  path_filters:
+    - "!**/*.lock"
+    - "!**/dist/**"
+    - "!**/build/**"
+    - "!**/.next/**"
+    - "!**/coverage/**"
+    - "!**/node_modules/**"
+    - "!**/*.min.js"
+    - "!**/*.min.css"
+    - "!**/__snapshots__/**"
+    - "!**/*.generated.ts"
+    - "!**/biome.json" # Biome config, no need to review
+
+  # ── Per-path targeted instructions ──
+  path_instructions:
+    # --- NestJS Backend (apps/api) ---
+    - path: "apps/api/**/*.ts"
+      instructions: |
+        This is a NestJS v11 backend.
+        - Ensure all route handlers have proper Guards (JWT/Google OAuth via Passport).
+        - Check that DTOs use nestjs-zod / Zod schemas for validation — not plain class-validator.
+        - Flag any missing @ApiProperty() decorators on Swagger-exposed DTOs.
+        - Verify throttler decorators are applied on sensitive or public endpoints.
+        - Look for missing error handling: unhandled promise rejections, missing try/catch in async methods.
+        - Flag direct use of `req.user` without type assertion or a typed decorator.
+        - Ensure Sentry is capturing exceptions where appropriate (SentryService or filter).
+
+    - path: "apps/api/**/auth/**"
+      instructions: |
+        This is the authentication module.
+        - Pay very close attention to JWT secret handling, token expiry, and refresh token rotation.
+        - Ensure Google OAuth2 callback validates state parameter to prevent CSRF.
+        - Flag hardcoded secrets or credentials of any kind.
+        - Verify cookie settings: httpOnly, secure, sameSite flags on JWT cookies.
+        - Check that passport strategies handle invalid credentials consistently (return null/false or throw UnauthorizedException, per project convention).
+
+    - path: "apps/api/**/schema*"
+      instructions: |
+        This is a Drizzle ORM schema file.
+        - Verify that foreign keys have explicit onDelete/onUpdate behavior defined.
+        - Check for missing indexes on columns used in WHERE clauses or JOINs.
+        - Flag nullable columns that probably should be NOT NULL.
+        - Ensure timestamps have defaultNow() and are typed correctly.
+
+    - path: "apps/api/**/*.sql"
+      instructions: |
+        - Check for SQL injection risks if raw queries are used.
+        - Flag missing indexes on filtered or joined columns.
+        - Warn about N+1 patterns or unbounded queries without LIMIT.
+
+    # --- React Frontend (apps/web) ---
+    - path: "apps/web/**/*.tsx"
+      instructions: |
+        This is a React 18 frontend using Effector for state management and Ant Design + Tailwind v4 for UI.
+        - Check React hooks rules: no conditional hooks, correct dependency arrays in useEffect/useCallback/useMemo.
+        - Flag missing `key` props in list renders.
+        - Ensure accessibility: interactive elements should have aria labels, buttons should not be plain divs.
+        - Flag direct DOM manipulation or use of `document` / `window` without SSR guards.
+        - For Ant Design forms, prefer react-hook-form + @hookform/resolvers with Zod schemas — flag manual validation.
+
+    - path: "apps/web/**/model*"
+      instructions: |
+        This is an Effector model file (stores, events, effects).
+        - Ensure effects (createEffect) have proper error handling — both done and fail watched.
+        - Flag stores that hold server data without a reset event on route leave.
+        - Check that patronum helpers (pending, condition, etc.) are used where applicable to reduce boilerplate.
+        - Verify no business logic leaks into UI components — it should live in model files.
+
+    - path: "apps/web/**/router*"
+      instructions: |
+        This is an atomic-router routing file.
+        - Ensure route guards check auth state before navigation.
+        - Flag routes missing chainRoute for protected pages.
+
+    # --- Shared Libraries (libs/) ---
+    - path: "libs/**/*.ts"
+      instructions: |
+        This is a shared library consumed by both API and Web.
+        - Be strict about type safety — no implicit `any`, no type assertions without comments.
+        - Ensure exports are tree-shakeable (named exports preferred over default).
+        - Flag any Node.js-specific or browser-specific APIs — shared libs must be isomorphic.
+
+    # --- Tests ---
+    - path: "**/*.spec.ts"
+      instructions: |
+        NestJS unit/integration tests using Jest.
+        - Verify mocks properly reset between tests.
+        - Flag tests that test implementation details instead of behavior.
+        - Ensure guards and interceptors are tested in integration tests, not just unit-mocked away.
+
+    - path: "**/*.test.ts"
+      instructions: |
+        Vitest tests (likely frontend/shared libs).
+        - Flag empty tests or tests with no assertions.
+        - Check for meaningful coverage of edge cases and error paths.
+        - Prefer Testing Library queries (getByRole, getByLabelText) over getByTestId.
+
+    # --- Infrastructure / Config ---
+    - path: "apps/api/docker-compose*"
+      instructions: |
+        - Ensure Redis and Postgres services have proper healthchecks.
+        - Flag exposed ports that shouldn't be public in production.
+        - Check for hardcoded passwords or secrets — these should reference env variables.
+
+    - path: "**/*.env*"
+      instructions: |
+        - NEVER approve .env files containing real secrets committed to the repo.
+        - Ensure .env.example exists and is kept in sync.
+
+    - path: "**"
+      instructions: |
+        This is a family-tree NX monorepo with two apps:
+        - `apps/api`: NestJS v11 REST API with Drizzle ORM + PostgreSQL, Redis cache (Keyv), AWS S3, Passport JWT + Google OAuth2, Swagger, Sentry, Throttler.
+        - `apps/web`: React 18 SPA with Effector state management, Ant Design + Tailwind v4 UI, atomic-router, react-hook-form + Zod, D3 for tree visualization, Rspack bundler.
+
+        General rules:
+        - Biome handles all formatting and basic linting — do NOT comment on formatting.
+        - All validation must use Zod schemas (nestjs-zod on backend, @hookform/resolvers on frontend).
+        - TypeScript strict mode is enabled — flag any `any`, non-null assertions without justification, or type casting without a comment.
+        - Nx affected commands are used for CI — do not suggest changes that break project boundaries.
+        - pnpm is the package manager — flag any npm/yarn usage in scripts.
+        - Security is a priority: JWT, OAuth2, S3 presigned URLs, rate limiting — review these areas carefully.
+
+# ─────────────────────────────────────────────
+# 3. CHAT
+# ─────────────────────────────────────────────
+chat:
+  auto_reply: true
+
+# ─────────────────────────────────────────────
+# 4. KNOWLEDGE BASE
+# ─────────────────────────────────────────────
+knowledge_base:
+  learnings:
+    scope: auto
+  pull_requests:
+    scope: auto

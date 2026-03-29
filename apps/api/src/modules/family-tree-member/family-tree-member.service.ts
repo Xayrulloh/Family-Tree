@@ -208,60 +208,6 @@ export class FamilyTreeMemberService {
       );
     }
 
-    // if member has spouse we should also check spouse parents
-    const spouse =
-      await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
-        where: and(
-          eq(
-            schema.familyTreeMemberConnectionsSchema.familyTreeId,
-            familyTreeId,
-          ),
-          eq(
-            schema.familyTreeMemberConnectionsSchema.type,
-            FamilyTreeMemberConnectionEnum.SPOUSE,
-          ),
-          or(
-            eq(
-              schema.familyTreeMemberConnectionsSchema.fromMemberId,
-              member.id,
-            ),
-            eq(schema.familyTreeMemberConnectionsSchema.toMemberId, member.id),
-          ),
-        ),
-      });
-
-    if (spouse) {
-      const spouseParents =
-        await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
-          where: and(
-            eq(
-              schema.familyTreeMemberConnectionsSchema.familyTreeId,
-              familyTreeId,
-            ),
-            eq(
-              schema.familyTreeMemberConnectionsSchema.type,
-              FamilyTreeMemberConnectionEnum.PARENT,
-            ),
-            or(
-              eq(
-                schema.familyTreeMemberConnectionsSchema.toMemberId,
-                spouse.toMemberId,
-              ),
-              eq(
-                schema.familyTreeMemberConnectionsSchema.toMemberId,
-                spouse.fromMemberId,
-              ),
-            ),
-          ),
-        });
-
-      if (spouseParents) {
-        throw new BadRequestException(
-          `Family tree member spouse with id ${spouse.toMemberId} has already parents`,
-        );
-      }
-    }
-
     // creating parents
     const [[father], [mother]] = await Promise.all([
       this.db

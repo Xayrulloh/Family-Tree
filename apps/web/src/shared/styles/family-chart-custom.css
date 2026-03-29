@@ -1,0 +1,132 @@
+/* ============================================================
+   Override family-chart CSS variables to match our design
+   ============================================================ */
+.f3 {
+  --male-color: #dbeafe; /* blue-100  */
+  --female-color: #fce7f3; /* pink-100  */
+  --text-color: #111827;
+}
+
+/* ============================================================
+   Allow overflow so our action buttons can escape the card box
+   ============================================================ */
+.f3 .f3-cont,
+.f3 .card_cont,
+.f3 .card,
+.f3 .card-inner,
+.ft-card-wrap {
+  overflow: visible !important;
+}
+
+/* ============================================================
+   Action button container – positioned inside .card
+   ============================================================ */
+.ft-card-wrap {
+  cursor: pointer;
+}
+
+.ft-actions {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* ── Shared button base ── */
+.ft-btn {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1.5px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
+  z-index: 20;
+  padding: 0;
+}
+
+.ft-btn:hover {
+  transform: scale(1.15);
+}
+
+/* Show buttons via JS-managed class (more reliable than :hover across SVG layers) */
+.ft-card-wrap.is-hovered .ft-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Preview (👁) – top-right corner ── */
+.ft-btn-preview {
+  top: -10px;
+  right: -10px;
+  color: #6b7280;
+}
+
+/* ── Add parents (⬆) – above, horizontally centered ── */
+.ft-btn-parents {
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-color: #374151;
+  color: #374151;
+  background: #f9fafb;
+}
+.ft-btn-parents:hover {
+  transform: translateX(-50%) scale(1.15);
+}
+
+/* ── Add spouse (+) – right-center ── */
+.ft-btn-spouse {
+  top: 50%;
+  right: -30px;
+  transform: translateY(-50%);
+  color: #fff;
+  border: none;
+}
+.ft-btn-spouse:hover {
+  transform: translateY(-50%) scale(1.15);
+}
+
+/* ── Add son (♂) – bottom-left ── */
+.ft-btn-boy {
+  bottom: -30px;
+  left: calc(50% - 26px);
+  background: #3b82f6;
+  border-color: #1e40af;
+  color: #fff;
+}
+
+/* ── Add daughter (♀) – bottom-right ── */
+.ft-btn-girl {
+  bottom: -30px;
+  left: calc(50% + 4px);
+  background: #ec4899;
+  border-color: #be185d;
+  color: #fff;
+}
+
+/* ── Connection lines ── */
+.f3 .link {
+  stroke: #94a3b8 !important;
+}
+
+/* ── Card hover shadow — tied to JS class so it stays in sync with buttons ── */
+/* Disable library's native :hover shadow so ours controls timing */
+.f3 div.card:hover .card-inner {
+  box-shadow: none !important;
+}
+/* Equal specificity (0,4,1) + later in file → wins over the rule above */
+.f3 div.ft-card-wrap.is-hovered .card-inner {
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.8) !important;
+}

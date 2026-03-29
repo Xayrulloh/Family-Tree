@@ -1,10 +1,8 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { createEvent, createStore, sample } from 'effector';
 import { persist } from 'effector-storage/local';
 import { createBrowserHistory } from 'history';
 import { router } from '~/shared/config/routing';
 import { appStarted } from '~/shared/config/system';
-
-const createBrowserHistoryFx = createEffect(() => createBrowserHistory());
 
 export type Theme = 'light' | 'dark';
 
@@ -21,10 +19,6 @@ persist({
 
 sample({
   clock: appStarted,
-  target: createBrowserHistoryFx,
-});
-
-sample({
-  clock: createBrowserHistoryFx.doneData,
+  fn: () => createBrowserHistory(),
   target: router.setHistory,
 });

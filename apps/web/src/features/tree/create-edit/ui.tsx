@@ -1,6 +1,6 @@
 import { UploadOutlined } from '@ant-design/icons';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Flex, Input, Modal, Upload } from 'antd';
+import { Button, Flex, Input, Modal, Switch, Typography, Upload } from 'antd';
 import type { RcFile } from 'antd/es/upload';
 import { useUnit } from 'effector-react';
 import { useId } from 'react';
@@ -23,6 +23,7 @@ export const CreateEditTreeModal: React.FC = () => {
   model.form.useBindFormWithModel({ form });
 
   const formId = useId();
+  const publicTreeLabelId = useId();
 
   const img = form.getValues().image;
 
@@ -53,6 +54,29 @@ export const CreateEditTreeModal: React.FC = () => {
               >
                 <Input {...field} placeholder="Enter tree name" />
               </FieldWrapper>
+            )}
+          />
+
+          {/* === 🌐 Visibility Toggle === */}
+          <Controller
+            control={form.control}
+            name="isPublic"
+            render={({ field }) => (
+              <Flex align="center" justify="space-between">
+                <Flex vertical gap={2}>
+                  <Typography.Text strong id={publicTreeLabelId}>
+                    Public tree
+                  </Typography.Text>
+                  <Typography.Text type="secondary" className="text-xs">
+                    Anyone can view this tree
+                  </Typography.Text>
+                </Flex>
+                <Switch
+                  checked={field.value}
+                  onChange={field.onChange}
+                  aria-labelledby={publicTreeLabelId}
+                />
+              </Flex>
             )}
           />
 

@@ -1,0 +1,1 @@
+CREATE INDEX "is_public_idx" ON "family_trees" USING btree ("is_public");

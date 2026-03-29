@@ -11,11 +11,13 @@ export const addGirlTrigger = createEvent<FamilyTreeMemberGetResponseType>(); //
 export const addSpouseTrigger = createEvent<FamilyTreeMemberGetResponseType>(); // Husband or Wife
 export const addParentsTrigger = createEvent<FamilyTreeMemberGetResponseType>(); // Husband or Wife
 export const created = createEvent();
+export const lastAddedMemberIdTrigger = createEvent();
 
 // Stores
 export const $member = createStore<FamilyTreeMemberGetResponseType | null>(
   null,
 );
+export const $lastAddedMemberId = createStore<string | null>(null);
 
 // Effects
 const addBoyFx = attach({
@@ -96,6 +98,19 @@ sample({
 sample({
   clock: addParentsTrigger,
   target: [$member, addParentsFx],
+});
+
+// Capture last added member id for post-add focus (parents excluded)
+sample({
+  clock: [addBoyFx.doneData, addGirlFx.doneData, addSpouseFx.doneData],
+  fn: (response) => response.data.id,
+  target: $lastAddedMemberId,
+});
+
+// Reset last added member id after it's consumed
+sample({
+  clock: lastAddedMemberIdTrigger,
+  target: $lastAddedMemberId.reinit,
 });
 
 // Ending part

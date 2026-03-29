@@ -13,8 +13,16 @@ export const tree = {
     query: FamilyTreePaginationAndSearchQueryType,
     config?: AxiosRequestConfig,
   ) => {
+    const params = new URLSearchParams({
+      page: String(query.page),
+      perPage: String(query.perPage),
+    });
+    if (query.name) params.set('name', query.name);
+    if (query.isPublic !== undefined)
+      params.set('isPublic', String(query.isPublic));
+
     return base.get<FamilyTreePaginationResponseType>(
-      `/family-trees?page=${query.page}&perPage=${query.perPage}${query.name ? `&name=${query.name}` : ''}`,
+      `/family-trees?${params.toString()}`,
       config,
     );
   },

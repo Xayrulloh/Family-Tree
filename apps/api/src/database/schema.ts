@@ -7,6 +7,7 @@ import { relations } from 'drizzle-orm';
 import {
   boolean,
   date,
+  index,
   pgEnum,
   pgTable,
   text,
@@ -73,10 +74,12 @@ export const familyTreesSchema = pgTable(
       })
       .notNull(),
     image: text('image'),
+    isPublic: boolean('is_public').notNull().default(false),
     ...baseSchema,
   },
   (table) => ({
     nameAndUserIdx: unique('name_and_user_idx').on(table.name, table.createdBy),
+    isPublicIdx: index('is_public_idx').on(table.isPublic),
   }),
 );
 

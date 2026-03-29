@@ -1,337 +1,309 @@
 import { DownloadOutlined, ShareAltOutlined } from '@ant-design/icons';
-import type { FamilyTreeMemberConnectionGetAllResponseType } from '@family-tree/shared';
+import type { FamilyTreeMemberGetResponseType } from '@family-tree/shared';
 import { theme } from 'antd';
 import { useUnit } from 'effector-react';
-import {
-  memo,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { saveSvgAsPng } from 'save-svg-as-png';
+import * as f3 from 'family-chart';
+import 'family-chart/styles/family-chart.css';
+import html2canvas from 'html2canvas';
+import { useCallback, useEffect, useRef } from 'react';
 import { ShareTreeModal, shareTreeModel } from '~/features/tree-detail/share';
 import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
-import {
-  calculatePositions,
-  type MemberMetadata,
-  type Position,
-} from '~/shared/lib/layout-engine';
-import { FamilyTreeNode } from '~/shared/ui/family-tree-node';
+import type {
+  F3Chart,
+  F3Datum,
+  F3NodeDatum,
+} from '~/shared/lib/family-chart-transformer';
+import { toF3Data } from '~/shared/lib/family-chart-transformer';
+import '~/shared/styles/family-chart-custom.css';
+import { errorFx } from '~/shared/lib/message';
 import type { Props } from './ui';
 
-const MemoizedFamilyTreeNode = memo(FamilyTreeNode);
-
-const CONNECTION = {
-  SPOUSE: { color: '#10b981', width: 3 },
-  PARENT_CHILD: { color: '#9ca3af', width: 2 },
-} as const;
-
-const NODE_WIDTH = 160;
-const NODE_HEIGHT = 80;
-
-const savedViews = new Map<
-  string,
-  { x: number; y: number; width: number; height: number }
->();
+/** family-chart ships without TS declarations; cast to our minimal interface. */
+type F3Module = { createChart: (el: HTMLElement, data: F3Datum[]) => F3Chart };
 
 export const Visualization: React.FC<Props> = ({ model }) => {
-  const [connections, members, id, sharedTree] = useUnit([
+  const [connections, members, sharedTree, lastAddedMemberId] = useUnit([
     model.$connections,
     model.$members,
-    model.$id,
     model.$sharedTree,
+    addMemberModel.$lastAddedMemberId,
   ]);
   const { token } = theme.useToken();
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
+  const chartRef = useRef<F3Chart | null>(null);
+  const membersMapRef = useRef(
+    new Map<string, FamilyTreeMemberGetResponseType>(),
+  );
+  const hasFirstDataRef = useRef(false);
+  const canAddMembersRef = useRef(false);
+  const treeNameRef = useRef<string | null>(null);
+  const lastAddedMemberIdRef = useRef<string | null>(null);
 
-  const [containerWidth, setContainerWidth] = useState(0);
+  // Sync refs with latest render values so stale closures always read current data
+  canAddMembersRef.current = sharedTree?.canAddMembers ?? false;
+  treeNameRef.current = sharedTree?.name ?? null;
+  lastAddedMemberIdRef.current = lastAddedMemberId;
 
-  useLayoutEffect(() => {
-    const update = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.clientWidth);
+  useEffect(() => {
+    membersMapRef.current = new Map(
+      members.map((m): [string, FamilyTreeMemberGetResponseType] => [m.id, m]),
+    );
+  }, [members]);
+
+  // ── Initialize chart once on mount ──────────────────────────
+  useEffect(() => {
+    const container = containerRef.current;
+
+    if (!container) return;
+
+    const chart = (f3 as unknown as F3Module).createChart(container, []);
+
+    // Disable phantom "add parent" placeholder nodes — we handle this with our own buttons.
+    // Phantom nodes bloat tree.dim causing treeFit to use wrong scale.
+    chart.setSingleParentEmptyCard(false);
+
+    chart
+      .setCardHtml()
+      // img_w/h/x/y = 0 → let CSS flex layout handle image sizing (no inline style conflicts)
+      .setCardDim({ w: 220, h: 70, img_w: 0, img_h: 0, img_x: 0, img_y: 0 })
+      .setCardDisplay([
+        (d: F3Datum) => d.data.name,
+        (d: F3Datum) => d.data.dob ?? '',
+      ])
+      .setCardImageField('image')
+      .setOnCardUpdate(function (this: HTMLElement, d: F3NodeDatum) {
+        // `this` = card_cont wrapper (a positioned point in the SVG)
+        // `.card` = inner div with transform:translate(-50%,-50%), acts as containing block
+        this.classList.add('ft-card-wrap');
+
+        // JS hover tracking with a short delay on leave so the cursor can
+        // cross the gap between the card edge and the outside-positioned buttons
+        if (!this.dataset.hoverBound) {
+          this.dataset.hoverBound = '1';
+
+          let leaveTimer: ReturnType<typeof setTimeout>;
+
+          this.addEventListener('mouseover', () => {
+            clearTimeout(leaveTimer);
+
+            this.classList.add('is-hovered');
+          });
+
+          this.addEventListener('mouseout', (e: MouseEvent) => {
+            if (!this.contains(e.relatedTarget as Node)) {
+              leaveTimer = setTimeout(
+                () => this.classList.remove('is-hovered'),
+                150,
+              );
+            }
+          });
+        }
+
+        // Remove stale action buttons before re-rendering
+        this.querySelector('.ft-actions')?.remove();
+
+        const hasSpouse = d.data.rels.spouses.length > 0;
+        const hasParents = d.data.rels.parents.length > 0;
+        const isMale = d.data.data.gender === 'M';
+        const spouseColor = isMale ? '#ec4899' : '#3b82f6';
+        const spouseBorder = isMale ? '#be185d' : '#1e40af';
+        const memberId = d.data.id;
+
+        const actions = document.createElement('div');
+
+        actions.className = 'ft-actions';
+
+        actions.innerHTML = `<button
+          class="ft-btn ft-btn-preview"
+          data-action="preview"
+          data-member-id="${memberId}"
+          title="View details"
+          aria-label="View details"
+        >👁</button>`;
+
+        if (canAddMembersRef.current) {
+          if (!hasParents) {
+            actions.innerHTML += `<button
+              class="ft-btn ft-btn-parents"
+              data-action="add-parents"
+              data-member-id="${memberId}"
+              title="Add parents"
+              aria-label="Add parents"
+            >⬆</button>`;
+          }
+
+          if (!hasSpouse) {
+            actions.innerHTML += `<button
+              class="ft-btn ft-btn-spouse"
+              data-action="add-spouse"
+              data-member-id="${memberId}"
+              style="background:${spouseColor};border-color:${spouseBorder}"
+              title="Add spouse"
+              aria-label="Add spouse"
+            >+</button>`;
+          }
+
+          if (hasSpouse && !isMale) {
+            actions.innerHTML += `<button
+              class="ft-btn ft-btn-boy"
+              data-action="add-boy"
+              data-member-id="${memberId}"
+              title="Add son"
+              aria-label="Add son"
+            >♂</button>
+            <button
+              class="ft-btn ft-btn-girl"
+              data-action="add-girl"
+              data-member-id="${memberId}"
+              title="Add daughter"
+              aria-label="Add daughter"
+            >♀</button>`;
+          }
+        }
+
+        // Append to .card so buttons are positioned relative to its coordinate space
+        const card = this.querySelector('.card');
+
+        if (card) card.appendChild(actions);
+      });
+
+    chartRef.current = chart;
+
+    return () => {
+      container.innerHTML = '';
+      chartRef.current = null;
+      hasFirstDataRef.current = false;
+    };
+  }, []);
+
+  // ── Sync data whenever members / connections change ──────────
+  useEffect(() => {
+    if (!chartRef.current || members.length === 0) return;
+
+    const focusId = lastAddedMemberIdRef.current;
+    const data = toF3Data(members, connections, focusId);
+
+    chartRef.current.updateData(data);
+
+    if (!hasFirstDataRef.current) {
+      // First load: fit all members in view
+      hasFirstDataRef.current = true;
+
+      requestAnimationFrame(() => {
+        chartRef.current?.updateTree({ initial: true, transition_time: 0 });
+      });
+    } else if (focusId) {
+      // After adding a member: fly to the newly created one
+      addMemberModel.lastAddedMemberIdTrigger();
+
+      requestAnimationFrame(() => {
+        chartRef.current?.updateTree({
+          tree_position: 'main_to_middle',
+          transition_time: 400,
+        });
+      });
+    } else {
+      chartRef.current.updateTree({
+        tree_position: 'inherit',
+        transition_time: 300,
+      });
+    }
+  }, [members, connections]);
+
+  // ── Event delegation for card action buttons ─────────────────
+  useEffect(() => {
+    const container = containerRef.current;
+
+    if (!container) return;
+
+    const handleClick = (e: MouseEvent) => {
+      const btn = (e.target as Element).closest(
+        '[data-action]',
+      ) as HTMLElement | null;
+      if (!btn) return;
+
+      e.stopPropagation();
+
+      const action = btn.dataset.action;
+      const memberId = btn.dataset.memberId;
+
+      if (!action || !memberId) return;
+
+      const member = membersMapRef.current.get(memberId);
+
+      if (!member) return;
+
+      switch (action) {
+        case 'preview':
+          previewMemberModel.previewMemberTrigger(member);
+
+          break;
+        case 'add-boy':
+          addMemberModel.addBoyTrigger(member);
+
+          break;
+        case 'add-girl':
+          addMemberModel.addGirlTrigger(member);
+
+          break;
+        case 'add-spouse':
+          addMemberModel.addSpouseTrigger(member);
+
+          break;
+        case 'add-parents':
+          addMemberModel.addParentsTrigger(member);
+
+          break;
       }
     };
-    update();
 
-    window.addEventListener('resize', update);
+    container.addEventListener('click', handleClick);
 
-    return () => window.removeEventListener('resize', update);
+    return () => container.removeEventListener('click', handleClick);
   }, []);
 
-  const { positions, metadata, couples } = useMemo(() => {
-    if (containerWidth === 0) {
-      return {
-        positions: new Map(),
-        metadata: new Map(),
-        couples: [],
-      };
-    }
-    return calculatePositions(members, connections, containerWidth);
-  }, [members, connections, containerWidth]);
-
-  /* ===============================
-   * Center tree in the viewport
-   * =============================== */
-
-  const [viewBox, setViewBox] = useState({
-    x: 0,
-    y: 0,
-    width: 1200,
-    height: 800,
-  });
-
-  const [isReady, setIsReady] = useState(false);
-
-  // Center once based on layout
-  const isCenteredRef = useRef(false);
-
-  /* ===============================
-   * Helper to get tree bounds
-   * =============================== */
-  const treeBounds = useMemo(() => {
-    if (positions.size === 0) return null;
-
-    let minY = Number.POSITIVE_INFINITY;
-    let maxY = Number.NEGATIVE_INFINITY;
-
-    // Pass 1: Find vertical bounds
-    for (const p of positions.values()) {
-      if (p.y < minY) minY = p.y;
-      if (p.y > maxY) maxY = p.y;
-    }
-
-    // Pass 2: Calculate center of root nodes
-    let rootSumX = 0;
-    let rootCount = 0;
-
-    for (const p of positions.values()) {
-      if (Math.abs(p.y - minY) < 5) {
-        rootSumX += p.x;
-        rootCount++;
-      }
-    }
-
-    if (rootCount === 0) return null;
-
-    const rootCenterX = rootSumX / rootCount;
-
-    // Pass 3: Calculate max symmetric distance
-    let maxDistX = 0;
-    const halfNode = NODE_WIDTH / 2;
-
-    for (const p of positions.values()) {
-      const distLeft = Math.abs(p.x - halfNode - rootCenterX);
-      const distRight = Math.abs(p.x + halfNode - rootCenterX);
-      const dist = distLeft > distRight ? distLeft : distRight;
-
-      if (dist > maxDistX) maxDistX = dist;
-    }
-
-    // Calculate fit dimensions
-    const width = maxDistX * 2 + NODE_WIDTH; // Extra padding
-    const height = maxY - minY + NODE_HEIGHT * 3; // Extra vertical padding
-
-    const vbX = rootCenterX - width / 2;
-    const vbY = minY - NODE_HEIGHT;
-
-    return { x: vbX, y: vbY, width, height };
-  }, [positions]);
-
+  // ── Toolbar handlers ─────────────────────────────────────────
   const handleCenterView = useCallback(() => {
-    if (!treeBounds) return;
-
-    setViewBox(treeBounds);
-
-    if (id) {
-      savedViews.set(id, treeBounds);
-    }
-  }, [treeBounds, id]);
-
-  const handleDownloadImage = useCallback(() => {
-    if (svgRef.current) {
-      const filename = sharedTree?.name
-        ? `${sharedTree.name}-famtree.png`
-        : 'famtree.png';
-
-      saveSvgAsPng(svgRef.current, filename, {
-        backgroundColor: 'rgba(249, 250, 251, 0.9)',
-        ...(treeBounds && {
-          left: treeBounds.x,
-          top: treeBounds.y,
-          width: treeBounds.width,
-          height: treeBounds.height,
-        }),
-      });
-    }
-  }, [sharedTree, treeBounds]);
-
-  useLayoutEffect(() => {
-    if (isCenteredRef.current || positions.size === 0 || !id) return;
-
-    // Check if we have a saved view for this tree
-    const saved = savedViews.get(id);
-
-    if (saved) {
-      setViewBox(saved);
-
-      isCenteredRef.current = true;
-
-      setIsReady(true);
-
-      return;
-    }
-
-    handleCenterView();
-
-    isCenteredRef.current = true;
-
-    setIsReady(true);
-  }, [positions, id]);
-
-  // Persist view changes
-  useEffect(() => {
-    if (id && isCenteredRef.current) {
-      savedViews.set(id, viewBox);
-    }
-  }, [viewBox, id]);
-
-  /* ===============================
-   * Drag logic for panning
-   * =============================== */
-  const [isDragging, setIsDragging] = useState(false);
-  const isDraggingRef = useRef(false);
-  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
-  const rafRef = useRef<number | null>(null);
-
-  const handleMouseDown = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
-    setIsDragging(true);
-
-    isDraggingRef.current = true;
-    lastPointRef.current = { x: e.clientX, y: e.clientY };
-  }, []);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
-    if (!isDraggingRef.current || !lastPointRef.current || !svgRef.current) {
-      return;
-    }
-
-    const currentX = e.clientX;
-    const currentY = e.clientY;
-
-    if (rafRef.current !== null) return;
-
-    rafRef.current = requestAnimationFrame(() => {
-      if (!lastPointRef.current || !svgRef.current) {
-        rafRef.current = null;
-
-        return;
-      }
-
-      const dx = currentX - lastPointRef.current.x;
-      const dy = currentY - lastPointRef.current.y;
-
-      const rect = svgRef.current.getBoundingClientRect();
-
-      // Update last point immediately
-      lastPointRef.current = { x: currentX, y: currentY };
-
-      setViewBox((prev) => {
-        const scaleX = prev.width / rect.width;
-        const scaleY = prev.height / rect.height;
-        const uniformScale = Math.max(scaleX, scaleY);
-
-        return {
-          ...prev,
-          x: prev.x - dx * uniformScale,
-          y: prev.y - dy * uniformScale,
-        };
-      });
-
-      rafRef.current = null;
+    chartRef.current?.updateTree({
+      tree_position: 'main_to_middle',
+      transition_time: 400,
     });
   }, []);
 
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
+  const handleDownloadImage = useCallback(async () => {
+    const container = containerRef.current;
 
-    isDraggingRef.current = false;
-    lastPointRef.current = null;
+    if (!container) return;
 
-    if (rafRef.current !== null) {
-      cancelAnimationFrame(rafRef.current);
+    const filename = treeNameRef.current
+      ? `${treeNameRef.current}-famtree.png`
+      : 'famtree.png';
 
-      rafRef.current = null;
-    }
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    setIsDragging(false);
-
-    isDraggingRef.current = false;
-    lastPointRef.current = null;
-
-    if (rafRef.current !== null) {
-      cancelAnimationFrame(rafRef.current);
-
-      rafRef.current = null;
-    }
-  }, []);
-
-  useEffect(() => {
-    const svg = svgRef.current;
-
-    if (!svg) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-
-      const scaleFactor = 1.1;
-      const { width, height, x, y } = viewBox;
-      const rect = svg.getBoundingClientRect();
-
-      const mouseX = ((e.clientX - rect.left) / rect.width) * width + x;
-      const mouseY = ((e.clientY - rect.top) / rect.height) * height + y;
-
-      const zoomIn = e.deltaY < 0;
-      const newWidth = zoomIn ? width / scaleFactor : width * scaleFactor;
-      const newHeight = zoomIn ? height / scaleFactor : height * scaleFactor;
-
-      const newX = mouseX - ((mouseX - x) * newWidth) / width;
-      const newY = mouseY - ((mouseY - y) * newHeight) / height;
-
-      setViewBox({
-        x: newX,
-        y: newY,
-        width: newWidth,
-        height: newHeight,
+    try {
+      const canvas = await html2canvas(container, {
+        backgroundColor: 'rgba(249, 250, 251, 0.9)',
+        useCORS: true,
       });
-    };
 
-    svg.addEventListener('wheel', handleWheel, { passive: false });
-
-    return () => {
-      svg.removeEventListener('wheel', handleWheel);
-    };
-  }, [viewBox]);
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch {
+      errorFx('Failed to export image');
+    }
+  }, []);
 
   return (
     <div
-      ref={containerRef}
       className="w-full p-4 select-none relative"
-      style={{
-        height: 'calc(103vh - 160px)',
-        opacity: isReady ? 1 : 0,
-        transition: 'opacity 0.2s ease-in',
-      }}
+      style={{ height: 'calc(103vh - 160px)' }}
     >
       <ShareTreeModal />
+
+      {/* Toolbar */}
       <div className="absolute top-8 right-8 z-10 flex gap-2">
         <button
           type="button"
@@ -365,255 +337,18 @@ export const Visualization: React.FC<Props> = ({ model }) => {
         </button>
       </div>
 
-      {/** biome-ignore lint/a11y/noSvgWithoutTitle: <There's no need for title> */}
-      <svg
-        width="100%"
-        height="100%"
-        viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
+      {/* family-chart container */}
+      <div
+        ref={containerRef}
+        id="FamilyChart"
+        className="w-full h-full f3"
         style={{
           background: 'rgba(249, 250, 251, 0.9)',
           border: `1px solid ${token.colorBorderSecondary}`,
           borderRadius: token.borderRadiusLG,
-          cursor: isDragging ? 'grabbing' : 'grab',
+          overflow: 'hidden',
         }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        ref={svgRef}
-      >
-        {/* <title>Family Tree</title> */}
-        {positions.size > 0 && (
-          <>
-            <g>
-              <CoupleConnections couples={couples} positions={positions} />
-            </g>
-            <g>
-              <ParentChildConnections
-                couples={couples}
-                positions={positions}
-                metadata={metadata}
-              />
-            </g>
-            <g>
-              {members.map((m) => {
-                const memberMetadata = metadata.get(m.id);
-                // biome-ignore lint/style/noNonNullAssertion: <Checked by positions.size > 0>
-                const position = positions.get(m.id)!;
-
-                return (
-                  <MemoizedFamilyTreeNode
-                    key={m.id}
-                    member={m}
-                    position={position}
-                    hasMarriage={!!memberMetadata?.spouseId}
-                    hasParents={(memberMetadata?.parents.length ?? 0) > 0}
-                    onPreviewClick={previewMemberModel.previewMemberTrigger}
-                    onAddBoyClick={addMemberModel.addBoyTrigger}
-                    onAddGirlClick={addMemberModel.addGirlTrigger}
-                    onAddSpouseClick={addMemberModel.addSpouseTrigger}
-                    onAddParentClick={addMemberModel.addParentsTrigger}
-                    canAddMembers={sharedTree?.canAddMembers}
-                  />
-                );
-              })}
-            </g>
-          </>
-        )}
-      </svg>
+      />
     </div>
   );
 };
-
-//#region CoupleConnections
-const CoupleConnections: React.FC<{
-  couples: FamilyTreeMemberConnectionGetAllResponseType;
-  positions: Map<string, Position>;
-}> = memo(({ couples, positions }) => {
-  const RECT_WIDTH = NODE_WIDTH / 2;
-
-  return couples.map((couple) => {
-    const p1 = positions.get(couple.fromMemberId);
-    const p2 = positions.get(couple.toMemberId);
-
-    if (!p1 || !p2) return null;
-
-    const midY = (p1.y + p2.y) / 2;
-
-    // Adjust line to stop at rect edges, not centers
-    const x1 = p1.x + RECT_WIDTH / 2;
-    const x2 = p2.x - RECT_WIDTH / 2;
-
-    return (
-      <line
-        key={`spouse-${couple.fromMemberId}-${couple.toMemberId}`}
-        x1={x1}
-        y1={midY}
-        x2={x2}
-        y2={midY}
-        stroke={CONNECTION.SPOUSE.color}
-        strokeWidth={CONNECTION.SPOUSE.width}
-      />
-    );
-  });
-});
-//#endregion
-
-//#region ParentChildConnections
-const ParentChildConnections: React.FC<{
-  couples: FamilyTreeMemberConnectionGetAllResponseType;
-  positions: Map<string, Position>;
-  metadata: Map<string, MemberMetadata>;
-}> = memo(({ positions, metadata }) => {
-  const result: React.ReactNode[] = [];
-
-  // Group children by parent using metadata
-  const grouped = new Map<string, Set<string>>();
-
-  metadata.forEach((memberData) => {
-    if (memberData.children.length === 0) return;
-
-    const origin = memberData.coupleCenterPosition ?? memberData.position;
-    if (!origin) return;
-
-    const key = `${origin.x},${origin.y}`;
-
-    if (!grouped.has(key)) grouped.set(key, new Set());
-
-    memberData.children.forEach((childId) => {
-      grouped.get(key)?.add(childId);
-    });
-  });
-
-  grouped.forEach((childSet, key) => {
-    const childIds = Array.from(childSet);
-
-    const [xStr, yStr] = key.split(',');
-    const coupleX = parseFloat(xStr);
-    const coupleY = parseFloat(yStr);
-
-    const childPositions = childIds
-      .map((id) => positions.get(id))
-      .filter(Boolean) as { x: number; y: number }[];
-
-    if (childPositions.length === 0) return;
-
-    const topY = coupleY + 1.5;
-
-    if (childPositions.length === 1) {
-      const child = childPositions[0];
-      const childId = childIds[0];
-      const childTop = child.y;
-
-      const childMetadata = metadata.get(childId);
-      const childHasSpouse = !!childMetadata?.spouseId;
-
-      if (childHasSpouse) {
-        const intermediateY = childTop - NODE_HEIGHT / 2 - 8;
-
-        result.push(
-          <line
-            key={`stem-vertical-${childId}-${coupleX}-${topY}`}
-            x1={coupleX}
-            y1={topY}
-            x2={coupleX}
-            y2={intermediateY}
-            stroke={CONNECTION.PARENT_CHILD.color}
-            strokeWidth={CONNECTION.PARENT_CHILD.width}
-          />,
-        );
-
-        // Horizontal line from parent X to child X
-        const x1Offset = child.x > coupleX ? 1 : -1;
-        const x2Offset = child.x > coupleX ? -1 : 1;
-
-        result.push(
-          <line
-            key={`stem-horizontal-${childId}-${coupleX}-${child.x}`}
-            x1={coupleX + x2Offset}
-            y1={intermediateY}
-            x2={child.x + x1Offset}
-            y2={intermediateY}
-            stroke={CONNECTION.PARENT_CHILD.color}
-            strokeWidth={CONNECTION.PARENT_CHILD.width}
-          />,
-        );
-
-        // Vertical line from intermediate Y down to child
-        result.push(
-          <line
-            key={`stem-child-${childId}-${child.x}-${intermediateY}`}
-            x1={child.x}
-            y1={intermediateY}
-            x2={child.x}
-            y2={childTop - 20}
-            stroke={CONNECTION.PARENT_CHILD.color}
-            strokeWidth={CONNECTION.PARENT_CHILD.width}
-          />,
-        );
-      } else {
-        // Straight line for single child without spouse
-        result.push(
-          <line
-            key={`stem-${child.x}-${child.y}`}
-            x1={coupleX}
-            y1={topY}
-            x2={coupleX}
-            y2={childTop}
-            stroke={CONNECTION.PARENT_CHILD.color}
-            strokeWidth={CONNECTION.PARENT_CHILD.width}
-          />,
-        );
-      }
-    } else {
-      const childTops = childPositions.map((c) => c.y - NODE_HEIGHT / 2);
-      const branchY = Math.min(...childTops) - 8;
-      const leftX = Math.min(...childPositions.map((c) => c.x)) - 1;
-      const rightX = Math.max(...childPositions.map((c) => c.x)) + 1;
-
-      // vertical stem
-      result.push(
-        <line
-          key={`stem-${coupleX}-${topY}-${branchY}`}
-          x1={coupleX}
-          y1={topY}
-          x2={coupleX}
-          y2={branchY}
-          stroke={CONNECTION.PARENT_CHILD.color}
-          strokeWidth={CONNECTION.PARENT_CHILD.width}
-        />,
-      );
-
-      // horizontal branch
-      result.push(
-        <line
-          key={`branch-${leftX}-${branchY}-${rightX}`}
-          x1={leftX}
-          y1={branchY}
-          x2={rightX}
-          y2={branchY}
-          stroke={CONNECTION.PARENT_CHILD.color}
-          strokeWidth={CONNECTION.PARENT_CHILD.width}
-        />,
-      );
-
-      // small vertical stems from each child to branch
-      childPositions.forEach((c, i) => {
-        result.push(
-          <line
-            key={`child-${c.x + i}-${c.y}-${branchY}`}
-            x1={c.x}
-            y1={branchY}
-            x2={c.x}
-            y2={c.y - 20}
-            stroke={CONNECTION.PARENT_CHILD.color}
-            strokeWidth={CONNECTION.PARENT_CHILD.width}
-          />,
-        );
-      });
-    }
-  });
-
-  return result;
-});
-//#endregion

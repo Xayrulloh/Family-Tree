@@ -1,9 +1,11 @@
 import {
+  $lastAddedMemberId,
   addBoyTrigger,
   addGirlTrigger,
   addParentsTrigger,
   addSpouseTrigger,
   created,
+  lastAddedMemberIdTrigger,
 } from './model';
 
 export const addMemberModel = {
@@ -12,4 +14,6 @@ export const addMemberModel = {
   addSpouseTrigger,
   addParentsTrigger,
   created,
+  $lastAddedMemberId,
+  lastAddedMemberIdTrigger,
 };
