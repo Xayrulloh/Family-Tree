@@ -18,7 +18,8 @@ export const tree = {
       perPage: String(query.perPage),
     });
     if (query.name) params.set('name', query.name);
-    if (query.isPublic !== undefined) params.set('isPublic', String(query.isPublic));
+    if (query.isPublic !== undefined)
+      params.set('isPublic', String(query.isPublic));
 
     return base.get<FamilyTreePaginationResponseType>(
       `/family-trees?${params.toString()}`,

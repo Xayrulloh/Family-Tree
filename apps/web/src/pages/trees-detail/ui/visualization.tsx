@@ -15,13 +15,13 @@ import { ShareTreeModal, shareTreeModel } from '~/features/tree-detail/share';
 import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
 import { routes } from '~/shared/config/routing';
-import { errorFx } from '~/shared/lib/message';
 import type {
   F3Chart,
   F3Datum,
   F3NodeDatum,
 } from '~/shared/lib/family-chart-transformer';
 import { toF3Data } from '~/shared/lib/family-chart-transformer';
+import { errorFx } from '~/shared/lib/message';
 import '~/shared/styles/family-chart-custom.css';
 import type { Props } from './ui';
 

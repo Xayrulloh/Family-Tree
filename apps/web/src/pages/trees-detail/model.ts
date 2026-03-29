@@ -24,8 +24,11 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
 
   const $id = authorizedRoute.$params.map((params) => params.id ?? null);
 
-  const $isOwner = combine($tree, userModel.$user, (tree, user) =>
-    tree !== null && user !== null && tree.createdBy === user.id,
+  const $isOwner = combine(
+    $tree,
+    userModel.$user,
+    (tree, user) =>
+      tree !== null && user !== null && tree.createdBy === user.id,
   );
 
   // Effects
