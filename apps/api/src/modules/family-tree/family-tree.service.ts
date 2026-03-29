@@ -27,18 +27,15 @@ export class FamilyTreeService {
     private cloudflareConfig: CloudflareConfig,
   ) {}
 
-  async getFamilyTreesOfUser(
-    userId: string,
-    { page, perPage, name }: FamilyTreePaginationAndSearchQueryDto,
+  private async paginateFamilyTrees(
+    whereConditions: Parameters<typeof and>[0][],
+    { page, perPage }: { page: number; perPage: number },
   ): Promise<FamilyTreePaginationResponseDto> {
     const offset = (page - 1) * perPage;
 
     const [familyTrees, countResult] = await Promise.all([
       this.db.query.familyTreesSchema.findMany({
-        where: and(
-          eq(schema.familyTreesSchema.createdBy, userId),
-          name ? ilike(schema.familyTreesSchema.name, `%${name}%`) : undefined,
-        ),
+        where: and(...whereConditions),
         orderBy: asc(schema.familyTreesSchema.createdAt),
         limit: perPage,
         offset,
@@ -49,14 +46,7 @@ export class FamilyTreeService {
           totalCount: sql<number>`COUNT(*)::int`,
         })
         .from(schema.familyTreesSchema)
-        .where(
-          and(
-            eq(schema.familyTreesSchema.createdBy, userId),
-            name
-              ? ilike(schema.familyTreesSchema.name, `%${name}%`)
-              : undefined,
-          ),
-        ),
+        .where(and(...whereConditions)),
     ]);
 
     const totalCount = countResult[0]?.totalCount ?? 0;
@@ -71,49 +61,29 @@ export class FamilyTreeService {
     };
   }
 
+  async getFamilyTreesOfUser(
+    userId: string,
+    { page, perPage, name }: FamilyTreePaginationAndSearchQueryDto,
+  ): Promise<FamilyTreePaginationResponseDto> {
+    const whereConditions = [
+      eq(schema.familyTreesSchema.createdBy, userId),
+      name ? ilike(schema.familyTreesSchema.name, `%${name}%`) : undefined,
+    ];
+
+    return this.paginateFamilyTrees(whereConditions, { page, perPage });
+  }
+
   async getPublicFamilyTrees({
     page,
     perPage,
     name,
   }: FamilyTreePaginationAndSearchQueryDto): Promise<FamilyTreePaginationResponseDto> {
-    const offset = (page - 1) * perPage;
+    const whereConditions = [
+      name ? ilike(schema.familyTreesSchema.name, `%${name}%`) : undefined,
+      eq(schema.familyTreesSchema.isPublic, true),
+    ];
 
-    const [familyTrees, countResult] = await Promise.all([
-      this.db.query.familyTreesSchema.findMany({
-        where: and(
-          name ? ilike(schema.familyTreesSchema.name, `%${name}%`) : undefined,
-          eq(schema.familyTreesSchema.isPublic, true),
-        ),
-        orderBy: asc(schema.familyTreesSchema.createdAt),
-        limit: perPage,
-        offset,
-      }),
-
-      this.db
-        .select({
-          totalCount: sql<number>`COUNT(*)::int`,
-        })
-        .from(schema.familyTreesSchema)
-        .where(
-          and(
-            name
-              ? ilike(schema.familyTreesSchema.name, `%${name}%`)
-              : undefined,
-            eq(schema.familyTreesSchema.isPublic, true),
-          ),
-        ),
-    ]);
-
-    const totalCount = countResult[0]?.totalCount ?? 0;
-    const totalPages = Math.ceil(totalCount / perPage);
-
-    return {
-      familyTrees,
-      page,
-      perPage,
-      totalCount,
-      totalPages,
-    };
+    return this.paginateFamilyTrees(whereConditions, { page, perPage });
   }
 
   async getFamilyTreeById(id: string): Promise<FamilyTreeResponseDto> {

@@ -44,10 +44,119 @@ type SharedTreeCardProps = {
   tree: SharedFamilyTreeResponseType;
 };
 
-// Tree Card Component for Already Created Tree
-export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
+type BaseTreeCardProps = {
+  tree: { id?: string; name: string; image: string | null };
+  actions?: React.ReactNode;
+  linkTo?: typeof routes.treesDetail | typeof routes.sharedTreesDetail;
+  linkParams?: { id: string };
+};
+
+// Base Tree Card Component
+const BaseTreeCard: React.FC<BaseTreeCardProps> = ({
+  tree,
+  actions,
+  linkTo,
+  linkParams,
+}) => {
   const { token } = theme.useToken();
 
+  const cardContent = (
+    <Card
+      hoverable
+      styles={{
+        body: {
+          padding: '12px 16px 16px',
+          height: 'calc(100% - 140px)',
+        },
+      }}
+      style={{
+        height: '100%',
+        position: 'relative',
+        borderRadius: 12,
+        overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        transition: 'all 0.2s ease',
+        display: 'flex',
+        flexDirection: 'column',
+        cursor: 'pointer',
+      }}
+      cover={
+        <div
+          style={{
+            height: 140,
+            background: token.colorFillContent,
+            display: 'flex',
+            overflow: 'hidden',
+            position: 'relative',
+            ...(tree.image
+              ? {}
+              : {
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: token.colorFillSecondary,
+                }),
+          }}
+        >
+          {tree.image ? (
+            <img
+              src={tree.image}
+              loading="eager"
+              alt={tree.name}
+              style={{
+                height: '100%',
+                width: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center',
+                transition: 'transform 0.3s',
+              }}
+            />
+          ) : (
+            <span
+              role="img"
+              aria-label="tree"
+              style={{
+                fontSize: 48,
+                lineHeight: 1,
+                color: token.colorTextDescription,
+              }}
+            >
+              🌲
+            </span>
+          )}
+        </div>
+      }
+    >
+      {actions}
+      <Typography.Title
+        level={5}
+        style={{
+          marginBottom: 4,
+          marginTop: 0,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+        title={tree.name}
+      >
+        {tree.name}
+      </Typography.Title>
+    </Card>
+  );
+
+  if (linkTo && linkParams) {
+    return (
+      <Link to={linkTo} params={linkParams}>
+        {''}
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return cardContent;
+};
+
+// Tree Card Component for Already Created Tree
+export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
   const menuItems: MenuProps['items'] = [
     {
       key: 'edit',
@@ -78,74 +187,11 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
   ];
 
   return (
-    <Link to={routes.treesDetail} params={{ id: tree.id }}>
-      {''}
-      {/* ← Wrap with Link */}
-      <Card
-        hoverable
-        styles={{
-          body: {
-            padding: '12px 16px 16px',
-            height: 'calc(100% - 140px)',
-          },
-        }}
-        style={{
-          height: '100%',
-          position: 'relative',
-          borderRadius: 12,
-          overflow: 'hidden',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-          transition: 'all 0.2s ease',
-          display: 'flex',
-          flexDirection: 'column',
-          cursor: 'pointer',
-        }}
-        cover={
-          <div
-            style={{
-              height: 140,
-              background: token.colorFillContent,
-              display: 'flex',
-              overflow: 'hidden',
-              position: 'relative',
-              ...(tree.image
-                ? {}
-                : {
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: token.colorFillSecondary,
-                  }),
-            }}
-          >
-            {tree.image ? (
-              <img
-                src={tree.image}
-                loading="eager"
-                alt={tree.name}
-                style={{
-                  height: '100%',
-                  width: '100%',
-                  objectFit: 'cover',
-                  objectPosition: 'center',
-                  transition: 'transform 0.3s',
-                }}
-              />
-            ) : (
-              <span
-                role="img"
-                aria-label="tree"
-                style={{
-                  fontSize: 48,
-                  lineHeight: 1,
-                  color: token.colorTextDescription,
-                }}
-              >
-                🌲
-              </span>
-            )}
-          </div>
-        }
-      >
+    <BaseTreeCard
+      tree={tree}
+      linkTo={routes.treesDetail}
+      linkParams={{ id: tree.id }}
+      actions={
         <Dropdown
           menu={{ items: menuItems }}
           trigger={['click']}
@@ -171,203 +217,30 @@ export const TreeCard: React.FC<TreeCardProps> = ({ tree }) => {
             }}
           />
         </Dropdown>
-
-        <Typography.Title
-          level={5}
-          style={{
-            marginBottom: 4,
-            marginTop: 0,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-          title={tree.name}
-        >
-          {tree.name}
-        </Typography.Title>
-      </Card>
-    </Link>
+      }
+    />
   );
 };
 
 // Public Tree Card Component
-export const PublicTreeeCard: React.FC<TreeCardProps> = ({ tree }) => {
-  const { token } = theme.useToken();
-
+export const PublicTreeCard: React.FC<TreeCardProps> = ({ tree }) => {
   return (
-    <Link to={routes.treesDetail} params={{ id: tree.id }}>
-      {''}
-      {/* ← Wrap with Link */}
-      <Card
-        hoverable
-        styles={{
-          body: {
-            padding: '12px 16px 16px',
-            height: 'calc(100% - 140px)',
-          },
-        }}
-        style={{
-          height: '100%',
-          position: 'relative',
-          borderRadius: 12,
-          overflow: 'hidden',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-          transition: 'all 0.2s ease',
-          display: 'flex',
-          flexDirection: 'column',
-          cursor: 'pointer',
-        }}
-        cover={
-          <div
-            style={{
-              height: 140,
-              background: token.colorFillContent,
-              display: 'flex',
-              overflow: 'hidden',
-              position: 'relative',
-              ...(tree.image
-                ? {}
-                : {
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: token.colorFillSecondary,
-                  }),
-            }}
-          >
-            {tree.image ? (
-              <img
-                src={tree.image}
-                loading="eager"
-                alt={tree.name}
-                style={{
-                  height: '100%',
-                  width: '100%',
-                  objectFit: 'cover',
-                  objectPosition: 'center',
-                  transition: 'transform 0.3s',
-                }}
-              />
-            ) : (
-              <span
-                role="img"
-                aria-label="tree"
-                style={{
-                  fontSize: 48,
-                  lineHeight: 1,
-                  color: token.colorTextDescription,
-                }}
-              >
-                🌲
-              </span>
-            )}
-          </div>
-        }
-      >
-        <Typography.Title
-          level={5}
-          style={{
-            marginBottom: 4,
-            marginTop: 0,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-          title={tree.name}
-        >
-          {tree.name}
-        </Typography.Title>
-      </Card>
-    </Link>
+    <BaseTreeCard
+      tree={tree}
+      linkTo={routes.treesDetail}
+      linkParams={{ id: tree.id }}
+    />
   );
 };
 
 // Shared Tree Card Component
 export const SharedTreeCard: React.FC<SharedTreeCardProps> = ({ tree }) => {
-  const { token } = theme.useToken();
-
   return (
-    <Link to={routes.sharedTreesDetail} params={{ id: tree.familyTreeId }}>
-      {''}
-      <Card
-        hoverable
-        styles={{
-          body: {
-            padding: '12px 16px 16px',
-            height: 'calc(100% - 140px)',
-          },
-        }}
-        style={{
-          height: '100%',
-          position: 'relative',
-          borderRadius: 12,
-          overflow: 'hidden',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-          transition: 'all 0.2s ease',
-          display: 'flex',
-          flexDirection: 'column',
-          cursor: 'pointer',
-        }}
-        cover={
-          <div
-            style={{
-              height: 140,
-              background: token.colorFillContent,
-              display: 'flex',
-              overflow: 'hidden',
-              position: 'relative',
-              ...(tree.image
-                ? {}
-                : {
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: token.colorFillSecondary,
-                  }),
-            }}
-          >
-            {tree.image ? (
-              <img
-                src={tree.image}
-                loading="eager"
-                alt={tree.name}
-                style={{
-                  height: '100%',
-                  width: '100%',
-                  objectFit: 'cover',
-                  objectPosition: 'center',
-                  transition: 'transform 0.3s',
-                }}
-              />
-            ) : (
-              <span
-                role="img"
-                aria-label="tree"
-                style={{
-                  fontSize: 48,
-                  lineHeight: 1,
-                  color: token.colorTextDescription,
-                }}
-              >
-                🌲
-              </span>
-            )}
-          </div>
-        }
-      >
-        <Typography.Title
-          level={5}
-          style={{
-            marginBottom: 4,
-            marginTop: 0,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-          title={tree.name}
-        >
-          {tree.name}
-        </Typography.Title>
-      </Card>
-    </Link>
+    <BaseTreeCard
+      tree={tree}
+      linkTo={routes.sharedTreesDetail}
+      linkParams={{ id: tree.familyTreeId }}
+    />
   );
 };
 
@@ -398,6 +271,13 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
   ]);
 
   const { token } = theme.useToken();
+
+  const currentSearchQuery =
+    mode === 'my-trees'
+      ? myTreesSearchQuery
+      : mode === 'shared-trees'
+        ? sharedTreesSearchQuery
+        : publicTreesSearchQuery;
 
   const tabItems = [
     {
@@ -560,7 +440,7 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
             {/* Public Trees */}
             {paginatedPublicTrees.familyTrees.map((publicTree) => (
               <Col xs={12} sm={8} md={6} lg={6} xl={4} key={publicTree.id}>
-                <PublicTreeeCard tree={publicTree} />
+                <PublicTreeCard tree={publicTree} />
               </Col>
             ))}
           </Row>
@@ -604,35 +484,23 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
           <Input
             placeholder="Search trees..."
             prefix={<SearchOutlined />}
-            value={
-              mode === 'my-trees'
-                ? myTreesSearchQuery
-                : mode === 'shared-trees'
-                  ? sharedTreesSearchQuery
-                  : publicTreesSearchQuery
-            }
+            value={currentSearchQuery}
             onChange={(e) => {
-              if (mode === 'my-trees') {
-                model.myTreesSearchChanged(e.target.value);
-              } else if (mode === 'shared-trees') {
-                model.sharedTreesSearchChanged(e.target.value);
-              } else {
-                model.publicTreesSearchChanged(e.target.value);
+              const value = e.target.value;
+              switch (mode) {
+                case 'my-trees':
+                  model.myTreesSearchChanged(value);
+                  break;
+                case 'shared-trees':
+                  model.sharedTreesSearchChanged(value);
+                  break;
+                case 'public-trees':
+                  model.publicTreesSearchChanged(value);
+                  break;
               }
             }}
             status={
-              (mode === 'my-trees'
-                ? myTreesSearchQuery
-                : mode === 'shared-trees'
-                  ? sharedTreesSearchQuery
-                  : publicTreesSearchQuery
-              ).length > 0 &&
-              (mode === 'my-trees'
-                ? myTreesSearchQuery
-                : mode === 'shared-trees'
-                  ? sharedTreesSearchQuery
-                  : publicTreesSearchQuery
-              ).length < 3
+              currentSearchQuery.length > 0 && currentSearchQuery.length < 3
                 ? 'error'
                 : undefined
             }

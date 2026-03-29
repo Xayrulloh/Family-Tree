@@ -1,4 +1,4 @@
-import { createEvent, createStore, sample } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 import { createDisclosure } from '~/shared/lib/disclosure';
 import { errorFx, infoFx } from '~/shared/lib/message';
 
@@ -9,6 +9,10 @@ export const $shareUrl = createStore('');
 export const shareTrigger = createEvent<{ url: string }>();
 export const copyTrigger = createEvent();
 
+export const copyToClipboardFx = createEffect(async (url: string) => {
+  return navigator.clipboard.writeText(url);
+});
+
 sample({
   clock: shareTrigger,
   fn: ({ url }) => `${url}/shared`,
@@ -18,17 +22,19 @@ sample({
 sample({
   clock: copyTrigger,
   source: $shareUrl,
-  fn: (url) => {
-    navigator.clipboard
-      .writeText(url)
-      .then(() => {
-        infoFx('Link copied to clipboard');
-      })
-      .catch((error) => {
-        console.error(error);
-        errorFx('Failed to copy link to clipboard');
-      });
-  },
+  target: copyToClipboardFx,
+});
+
+sample({
+  clock: copyToClipboardFx.done,
+  fn: () => 'Link copied to clipboard',
+  target: infoFx,
+});
+
+sample({
+  clock: copyToClipboardFx.fail,
+  fn: () => 'Failed to copy link to clipboard',
+  target: errorFx,
 });
 
 sample({

@@ -23,6 +23,7 @@ export const CreateEditTreeModal: React.FC = () => {
   model.form.useBindFormWithModel({ form });
 
   const formId = useId();
+  const publicTreeLabelId = useId();
 
   const img = form.getValues().image;
 
@@ -63,12 +64,18 @@ export const CreateEditTreeModal: React.FC = () => {
             render={({ field }) => (
               <Flex align="center" justify="space-between">
                 <Flex vertical gap={2}>
-                  <Typography.Text strong>Public tree</Typography.Text>
+                  <Typography.Text strong id={publicTreeLabelId}>
+                    Public tree
+                  </Typography.Text>
                   <Typography.Text type="secondary" className="text-xs">
                     Anyone can view this tree
                   </Typography.Text>
                 </Flex>
-                <Switch checked={field.value} onChange={field.onChange} />
+                <Switch
+                  checked={field.value}
+                  onChange={field.onChange}
+                  aria-labelledby={publicTreeLabelId}
+                />
               </Flex>
             )}
           />

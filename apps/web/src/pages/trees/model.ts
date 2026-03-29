@@ -283,6 +283,37 @@ export const factory = ({ route }: LazyPageFactoryParams) => {
     target: $paginatedPublicTrees,
   });
 
+  // Reset stores on route close
+  sample({
+    clock: authorizedRoute.closed,
+    fn: () => ({
+      page: 1,
+      perPage: 15,
+      totalCount: 0,
+      totalPages: 0,
+      familyTrees: [],
+    }),
+    target: [$paginatedUserTrees, $paginatedPublicTrees],
+  });
+
+  sample({
+    clock: authorizedRoute.closed,
+    fn: () => ({
+      page: 1,
+      perPage: 15,
+      totalCount: 0,
+      totalPages: 0,
+      sharedFamilyTrees: [],
+    }),
+    target: $paginatedSharedTrees,
+  });
+
+  sample({
+    clock: authorizedRoute.closed,
+    fn: () => 1,
+    target: [$myTreesPage, $sharedTreesPage, $publicTreesPage],
+  });
+
   return {
     $mode,
     $myTreesPage,
