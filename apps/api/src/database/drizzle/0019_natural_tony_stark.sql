@@ -1,2 +1,1 @@
 ALTER TABLE "family_trees" ADD COLUMN "is_public" boolean DEFAULT false NOT NULL;
-CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_family_trees_is_public" ON "family_trees" ("is_public") WHERE "is_public" = true;
