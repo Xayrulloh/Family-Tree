@@ -18,6 +18,7 @@ import { toF3Data } from '~/shared/lib/family-chart-transformer';
 import '~/shared/styles/family-chart-custom.css';
 import type { Props } from './ui';
 
+/** family-chart ships without TS declarations; cast to our minimal interface. */
 type F3Module = { createChart: (el: HTMLElement, data: F3Datum[]) => F3Chart };
 
 export const Visualization: React.FC<Props> = ({ model }) => {
@@ -115,6 +116,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
           data-action="preview"
           data-member-id="${memberId}"
           title="View details"
+          aria-label="View details"
         >👁</button>`;
 
         if (canAddMembersRef.current) {
@@ -124,6 +126,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
               data-action="add-parents"
               data-member-id="${memberId}"
               title="Add parents"
+              aria-label="Add parents"
             >⬆</button>`;
           }
 
@@ -134,6 +137,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
               data-member-id="${memberId}"
               style="background:${spouseColor};border-color:${spouseBorder}"
               title="Add spouse"
+              aria-label="Add spouse"
             >+</button>`;
           }
 
@@ -143,12 +147,14 @@ export const Visualization: React.FC<Props> = ({ model }) => {
               data-action="add-boy"
               data-member-id="${memberId}"
               title="Add son"
+              aria-label="Add son"
             >♂</button>
             <button
               class="ft-btn ft-btn-girl"
               data-action="add-girl"
               data-member-id="${memberId}"
               title="Add daughter"
+              aria-label="Add daughter"
             >♀</button>`;
           }
         }
@@ -260,16 +266,19 @@ export const Visualization: React.FC<Props> = ({ model }) => {
       ? `${treeNameRef.current}-famtree.png`
       : 'famtree.png';
 
-    const canvas = await html2canvas(container, {
-      backgroundColor: 'rgba(249, 250, 251, 0.9)',
-      useCORS: true,
-      allowTaint: true,
-    });
+    try {
+      const canvas = await html2canvas(container, {
+        backgroundColor: 'rgba(249, 250, 251, 0.9)',
+        useCORS: true,
+      });
 
-    const link = document.createElement('a');
-    link.download = filename;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      console.error('Failed to export image:', err);
+    }
   }, []);
 
   return (
