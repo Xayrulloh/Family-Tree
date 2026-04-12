@@ -13,11 +13,9 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import {
-  ApiBody,
   ApiCookieAuth,
   ApiNoContentResponse,
   ApiOkResponse,
-  ApiParam,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
@@ -57,7 +55,6 @@ export class UserController {
   @Get(':id')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiParam({ name: 'id', required: true, type: String })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: UserResponseDto })
   @ZodSerializerDto(UserResponseSchema)
@@ -70,7 +67,6 @@ export class UserController {
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiBody({ type: UserUpdateRequestDto })
   @ApiNoContentResponse()
   async updateUser(
     @Req() req: AuthenticatedRequest,

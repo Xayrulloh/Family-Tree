@@ -19,8 +19,6 @@ import {
   ApiCookieAuth,
   ApiNoContentResponse,
   ApiOkResponse,
-  ApiParam,
-  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
@@ -51,9 +49,6 @@ export class SharedFamilyTreeController {
   @Get('shared')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiQuery({ name: 'page', required: false, type: Number, default: 1 })
-  @ApiQuery({ name: 'perPage', required: false, type: Number, default: 15 })
-  @ApiQuery({ name: 'name', required: false, type: String })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: SharedFamilyTreePaginationResponseDto })
   @ZodSerializerDto(SharedFamilyTreePaginationResponseSchema)
@@ -71,7 +66,6 @@ export class SharedFamilyTreeController {
   @Get(':familyTreeId/shared')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiParam({ name: 'familyTreeId', required: true, type: String })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: SharedFamilyTreeResponseDto })
   @ZodSerializerDto(SharedFamilyTreeResponseSchema)
@@ -89,10 +83,6 @@ export class SharedFamilyTreeController {
   @Get(':familyTreeId/shared-users')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiParam({ name: 'familyTreeId', required: true, type: String })
-  @ApiQuery({ name: 'page', required: false, type: Number, default: 1 })
-  @ApiQuery({ name: 'perPage', required: false, type: Number, default: 15 })
-  @ApiQuery({ name: 'name', required: false, type: String })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: SharedFamilyTreeUsersPaginationResponseDto })
   @ZodSerializerDto(SharedFamilyTreeUsersPaginationResponseSchema)
@@ -112,8 +102,6 @@ export class SharedFamilyTreeController {
   @Put(':familyTreeId/shared-users/:userId')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiParam({ name: 'familyTreeId', required: true, type: String })
-  @ApiParam({ name: 'userId', required: true, type: String })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   async updateSharedFamilyTreeById(

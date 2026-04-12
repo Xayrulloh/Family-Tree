@@ -17,12 +17,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import {
-  ApiBody,
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
-  ApiParam,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
@@ -47,7 +45,6 @@ import {
 import { FamilyTreeMemberService } from './family-tree-member.service';
 
 @ApiTags('Family Tree Member')
-@ApiParam({ name: 'familyTreeId', required: true, type: String })
 @Controller('family-trees/:familyTreeId/members')
 @UseInterceptors(FamilyTreeCacheInterceptor)
 export class FamilyTreeMemberController {
@@ -62,7 +59,6 @@ export class FamilyTreeMemberController {
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ type: FamilyTreeMemberGetResponseDto })
-  @ApiBody({ type: FamilyTreeMemberCreateChildRequestDto })
   @ZodSerializerDto(FamilyTreeMemberGetResponseSchema)
   async createFamilyTreeMemberChild(
     @Req() req: AuthenticatedRequest,
@@ -90,7 +86,6 @@ export class FamilyTreeMemberController {
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ type: FamilyTreeMemberGetResponseDto })
-  @ApiBody({ type: FamilyTreeMemberCreateSpouseRequestDto })
   @ZodSerializerDto(FamilyTreeMemberGetResponseSchema)
   async createFamilyTreeMemberSpouse(
     @Req() req: AuthenticatedRequest,
@@ -118,7 +113,6 @@ export class FamilyTreeMemberController {
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ type: FamilyTreeMemberGetResponseDto })
-  @ApiBody({ type: FamilyTreeMemberCreateParentsRequestDto })
   @ZodSerializerDto(FamilyTreeMemberGetResponseSchema)
   async createFamilyTreeMemberParents(
     @Req() req: AuthenticatedRequest,
@@ -145,8 +139,6 @@ export class FamilyTreeMemberController {
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiBody({ type: FamilyTreeMemberUpdateRequestDto })
-  @ApiParam({ name: 'id', required: true, type: String })
   @ApiNoContentResponse()
   async updateFamilyTreeMember(
     @Req() req: AuthenticatedRequest,
@@ -170,7 +162,6 @@ export class FamilyTreeMemberController {
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiParam({ name: 'id', required: true, type: String })
   @ApiNoContentResponse()
   async deleteFamilyTreeMember(
     @Req() req: AuthenticatedRequest,
@@ -212,7 +203,6 @@ export class FamilyTreeMemberController {
   @Get(':id')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiParam({ name: 'id', required: true, type: String })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: FamilyTreeMemberGetResponseDto })
   @ZodSerializerDto(FamilyTreeMemberGetResponseSchema)

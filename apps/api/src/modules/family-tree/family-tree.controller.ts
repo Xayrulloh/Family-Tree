@@ -19,13 +19,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import {
-  ApiBody,
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
-  ApiParam,
-  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
@@ -60,10 +57,6 @@ export class FamilyTreeController {
   @Get()
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiQuery({ name: 'page', required: false, type: Number, default: 1 })
-  @ApiQuery({ name: 'perPage', required: false, type: Number, default: 15 })
-  @ApiQuery({ name: 'name', required: false, type: String })
-  @ApiQuery({ name: 'isPublic', required: false, type: Boolean })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: FamilyTreePaginationResponseDto })
   @ZodSerializerDto(FamilyTreePaginationResponseSchema)
@@ -83,7 +76,6 @@ export class FamilyTreeController {
   @Get(':id')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiParam({ name: 'id', required: true, type: String })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: FamilyTreeResponseDto })
   @ZodSerializerDto(FamilyTreeResponseSchema)
@@ -106,7 +98,6 @@ export class FamilyTreeController {
   @Post()
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiBody({ type: FamilyTreeCreateRequestDto })
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ type: FamilyTreeResponseDto })
   @ZodSerializerDto(FamilyTreeResponseSchema)
@@ -132,8 +123,6 @@ export class FamilyTreeController {
   @Put(':id')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiBody({ type: FamilyTreeUpdateRequestDto })
-  @ApiParam({ name: 'id', required: true, type: String })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   async updateFamilyTree(
@@ -148,7 +137,6 @@ export class FamilyTreeController {
   @Delete(':id')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiParam({ name: 'id', required: true, type: String })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   async deleteFamilyTree(

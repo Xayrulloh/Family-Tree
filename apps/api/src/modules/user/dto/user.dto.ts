@@ -19,8 +19,8 @@ class UserIdParamDto extends createZodDto(UserIdParamSchema) {}
 class UserResponseDto extends createZodDto(UserResponseSchema) {}
 
 export {
-  UserUpdateRequestDto,
   UserEmailParamDto,
   UserIdParamDto,
   UserResponseDto,
+  UserUpdateRequestDto,
 };

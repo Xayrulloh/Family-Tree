@@ -10,7 +10,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
-  ApiBody,
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
@@ -20,6 +19,7 @@ import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
+// biome-ignore lint/style/useImportType: <query/param doesn't work>
 import {
   FCMTokenCreateDeleteRequestDto,
   FCMTokenResponseDto,
@@ -36,7 +36,6 @@ export class FCMTokenController {
   @Post()
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiBody({ type: FCMTokenCreateDeleteRequestDto })
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ type: FCMTokenResponseDto })
   @ZodSerializerDto(FCMTokenResponseSchema)
@@ -51,7 +50,6 @@ export class FCMTokenController {
   @Delete()
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiBody({ type: FCMTokenCreateDeleteRequestDto })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   deleteFcmToken(

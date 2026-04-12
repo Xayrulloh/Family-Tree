@@ -42,14 +42,14 @@ export const DrizzleFamilyTreeMemberConnectionEnum = pgEnum(
 // schemas
 const baseSchema = {
   id: uuid('id').primaryKey().defaultRandom(),
-  createdAt: timestamp('created_at', { mode: 'date', withTimezone: true })
+  createdAt: timestamp('created_at', { mode: 'string', withTimezone: true })
     .defaultNow()
     .notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true })
+  updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true })
     .defaultNow()
     .notNull()
-    .$onUpdate(() => new Date()),
-  deletedAt: timestamp('deleted_at', { mode: 'date', withTimezone: true }),
+    .$onUpdate(() => new Date().toISOString()),
+  deletedAt: timestamp('deleted_at', { mode: 'string', withTimezone: true }),
 };
 
 export const usersSchema = pgTable('users', {
@@ -174,7 +174,7 @@ export const notificationReadsSchema = pgTable('notification_reads', {
       onDelete: 'cascade',
     })
     .notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true })
+  updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true })
     .defaultNow()
     .notNull(),
 });

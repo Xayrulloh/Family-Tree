@@ -20,7 +20,7 @@ export class AuthService {
   }
 
   async signIn(user: UserSchemaType) {
-    if (!user || !user.email) {
+    if (!user?.email) {
       throw new BadRequestException('Unauthenticated');
     }
 
@@ -39,7 +39,7 @@ export class AuthService {
   }
 
   async registerUser(user: UserSchemaType) {
-    if (!user || !user.email) {
+    if (!user?.email) {
       throw new BadRequestException('Unauthenticated');
     }
 

@@ -1,7 +1,4 @@
-import {
-  FileUploadFolderEnum,
-  FileUploadResponseSchema,
-} from '@family-tree/shared';
+import { FileUploadResponseSchema } from '@family-tree/shared';
 import {
   Controller,
   HttpStatus,
@@ -18,7 +15,6 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
-  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
@@ -53,15 +49,6 @@ export class FileController {
         file: { type: 'string', format: 'binary' },
       },
     },
-  })
-  @ApiParam({
-    name: 'folder',
-    required: true,
-    enum: [
-      FileUploadFolderEnum.AVATAR,
-      FileUploadFolderEnum.TREE,
-      FileUploadFolderEnum.TREE_MEMBER,
-    ],
   })
   @ApiResponse({ status: 201, description: 'File uploaded successfully.' })
   @ApiResponse({ status: 422, description: 'File type or size not valid.' })

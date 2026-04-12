@@ -47,11 +47,11 @@ class FamilyTreeMemberGetAllParamDto extends createZodDto(
 
 export {
   FamilyTreeMemberCreateChildRequestDto,
-  FamilyTreeMemberCreateSpouseRequestDto,
   FamilyTreeMemberCreateParentsRequestDto,
-  FamilyTreeMemberUpdateRequestDto,
-  FamilyTreeMemberGetResponseDto,
+  FamilyTreeMemberCreateSpouseRequestDto,
+  FamilyTreeMemberGetAllParamDto,
   FamilyTreeMemberGetAllResponseDto,
   FamilyTreeMemberGetParamDto,
-  FamilyTreeMemberGetAllParamDto,
+  FamilyTreeMemberGetResponseDto,
+  FamilyTreeMemberUpdateRequestDto,
 };

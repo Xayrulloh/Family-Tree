@@ -9,11 +9,11 @@ import {
 import { Reflector } from '@nestjs/core';
 import { validate, type ZodDto, ZodSerializationException } from 'nestjs-zod';
 import { map, type Observable } from 'rxjs';
-import type { ZodError, ZodSchema } from 'zod';
+import type { ZodSchema } from 'zod';
 
 const ZodSerializerDtoOptions = 'ZOD_SERIALIZER_DTO_OPTIONS' as const;
 
-const createZodSerializationException = (error: ZodError) => {
+const createZodSerializationException = (error: unknown) => {
   return new ZodSerializationException(error);
 };
 

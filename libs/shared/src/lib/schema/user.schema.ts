@@ -40,4 +40,4 @@ const UserSchema = z
 
 type UserSchemaType = z.infer<typeof UserSchema>;
 
-export { UserSchema, type UserSchemaType, UserGenderEnum };
+export { UserGenderEnum, UserSchema, type UserSchemaType };

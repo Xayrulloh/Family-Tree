@@ -58,7 +58,7 @@ export class NotificationService {
     await this.db
       .update(schema.notificationReadsSchema)
       .set({
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(schema.notificationReadsSchema.userId, userId));
   }
