@@ -25,7 +25,9 @@ class SwaggerBuilder {
       .addApiKey({ in: 'header', name: 'api-key', type: 'apiKey' }, 'api-key')
       .build();
 
-    const document = cleanupOpenApiDoc(SwaggerModule.createDocument(app, config));
+    const document = cleanupOpenApiDoc(
+      SwaggerModule.createDocument(app, config),
+    );
 
     SwaggerModule.setup('docs', app, document, {
       swaggerOptions: {
