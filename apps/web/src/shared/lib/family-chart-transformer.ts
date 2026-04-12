@@ -57,6 +57,13 @@ export interface F3Chart {
   updateTree: (options: F3UpdateTreeOptions) => void;
 }
 
+const pushTo = (map: Map<string, string[]>, key: string, value: string) => {
+  const arr = map.get(key);
+
+  if (arr) arr.push(value);
+  else map.set(key, [value]);
+};
+
 export const toF3Data = (
   members: FamilyTreeMemberGetAllResponseType,
   connections: FamilyTreeMemberConnectionGetAllResponseType,
@@ -68,53 +75,60 @@ export const toF3Data = (
 
   for (const c of connections) {
     if (c.type === FamilyTreeMemberConnectionEnum.SPOUSE) {
-      spousesMap.set(c.fromMemberId, [
-        ...(spousesMap.get(c.fromMemberId) ?? []),
-        c.toMemberId,
-      ]);
-
-      spousesMap.set(c.toMemberId, [
-        ...(spousesMap.get(c.toMemberId) ?? []),
-        c.fromMemberId,
-      ]);
+      pushTo(spousesMap, c.fromMemberId, c.toMemberId);
+      pushTo(spousesMap, c.toMemberId, c.fromMemberId);
     } else if (c.type === FamilyTreeMemberConnectionEnum.PARENT) {
       // fromMember is parent of toMember
-      childrenMap.set(c.fromMemberId, [
-        ...(childrenMap.get(c.fromMemberId) ?? []),
-        c.toMemberId,
-      ]);
-
-      parentsMap.set(c.toMemberId, [
-        ...(parentsMap.get(c.toMemberId) ?? []),
-        c.fromMemberId,
-      ]);
+      pushTo(childrenMap, c.fromMemberId, c.toMemberId);
+      pushTo(parentsMap, c.toMemberId, c.fromMemberId);
     }
   }
 
-  const result = members.map((m) => ({
-    id: m.id,
-    data: {
-      gender: (m.gender === UserGenderEnum.MALE
-        ? 'M'
-        : 'F') as F3Datum['data']['gender'],
-      name: m.name,
-      image: m.image,
-      dob: m.dob,
-      dod: m.dod,
-      familyTreeId: m.familyTreeId,
-    },
-    rels: {
-      spouses: spousesMap.get(m.id) ?? [],
-      children: childrenMap.get(m.id) ?? [],
-      parents: parentsMap.get(m.id) ?? [],
-    },
-  }));
+  const sortKeyMap = new Map<string, number>();
+  const result: F3Datum[] = [];
 
-  if (mainMemberId) {
-    const idx = result.findIndex((d) => d.id === mainMemberId);
+  let mainIdx = -1;
 
-    if (idx > 0) result.unshift(...result.splice(idx, 1));
+  for (let i = 0; i < members.length; i++) {
+    const m = members[i];
+
+    sortKeyMap.set(
+      m.id,
+      (m.dob ? new Date(m.dob) : new Date(m.createdAt)).getTime(),
+    );
+
+    result.push({
+      id: m.id,
+      data: {
+        gender: (m.gender === UserGenderEnum.MALE
+          ? 'M'
+          : 'F') as F3Datum['data']['gender'],
+        name: m.name,
+        image: m.image,
+        dob: m.dob,
+        dod: m.dod,
+        familyTreeId: m.familyTreeId,
+      },
+      rels: {
+        spouses: spousesMap.get(m.id) ?? [],
+        children: childrenMap.get(m.id) ?? [],
+        parents: parentsMap.get(m.id) ?? [],
+      },
+    });
+
+    if (mainMemberId && m.id === mainMemberId) mainIdx = i;
   }
+
+  // Sort children oldest-first (dob preferred, createdAt as fallback)
+  for (const node of result) {
+    if (node.rels.children.length > 1) {
+      node.rels.children.sort(
+        (a, b) => (sortKeyMap.get(a) ?? 0) - (sortKeyMap.get(b) ?? 0),
+      );
+    }
+  }
+
+  if (mainIdx > 0) result.unshift(...result.splice(mainIdx, 1));
 
   return result;
 };

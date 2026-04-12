@@ -277,7 +277,6 @@ export class SharedFamilyTreeService {
 
     // public trees: anyone can read, only the owner can write
     if (familyTree.isPublic) {
-      console.log('what the fuck');
       if (access) {
         throw new ForbiddenException(`You don't have a permission`);
       }
