@@ -1,4 +1,4 @@
-name: Frontend Deployment
+name: Frontend CD
 
 on:
   push:
