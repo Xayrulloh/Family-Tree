@@ -1,7 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import basicAuth from 'express-basic-auth';
-import { patchNestJsSwagger } from 'nestjs-zod';
+import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 // biome-ignore lint/complexity/noStaticOnlyClass: no reason
 class SwaggerBuilder {
@@ -25,9 +25,9 @@ class SwaggerBuilder {
       .addApiKey({ in: 'header', name: 'api-key', type: 'apiKey' }, 'api-key')
       .build();
 
-    patchNestJsSwagger();
-
-    const document = SwaggerModule.createDocument(app, config);
+    const document = cleanupOpenApiDoc(
+      SwaggerModule.createDocument(app, config),
+    );
 
     SwaggerModule.setup('docs', app, document, {
       swaggerOptions: {

@@ -24,4 +24,4 @@ const FCMTokenSchema = z
 
 type FCMTokenSchemaType = z.infer<typeof FCMTokenSchema>;
 
-export { FCMTokenSchema, type FCMTokenSchemaType, FCMTokenDeviceEnum };
+export { FCMTokenDeviceEnum, FCMTokenSchema, type FCMTokenSchemaType };

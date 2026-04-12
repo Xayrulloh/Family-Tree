@@ -9,13 +9,15 @@
 
 /* ============================================================
    Allow overflow so our action buttons can escape the card box
+   These rules rely on cascade order (loaded after family-chart/styles/family-chart.css).
+   If the vendor library upgrades with higher-specificity selectors, re-add !important.
    ============================================================ */
 .f3 .f3-cont,
 .f3 .card_cont,
 .f3 .card,
 .f3 .card-inner,
 .ft-card-wrap {
-  overflow: visible !important;
+  overflow: visible;
 }
 
 /* ============================================================
@@ -118,15 +120,15 @@
 
 /* ── Connection lines ── */
 .f3 .link {
-  stroke: #94a3b8 !important;
+  stroke: #94a3b8;
 }
 
 /* ── Card hover shadow — tied to JS class so it stays in sync with buttons ── */
 /* Disable library's native :hover shadow so ours controls timing */
 .f3 div.card:hover .card-inner {
-  box-shadow: none !important;
+  box-shadow: none;
 }
 /* Equal specificity (0,4,1) + later in file → wins over the rule above */
 .f3 div.ft-card-wrap.is-hovered .card-inner {
-  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.8) !important;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.8);
 }

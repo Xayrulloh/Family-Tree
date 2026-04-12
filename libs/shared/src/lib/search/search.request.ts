@@ -15,7 +15,7 @@ type SearchByPublicQueryType = z.infer<typeof SearchByPublicQuerySchema>;
 
 export {
   SearchByNameQuerySchema,
-  SearchByPublicQuerySchema,
   type SearchByNameQueryType,
+  SearchByPublicQuerySchema,
   type SearchByPublicQueryType,
 };
