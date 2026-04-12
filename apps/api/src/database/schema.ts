@@ -173,7 +173,8 @@ export const notificationReadsSchema = pgTable('notification_reads', {
     .references(() => usersSchema.id, {
       onDelete: 'cascade',
     })
-    .notNull(),
+    .notNull()
+    .primaryKey(),
   updatedAt: timestamp('updated_at', { mode: 'string', withTimezone: true })
     .defaultNow()
     .notNull(),

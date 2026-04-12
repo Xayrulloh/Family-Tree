@@ -9,6 +9,8 @@
 
 /* ============================================================
    Allow overflow so our action buttons can escape the card box
+   These rules rely on cascade order (loaded after family-chart/styles/family-chart.css).
+   If the vendor library upgrades with higher-specificity selectors, re-add !important.
    ============================================================ */
 .f3 .f3-cont,
 .f3 .card_cont,

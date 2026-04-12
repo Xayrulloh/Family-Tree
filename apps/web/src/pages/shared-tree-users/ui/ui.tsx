@@ -57,7 +57,7 @@ const SharedTreeUsers: React.FC<Props> = ({ model }) => {
       render: (_, record) => (
         <Space>
           <Avatar src={record.image}>{record.name?.[0]}</Avatar>
-          <Space direction="vertical" size={0}>
+          <Space orientation="vertical" size={0}>
             <Text strong>{record.name}</Text>
             <Text type="secondary" style={{ fontSize: '12px' }}>
               {record.email}
@@ -72,7 +72,7 @@ const SharedTreeUsers: React.FC<Props> = ({ model }) => {
       key: 'permissions',
       render: (_, record) => (
         <Space size="large">
-          <Space direction="vertical" size="small" align="center">
+          <Space orientation="vertical" size="small" align="center">
             <Text type="secondary" style={{ fontSize: '12px' }}>
               Add Members
             </Text>
@@ -87,7 +87,7 @@ const SharedTreeUsers: React.FC<Props> = ({ model }) => {
               }
             />
           </Space>
-          <Space direction="vertical" size="small" align="center">
+          <Space orientation="vertical" size="small" align="center">
             <Text type="secondary" style={{ fontSize: '12px' }}>
               Edit Members
             </Text>
@@ -102,7 +102,7 @@ const SharedTreeUsers: React.FC<Props> = ({ model }) => {
               }
             />
           </Space>
-          <Space direction="vertical" size="small" align="center">
+          <Space orientation="vertical" size="small" align="center">
             <Text type="secondary" style={{ fontSize: '12px' }}>
               Delete Members
             </Text>

@@ -1,9 +1,13 @@
 import { z } from 'zod';
 
-const dateToString = z.preprocess(
-  (val) => (val != null ? new Date(val as string | Date).toISOString() : val),
-  z.string().datetime(),
-);
+const dateToString = z.preprocess((val) => {
+  if (val == null) return val;
+  // Drizzle returns ISO strings (mode:'string') or Date objects from $onUpdate;
+  // normalize both to a Z-suffixed ISO string required by z.string().datetime()
+  if (val instanceof Date) return val.toISOString();
+  if (typeof val === 'string') return new Date(val).toISOString();
+  return val;
+}, z.string().datetime());
 
 const BaseSchema = z.object({
   id: z.string().uuid().describe('Primary key'),

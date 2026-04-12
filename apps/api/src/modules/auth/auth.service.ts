@@ -34,6 +34,7 @@ export class AuthService {
 
     return this.generateJwt({
       sub: userExists.id,
+      // email is guaranteed non-null: usersSchema defines it as text().notNull()
       email: userExists.email as string,
     });
   }
@@ -56,6 +57,7 @@ export class AuthService {
 
     return this.generateJwt({
       sub: newUser.id,
+      // email is guaranteed non-null: inserted value comes from validated UserSchemaType
       email: newUser.email as string,
     });
   }

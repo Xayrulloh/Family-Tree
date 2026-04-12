@@ -666,7 +666,7 @@ find . -name "project.json" -exec grep -l "vitest" {} \;
 find . -name "*.spec.*" -o -name "*.test.*"
 
 # Files with mock usage
-rg "vi\.(fn|spyOn|mock|restoreAllMocks)" --type ts --type tsx --type js
+rg "vi\.(fn|spyOn|mock|restoreAllMocks)" --type ts --type js -g '*.tsx'
 
 # Files with coverage config
 rg "coverage\.(all|extensions|ignoreEmptyLines)" --type ts --type js

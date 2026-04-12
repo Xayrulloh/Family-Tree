@@ -16,6 +16,8 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
     if (exception instanceof ZodSerializationException) {
       const zodError = exception.getZodError();
 
+      // nestjs-zod v5 types getZodError() as unknown; safe to cast because
+      // ZodSerializationException always wraps a ZodError instance
       this.logger.error(
         `ZodSerializationException: ${(zodError as ZodError).message}`,
       );

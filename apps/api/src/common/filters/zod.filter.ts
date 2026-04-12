@@ -15,6 +15,8 @@ export class ZodValidationExceptionFilter implements ExceptionFilter {
 
     const zodError = exception.getZodError();
 
+    // nestjs-zod v5 types getZodError() as unknown; safe to cast because
+    // ZodValidationException always wraps a ZodError instance
     const errors = (zodError as ZodError).issues.map((issue) => ({
       path: issue.path.join('.'),
       message: issue.message,
