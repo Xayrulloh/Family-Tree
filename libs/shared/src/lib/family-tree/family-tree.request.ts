@@ -29,9 +29,9 @@ type FamilyTreePaginationAndSearchQueryType = z.infer<
 
 export {
   FamilyTreeCreateRequestSchema,
-  FamilyTreeUpdateRequestSchema,
-  FamilyTreePaginationAndSearchQuerySchema,
   type FamilyTreeCreateRequestType,
-  type FamilyTreeUpdateRequestType,
+  FamilyTreePaginationAndSearchQuerySchema,
   type FamilyTreePaginationAndSearchQueryType,
+  FamilyTreeUpdateRequestSchema,
+  type FamilyTreeUpdateRequestType,
 };

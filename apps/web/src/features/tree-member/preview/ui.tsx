@@ -94,7 +94,7 @@ export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
         </Title>
       </Flex>
 
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space orientation="vertical" style={{ width: '100%' }}>
         {/* Gender Information */}
         <Flex justify="space-between" align="center">
           <Text strong>Gender</Text>
@@ -112,7 +112,7 @@ export const PreviewMemberModal: React.FC<PreviewMemberModalProps> = ({
         {ageInfo && (
           <Flex justify="space-between" align="center">
             <Text strong>Date of Birth</Text>
-            <Space direction="vertical" size={2} align="end">
+            <Space orientation="vertical" size={2} align="end">
               <Space>
                 <CalendarOutlined style={{ color: '#6b7280' }} />
                 <Text>{ageInfo.birthFormatted}</Text>

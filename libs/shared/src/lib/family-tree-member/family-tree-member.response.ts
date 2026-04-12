@@ -16,8 +16,8 @@ type FamilyTreeMemberGetAllResponseType = z.infer<
 >;
 
 export {
-  FamilyTreeMemberGetResponseSchema,
   FamilyTreeMemberGetAllResponseSchema,
-  type FamilyTreeMemberGetResponseType,
   type FamilyTreeMemberGetAllResponseType,
+  FamilyTreeMemberGetResponseSchema,
+  type FamilyTreeMemberGetResponseType,
 };

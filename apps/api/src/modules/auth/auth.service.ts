@@ -20,7 +20,7 @@ export class AuthService {
   }
 
   async signIn(user: UserSchemaType) {
-    if (!user || !user.email) {
+    if (!user?.email) {
       throw new BadRequestException('Unauthenticated');
     }
 
@@ -34,12 +34,13 @@ export class AuthService {
 
     return this.generateJwt({
       sub: userExists.id,
+      // email is guaranteed non-null: usersSchema defines it as text().notNull()
       email: userExists.email as string,
     });
   }
 
   async registerUser(user: UserSchemaType) {
-    if (!user || !user.email) {
+    if (!user?.email) {
       throw new BadRequestException('Unauthenticated');
     }
 
@@ -56,6 +57,7 @@ export class AuthService {
 
     return this.generateJwt({
       sub: newUser.id,
+      // email is guaranteed non-null: inserted value comes from validated UserSchemaType
       email: newUser.email as string,
     });
   }

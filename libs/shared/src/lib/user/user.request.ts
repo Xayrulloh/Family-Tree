@@ -22,9 +22,9 @@ type UserUpdateRequestType = z.infer<typeof UserUpdateRequestSchema>;
 type UserUsernameParamType = z.infer<typeof UserEmailParamSchema>;
 
 export {
+  UserEmailParamSchema,
+  UserIdParamSchema,
   UserUpdateRequestSchema,
   type UserUpdateRequestType,
-  UserEmailParamSchema,
   type UserUsernameParamType,
-  UserIdParamSchema,
 };

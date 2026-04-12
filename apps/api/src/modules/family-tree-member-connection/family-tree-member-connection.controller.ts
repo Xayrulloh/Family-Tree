@@ -12,7 +12,6 @@ import {
 import {
   ApiCookieAuth,
   ApiOkResponse,
-  ApiParam,
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
@@ -32,7 +31,6 @@ import {
 import { FamilyTreeMemberConnectionService } from './family-tree-member-connection.service';
 
 @ApiTags('Family Tree Member Connection')
-@ApiParam({ name: 'familyTreeId', required: true, type: String })
 @Controller('family-trees/:familyTreeId/members')
 @UseInterceptors(FamilyTreeCacheInterceptor)
 export class FamilyTreeMemberConnectionController {
@@ -67,7 +65,6 @@ export class FamilyTreeMemberConnectionController {
   @Get(':memberUserId/connections')
   @UseGuards(JWTAuthGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
-  @ApiParam({ name: 'memberUserId', required: true, type: String })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: FamilyTreeMemberConnectionGetAllResponseDto })
   @ZodSerializerDto(FamilyTreeMemberConnectionGetAllResponseSchema)

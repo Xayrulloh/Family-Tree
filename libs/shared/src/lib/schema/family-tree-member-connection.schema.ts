@@ -25,7 +25,7 @@ type FamilyTreeMemberConnectionSchemaType = z.infer<
 >;
 
 export {
-  FamilyTreeMemberConnectionSchema,
   FamilyTreeMemberConnectionEnum,
+  FamilyTreeMemberConnectionSchema,
   type FamilyTreeMemberConnectionSchemaType,
 };

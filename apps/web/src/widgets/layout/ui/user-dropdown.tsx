@@ -60,7 +60,7 @@ export const UserDropdown = () => {
           )}
           {/* Gender and Birthdate */}
           {(userGenderIcon || user.dob) && (
-            <Space direction="vertical" size={4} className="mt-2">
+            <Space orientation="vertical" size={4} className="mt-2">
               {user.gender && userGenderIcon && (
                 <Space>
                   {userGenderIcon}
@@ -162,10 +162,12 @@ export const UserDropdown = () => {
       menu={{ items: menuItems }}
       trigger={['click']}
       placement="bottomRight"
-      overlayStyle={{
-        width: 240,
-        borderRadius: 8,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+      styles={{
+        root: {
+          width: 240,
+          borderRadius: 8,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+        },
       }}
     >
       <Avatar

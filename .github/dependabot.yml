@@ -2,13 +2,17 @@ version: 2
 updates:
   - package-ecosystem: 'npm'
     directory: '/'
+    target-branch: 'develop'
     schedule:
       interval: 'weekly'
       day: 'friday'
       time: '08:00'
     allow:
       - dependency-type: "all"
-    open-pull-requests-limit: 100
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: 'chore(pnpm deps)'
       include: 'scope'

@@ -15,8 +15,8 @@ type FamilyTreePaginationResponseType = z.infer<
 >;
 
 export {
-  FamilyTreeResponseSchema,
-  type FamilyTreeResponseType,
   FamilyTreePaginationResponseSchema,
   type FamilyTreePaginationResponseType,
+  FamilyTreeResponseSchema,
+  type FamilyTreeResponseType,
 };
