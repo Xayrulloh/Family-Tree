@@ -453,7 +453,7 @@ export class FamilyTreeMemberService {
       where: and(
         eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
       ),
-      orderBy: asc(schema.familyTreeMembersSchema.createdAt),
+      orderBy: [asc(schema.familyTreeMembersSchema.dob)],
     });
   }
 
