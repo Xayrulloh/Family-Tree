@@ -64,6 +64,13 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     // Phantom nodes bloat tree.dim causing treeFit to use wrong scale.
     chart.setSingleParentEmptyCard(false);
 
+    chart.setSortChildrenFunction((a, b) => {
+      if (!a.data.dob && !b.data.dob) return 0;
+      if (!a.data.dob) return 1;
+      if (!b.data.dob) return -1;
+      return a.data.dob.localeCompare(b.data.dob);
+    });
+
     chart
       .setCardHtml()
       // img_w/h/x/y = 0 → let CSS flex layout handle image sizing (no inline style conflicts)

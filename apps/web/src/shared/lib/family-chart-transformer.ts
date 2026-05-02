@@ -52,6 +52,7 @@ export interface F3CardHtml {
 
 export interface F3Chart {
   setSingleParentEmptyCard: (value: boolean) => void;
+  setSortChildrenFunction: (fn: (a: F3Datum, b: F3Datum) => number) => F3Chart;
   setCardHtml: () => F3CardHtml;
   updateData: (data: F3Datum[]) => void;
   updateTree: (options: F3UpdateTreeOptions) => void;

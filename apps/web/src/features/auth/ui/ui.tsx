@@ -14,6 +14,7 @@ export const Auth: React.FC = () => {
       <Button
         type="default"
         onClick={() => model.googleLoginFx()}
+        translate="no"
         className="flex items-center justify-center"
         style={{
           width: '80%',
