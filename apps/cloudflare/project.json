@@ -1,0 +1,51 @@
+{
+  "name": "cloudflare",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/cloudflare/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "login": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "wrangler login",
+        "cwd": "apps/cloudflare"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "wrangler dev",
+        "cwd": "apps/cloudflare"
+      }
+    },
+    "deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "wrangler deploy",
+        "cwd": "apps/cloudflare"
+      }
+    },
+    "tail": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "wrangler tail",
+        "cwd": "apps/cloudflare"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "biome check",
+        "cwd": "apps/cloudflare"
+      }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "biome check --write --unsafe",
+        "cwd": "apps/cloudflare"
+      }
+    }
+  }
+}

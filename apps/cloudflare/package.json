@@ -1,0 +1,9 @@
+{
+  "name": "@family-tree/cloudflare",
+  "version": "0.0.1",
+  "private": true,
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260518.1",
+    "wrangler": "^3.114.17"
+  }
+}
