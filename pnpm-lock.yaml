@@ -335,10 +335,10 @@ importers:
   apps/cloudflare:
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^4.20250101.0
+        specifier: ^4.20260518.1
         version: 4.20260518.1
       wrangler:
-        specifier: ^3.99.0
+        specifier: ^3.114.17
         version: 3.114.17(@cloudflare/workers-types@4.20260518.1)
 
   apps/web:
