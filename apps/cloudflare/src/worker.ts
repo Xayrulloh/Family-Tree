@@ -75,9 +75,12 @@ export default {
     const treeId = match[1];
 
     try {
-      const apiRes = await fetch(`${env.API_URL}/family-trees/${treeId}/preview`, {
-        cf: { cacheTtl: 300, cacheEverything: true },
-      });
+      const apiRes = await fetch(
+        `${env.API_URL}/family-trees/${treeId}/preview`,
+        {
+          cf: { cacheTtl: 300, cacheEverything: true },
+        },
+      );
 
       if (!apiRes.ok) {
         // Tree missing or API down — let the SPA handle it (it'll show its own error)
@@ -85,7 +88,11 @@ export default {
       }
 
       const preview = (await apiRes.json()) as FamilyTreePreview;
-      const html = renderPreviewHtml(preview, url.toString(), env.OG_FALLBACK_IMAGE);
+      const html = renderPreviewHtml(
+        preview,
+        url.toString(),
+        env.OG_FALLBACK_IMAGE,
+      );
 
       return new Response(html, {
         headers: {
