@@ -9,5 +9,5 @@ pattern = "www.famtree.uz/family-trees/*"
 zone_name = "famtree.uz"
 
 [vars]
-API_URL = "https://api.famtree.uz"
+API_URL = "https://api.famtree.uz/api"
 OG_FALLBACK_IMAGE = "https://www.famtree.uz/family-tree-icon.png"
