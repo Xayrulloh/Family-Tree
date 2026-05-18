@@ -11,6 +11,9 @@
     },
     {
       "path": "./libs/shared"
+    },
+    {
+      "path": "./apps/cloudflare"
     }
   ]
 }

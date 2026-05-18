@@ -1,5 +1,6 @@
 import {
   FamilyTreePaginationResponseSchema,
+  FamilyTreePreviewResponseSchema,
   FamilyTreeResponseSchema,
 } from '@family-tree/shared';
 import {
@@ -38,6 +39,7 @@ import {
   FamilyTreeIdParamDto,
   FamilyTreePaginationAndSearchQueryDto,
   FamilyTreePaginationResponseDto,
+  FamilyTreePreviewResponseDto,
   FamilyTreeResponseDto,
   FamilyTreeUpdateRequestDto,
 } from './dto/family-tree.dto';
@@ -70,6 +72,17 @@ export class FamilyTreeController {
     }
 
     return this.familyTreeService.getFamilyTreesOfUser(req.user.id, query);
+  }
+
+  // Public preview metadata for share-link crawlers (Telegram, OG, etc.)
+  @Get(':id/preview')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: FamilyTreePreviewResponseDto })
+  @ZodSerializerDto(FamilyTreePreviewResponseSchema)
+  async getFamilyTreePreview(
+    @Param() param: FamilyTreeIdParamDto,
+  ): Promise<FamilyTreePreviewResponseDto> {
+    return this.familyTreeService.getFamilyTreeById(param.id);
   }
 
   // Find family tree by id

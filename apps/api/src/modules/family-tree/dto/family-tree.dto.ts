@@ -2,6 +2,7 @@ import {
   FamilyTreeCreateRequestSchema,
   FamilyTreePaginationAndSearchQuerySchema,
   FamilyTreePaginationResponseSchema,
+  FamilyTreePreviewResponseSchema,
   FamilyTreeResponseSchema,
   FamilyTreeUpdateRequestSchema,
   IdQuerySchema,
@@ -32,11 +33,16 @@ class FamilyTreePaginationResponseDto extends createZodDto(
   FamilyTreePaginationResponseSchema,
 ) {}
 
+class FamilyTreePreviewResponseDto extends createZodDto(
+  FamilyTreePreviewResponseSchema,
+) {}
+
 export {
   FamilyTreeCreateRequestDto,
   FamilyTreeIdParamDto,
   FamilyTreePaginationAndSearchQueryDto,
   FamilyTreePaginationResponseDto,
+  FamilyTreePreviewResponseDto,
   FamilyTreeResponseDto,
   FamilyTreeUpdateRequestDto,
 };

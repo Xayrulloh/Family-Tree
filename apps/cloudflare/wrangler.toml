@@ -1,0 +1,13 @@
+name = "famtree-og"
+main = "src/worker.ts"
+compatibility_date = "2026-05-18"
+workers_dev = false
+
+# Production deployment — intercepts share URLs on www.famtree.uz
+[[routes]]
+pattern = "www.famtree.uz/family-trees/*"
+zone_name = "famtree.uz"
+
+[vars]
+API_URL = "https://api.famtree.uz"
+OG_FALLBACK_IMAGE = "https://www.famtree.uz/family-tree-icon.png"
