@@ -47,3 +47,6 @@ vite.config.*.timestamp*
 
 # static analysis
 .scannerwork
+
+# Claude Code local settings (contains secrets)
+.claude/settings.local.json

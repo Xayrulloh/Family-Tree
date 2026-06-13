@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git status:*)",
+      "Bash(git branch:*)",
+      "Bash(gh:*)",
+      "Bash(pnpm:*)",
+      "Bash(nx:*)",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "WebFetch(*)",
+      "WebSearch(*)"
+    ]
+  },
+  "mcpServers": {
+    "github": {
+      "command": "pnpm",
+      "args": ["dlx", "@modelcontextprotocol/server-github@2025.4.8"]
+    }
+  }
+}
