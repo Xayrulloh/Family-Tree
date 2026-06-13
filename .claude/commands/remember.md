@@ -15,6 +15,5 @@ After reading all files, print a compact summary:
 - DB tables (names only)
 - API endpoints grouped by module (condensed)
 - Recent implementation log entries (last 3)
-- Any TODOs or open questions noted in the files
 
 Confirm you're ready to work.

@@ -6,14 +6,13 @@ Steps:
    - What files were created or modified (list them)
    - Any key architectural decisions made
    - Any open TODOs or things left for next session
-2. Format the summary as a new entry for the log:
+2. Format the summary as a new entry:
    ```
    ## YYYY-MM-DD — <short session title>
    - bullet 1
    - bullet 2
-   ...
    ```
-3. Append this entry to `.claude/context/implementation-log.md` (add after the last `---` separator, or at the end of the file)
+3. Append this entry to `.claude/context/implementation-log.md`
 4. Also update any context files that are now outdated:
    - If new DB tables were added → update `db.md`
    - If new API endpoints were added → update `api.md`

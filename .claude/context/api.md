@@ -83,7 +83,7 @@ Cache: `FamilyTreeCacheInterceptor`
 ---
 
 ### Family Tree Member (`/family-trees/:familyTreeId/members`)
-Access check on all write routes via `SharedFamilyTreeService.checkAccessSharedFamilyTree()`.
+Access check on all routes via `SharedFamilyTreeService.checkAccessSharedFamilyTree()`.
 
 | Method | Route | Guard | Permission check | Description |
 |---|---|---|---|---|
