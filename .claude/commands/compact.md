@@ -17,6 +17,8 @@ Steps:
    - If new DB tables were added → update `db.md`
    - If new API endpoints were added → update `api.md`
    - If new pages/features were added → update `web.md`
+   - If shared Zod schemas/types changed → update `shared.md`
+   - If Cloudflare Worker behavior changed → update `cloudflare.md`
 5. Confirm what was saved and which context files were updated.
 
 Keep each log entry tight — 5–10 bullets max. Focus on what's non-obvious or wouldn't be derivable from reading the code.

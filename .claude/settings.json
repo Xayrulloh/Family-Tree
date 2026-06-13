@@ -20,8 +20,8 @@
   },
   "mcpServers": {
     "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"]
+      "command": "pnpm",
+      "args": ["dlx", "@modelcontextprotocol/server-github@2025.4.8"]
     }
   }
 }
