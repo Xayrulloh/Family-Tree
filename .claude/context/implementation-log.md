@@ -53,3 +53,20 @@ Append a bullet here after each session with: date, what was built/changed, and 
 - **Key note (route ordering):** `members/:id` (member module) would shadow `members/connections` (connection module). It works because `FamilyTreeMemberConnectionModule` is imported BEFORE `FamilyTreeMemberModule` in `app.module` (Express: first registered route wins). Same for `/family-trees/shared` (SharedFamilyTreeModule) before `:id` (FamilyTreeModule). Do not reorder these module imports.
 - **Key note (verification gotcha):** standalone `tsc -p apps/api/tsconfig.app.json` floods TS6305 + "property does not exist on …Dto" errors because `@family-tree/shared` resolves to a stale/absent `dist/` (no `build` target — consumed from source). The errors hit untouched pre-existing files identically. Canonical check is `nx run api:build:development` (rspack from source), NOT standalone tsc.
 - **Key note (intentional breakage):** `GET /:id` is now owner-only, so public/shared viewing is broken until Phase 3 repoints the frontend to `/:id/public`, `/public/members`, `/shared/members`, etc. Acceptable because nothing merges until the full task is ready.
+
+---
+
+## 2026-06-14 — Isolation ticket: Phase 3 (frontend)
+- Branch `feature/isolation-routes` (continued, same branch as Phase 2).
+- Created `shared/config/tree-scope.ts` — `TreeScope` type (`'owner' | 'shared' | 'public'`), global `$treeScope` store + `treeScopeChanged` event, `scopeSegment()` helper that maps scope to URL infix.
+- Extended all API clients (`tree.ts`, `tree-member.ts`, `tree-member-connection.ts`) with `scope?: TreeScope`; URLs compute the correct prefix segment via `scopeSegment(scope)`. Added `findByIdPublic(id)` to `tree.ts` for the public tree metadata endpoint.
+- Added `publicTreesDetail` route (`/family-trees/:id/public`) to `routing.ts` and `pages/index.ts`.
+- Created `widgets/tree-visualization/` widget: `model.ts` (`createTreeDetailModel<T>` generic factory), `visualization.tsx`, `view.tsx` (`TreeDetailView`), `index.ts`. Factory takes `scope`, `requireAuth`, `fetchTree`, `resolvePermissions`, `getName` — handles auth-gating, data fetching, scope signalling, and permission derivation. Single engine for all 3 page types.
+- Replaced the two per-page visualization components (`trees-detail/ui/visualization.tsx`, `shared-trees-detail/ui/visualization.tsx`) and their page models with thin `createModel` + `component = TreeDetailView` exports in each page's `ui.tsx`.
+- Created new `pages/trees-public-detail/` page — all permissions `false`, `requireAuth: false`, fetches via `api.tree.findByIdPublic`.
+- Updated `pages/trees/ui/ui.tsx`: public tree cards now link to `routes.publicTreesDetail` (were erroneously pointing to `treesDetail`).
+- Updated Cloudflare Worker: `TREE_ROUTE` regex now matches `/family-trees/:id`, `/family-trees/:id/shared`, and `/family-trees/:id/public` so OG crawlers get meta tags for all 3 URL shapes.
+- Fixed `null` id bug (found in code-review): `attach` effects in `createTreeDetailModel` typed source as `string` but `$id` is `string | null`; added early-throw guard so no API call fires with `"null"` as tree id.
+- **Key note (`Effector attach` + nullable source):** When an `attach` reads a store that can be `null`, you MUST widen the `effect` param type to `string | null` and guard eagerly (`if (!id) throw ...`). TypeScript won't catch the mismatch because Effector's `attach` types the effect param from the provided `effect` function, not the source store. The bug manifests as `GET /family-trees/null/members` at runtime.
+- **Key note (public page + Layout):** `UserDropdown` already guards `if (!user) return <InlineLoading />`, so it's safe on unauthenticated public pages. No Layout changes needed.
+- **Key note (web tsc verification):** Run `npx tsc -p libs/shared/tsconfig.lib.json` first to build shared lib, then `npx tsc -p apps/web/tsconfig.json --noEmit`. Without building shared first, tsc reports TS6305 errors on every shared import. Two pre-existing `_authorizedRoute` warnings exist in untouched files — safe to ignore.

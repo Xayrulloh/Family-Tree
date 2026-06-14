@@ -47,7 +47,10 @@ type SharedTreeCardProps = {
 type BaseTreeCardProps = {
   tree: { id?: string; name: string; image: string | null };
   actions?: React.ReactNode;
-  linkTo?: typeof routes.treesDetail | typeof routes.sharedTreesDetail;
+  linkTo?:
+    | typeof routes.treesDetail
+    | typeof routes.sharedTreesDetail
+    | typeof routes.publicTreesDetail;
   linkParams?: { id: string };
 };
 
@@ -226,7 +229,7 @@ export const PublicTreeCard: React.FC<TreeCardProps> = ({ tree }) => {
   return (
     <BaseTreeCard
       tree={tree}
-      linkTo={routes.treesDetail}
+      linkTo={routes.publicTreesDetail}
       linkParams={{ id: tree.id }}
     />
   );

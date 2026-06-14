@@ -21,8 +21,9 @@ VITE_API_URL  — base URL for the API
 | `browse` | `/` |
 | `registration` | `/register` |
 | `trees` | `/family-trees` |
-| `treesDetail` | `/family-trees/:id` |
-| `sharedTreesDetail` | `/family-trees/:id/shared` |
+| `treesDetail` | `/family-trees/:id` (owner only, requires auth) |
+| `sharedTreesDetail` | `/family-trees/:id/shared` (shared RBAC, requires auth) |
+| `publicTreesDetail` | `/family-trees/:id/public` (read-only, anonymous) |
 | `sharedTreeUsers` | `/family-trees/:id/shared-users` |
 | `notFound` | (catch-all) |
 
@@ -39,12 +40,13 @@ VITE_API_URL  — base URL for the API
 ```
 src/
 ├── app/           # App init, theme store, router setup
-├── pages/         # Route-level pages (each: model.ts + ui/ui.tsx + index.ts)
+├── pages/         # Route-level pages (each: ui/ui.tsx + index.ts; no separate model.ts)
 │   ├── home/                     # /
 │   ├── registration/             # /register
 │   ├── trees/                    # /family-trees
-│   ├── trees-detail/             # /family-trees/:id (owner view + visualization)
-│   ├── shared-trees-detail/      # /family-trees/:id/shared (shared viewer + visualization)
+│   ├── trees-detail/             # /family-trees/:id (owner, full permissions)
+│   ├── shared-trees-detail/      # /family-trees/:id/shared (shared RBAC permissions)
+│   ├── trees-public-detail/      # /family-trees/:id/public (read-only, anon)
 │   ├── shared-tree-users/        # /family-trees/:id/shared-users
 │   └── not-found/
 ├── features/      # User-triggered actions (each: model.ts + ui.tsx + index.ts)
@@ -65,15 +67,22 @@ src/
     └── ui/         # field-wrapper, loading spinner
 ```
 
-## Visualization
-- `pages/trees-detail/ui/visualization.tsx` — owner tree visualization
-- `pages/shared-trees-detail/ui/visualization.tsx` — shared tree visualization
-- Uses `family-chart` library with custom CSS
-- `shared/lib/family-chart-transformer.ts` — transforms API member/connection data into family-chart format
+## Visualization widget (`src/widgets/tree-visualization/`)
+- `model.ts` — `createTreeDetailModel<T>(config)` generic factory; takes `scope`, `requireAuth`, `fetchTree`, `resolvePermissions`, `getName`; returns `TreeDetailModel` (`$members`, `$connections`, `$id`, `$treeName`, `$permissions`, `$loading`)
+- `visualization.tsx` — canvas component; reads `permissions.canAdd/canEdit/canDelete/canManageSharedUsers`
+- `view.tsx` — `TreeDetailView` (edit/delete buttons gated on permissions)
+- All 3 tree pages (`trees-detail`, `shared-trees-detail`, `trees-public-detail`) are thin wrappers: `createModel` delegates to this factory, `component = TreeDetailView`
+
+## TreeScope (`src/shared/config/tree-scope.ts`)
+- `TreeScope = 'owner' | 'shared' | 'public'`
+- `$treeScope` global store — set by `treeScopeChanged` on every page open so write features (add/edit/delete) target the correct API prefix
+- `scopeSegment(scope)` → `''` / `'/shared'` / `'/public'` (used in API client URLs)
 
 ## Key patterns
-- Each page has a `model.ts` with Effector stores/effects/events and a `ui/ui.tsx` that consumes them
+- Tree detail pages: no separate `model.ts`; `createModel` inline in `ui/ui.tsx`, `component = TreeDetailView`
+- Write features (`add/edit/delete`) are singletons; they read `$treeScope` via `attach({ source: { ..., scope: $treeScope } })` so scope propagates without prop-drilling
 - `shared/lib/create-form.ts` — generic form factory
 - `shared/lib/disclosure.ts` — open/close state for modals/drawers
 - Lazy loading via `shared/lib/lazy-page.ts` + `with-suspense` HOC
 - `appStarted` event fires on app boot to initialize router history
+- `shared/lib/family-chart-transformer.ts` — transforms API member/connection data into family-chart format

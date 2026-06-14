@@ -1,6 +1,11 @@
-import { DownloadOutlined, ShareAltOutlined } from '@ant-design/icons';
+import {
+  DownloadOutlined,
+  ShareAltOutlined,
+  TeamOutlined,
+} from '@ant-design/icons';
 import type { FamilyTreeMemberGetResponseType } from '@family-tree/shared';
 import { theme } from 'antd';
+import { Link } from 'atomic-router-react';
 import { useUnit } from 'effector-react';
 import * as f3 from 'family-chart';
 import 'family-chart/styles/family-chart.css';
@@ -9,26 +14,32 @@ import { useCallback, useEffect, useRef } from 'react';
 import { ShareTreeModal, shareTreeModel } from '~/features/tree-detail/share';
 import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
+import { routes } from '~/shared/config/routing';
 import type {
   F3Chart,
   F3Datum,
   F3NodeDatum,
 } from '~/shared/lib/family-chart-transformer';
 import { toF3Data } from '~/shared/lib/family-chart-transformer';
-import '~/shared/styles/family-chart-custom.css';
 import { errorFx } from '~/shared/lib/message';
-import type { Props } from './ui';
+import '~/shared/styles/family-chart-custom.css';
+import type { TreeDetailModel } from './model';
 
 /** family-chart ships without TS declarations; cast to our minimal interface. */
 type F3Module = { createChart: (el: HTMLElement, data: F3Datum[]) => F3Chart };
 
+type Props = { model: TreeDetailModel };
+
 export const Visualization: React.FC<Props> = ({ model }) => {
-  const [connections, members, sharedTree, lastAddedMemberId] = useUnit([
-    model.$connections,
-    model.$members,
-    model.$sharedTree,
-    addMemberModel.$lastAddedMemberId,
-  ]);
+  const [connections, members, id, treeName, permissions, lastAddedMemberId] =
+    useUnit([
+      model.$connections,
+      model.$members,
+      model.$id,
+      model.$treeName,
+      model.$permissions,
+      addMemberModel.$lastAddedMemberId,
+    ]);
   const { token } = theme.useToken();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -37,14 +48,14 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     new Map<string, FamilyTreeMemberGetResponseType>(),
   );
   const hasFirstDataRef = useRef(false);
-  const canAddMembersRef = useRef(false);
-  const treeNameRef = useRef<string | null>(null);
+  const canAddRef = useRef(false);
   const lastAddedMemberIdRef = useRef<string | null>(null);
+  const treeNameRef = useRef<string | null>(null);
 
   // Sync refs with latest render values so stale closures always read current data
-  canAddMembersRef.current = sharedTree?.canAddMembers ?? false;
-  treeNameRef.current = sharedTree?.name ?? null;
+  canAddRef.current = permissions.canAdd;
   lastAddedMemberIdRef.current = lastAddedMemberId;
+  treeNameRef.current = treeName;
 
   useEffect(() => {
     membersMapRef.current = new Map(
@@ -68,6 +79,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
       if (!a.data.dob && !b.data.dob) return 0;
       if (!a.data.dob) return 1;
       if (!b.data.dob) return -1;
+
       return a.data.dob.localeCompare(b.data.dob);
     });
 
@@ -130,7 +142,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
           aria-label="View details"
         >👁</button>`;
 
-        if (canAddMembersRef.current) {
+        if (canAddRef.current) {
           if (!hasParents) {
             actions.innerHTML += `<button
               class="ft-btn ft-btn-parents"
@@ -172,7 +184,6 @@ export const Visualization: React.FC<Props> = ({ model }) => {
 
         // Append to .card so buttons are positioned relative to its coordinate space
         const card = this.querySelector('.card');
-
         if (card) card.appendChild(actions);
       });
 
@@ -229,6 +240,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
       const btn = (e.target as Element).closest(
         '[data-action]',
       ) as HTMLElement | null;
+
       if (!btn) return;
 
       e.stopPropagation();
@@ -303,6 +315,8 @@ export const Visualization: React.FC<Props> = ({ model }) => {
     }
   }, []);
 
+  if (!id) return null;
+
   return (
     <div
       className="w-full p-4 select-none relative"
@@ -312,6 +326,16 @@ export const Visualization: React.FC<Props> = ({ model }) => {
 
       {/* Toolbar */}
       <div className="absolute top-8 right-8 z-10 flex gap-2">
+        {permissions.canManageSharedUsers && (
+          <Link
+            to={routes.sharedTreeUsers}
+            params={{ id }}
+            className="p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors border border-gray-200 cursor-pointer flex items-center justify-center"
+            title="Shared Users"
+          >
+            <TeamOutlined style={{ fontSize: '24px', color: '#595959' }} />
+          </Link>
+        )}
         <button
           type="button"
           onClick={() =>

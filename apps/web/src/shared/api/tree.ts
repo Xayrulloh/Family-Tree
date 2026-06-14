@@ -42,4 +42,10 @@ export const tree = {
   findById: (id: string, config?: AxiosRequestConfig) => {
     return base.get<FamilyTreeResponseType>(`/family-trees/${id}`, config);
   },
+  findByIdPublic: (id: string, config?: AxiosRequestConfig) => {
+    return base.get<FamilyTreeResponseType>(
+      `/family-trees/${id}/public`,
+      config,
+    );
+  },
 };

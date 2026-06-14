@@ -1,58 +1,25 @@
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
-import { useUnit } from 'effector-react';
-import type React from 'react';
+import type { SharedFamilyTreeResponseType } from '@family-tree/shared';
+import { api } from '~/shared/api';
+import type { LazyPageFactoryParams } from '~/shared/lib/lazy-page';
 import {
-  DeleteMemberModal,
-  deleteMemberModel,
-} from '~/features/tree-member/delete';
-import { EditMemberModal, editMemberModel } from '~/features/tree-member/edit';
-import { PreviewMemberModal } from '~/features/tree-member/preview';
-import type { LazyPageProps } from '~/shared/lib/lazy-page';
-import { PageLoading } from '~/shared/ui/loading';
-import { factory } from '../model';
-import { Visualization } from './visualization';
+  createTreeDetailModel,
+  TreeDetailView,
+} from '~/widgets/tree-visualization';
 
-// Types
-type Model = ReturnType<typeof factory>;
-export type Props = LazyPageProps<Model>;
+// SHARED view — /shared path, permissions from the RBAC flags on the record.
+export const createModel = ({ route }: LazyPageFactoryParams<{ id: string }>) =>
+  createTreeDetailModel<SharedFamilyTreeResponseType>({
+    route,
+    scope: 'shared',
+    requireAuth: true,
+    fetchTree: (id) => api.sharedTree.findById({ familyTreeId: id }),
+    resolvePermissions: (tree) => ({
+      canAdd: tree.canAddMembers,
+      canEdit: tree.canEditMembers,
+      canDelete: tree.canDeleteMembers,
+      canManageSharedUsers: false,
+    }),
+    getName: (tree) => tree.name,
+  });
 
-export const SharedFamilyTreeView: React.FC<Props> = ({ model }) => {
-  const [loading, sharedTree] = useUnit([model.$loading, model.$sharedTree]);
-
-  if (loading) {
-    return <PageLoading />;
-  }
-
-  return (
-    <>
-      <Visualization model={model} />
-      <PreviewMemberModal
-        renderEditMemberSlot={(member) =>
-          sharedTree?.canEditMembers && (
-            <Button
-              type="text"
-              icon={<EditOutlined style={{ fontSize: 18 }} />}
-              onClick={() => editMemberModel.editTrigger(member)}
-            />
-          )
-        }
-        renderDeleteMemberSlot={(member) =>
-          sharedTree?.canDeleteMembers && (
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined style={{ fontSize: 18 }} />}
-              onClick={() => deleteMemberModel.deleteTrigger(member)}
-            />
-          )
-        }
-      />
-      <EditMemberModal />
-      <DeleteMemberModal />
-    </>
-  );
-};
-
-export const component = SharedFamilyTreeView;
-export const createModel = factory;
+export const component = TreeDetailView;

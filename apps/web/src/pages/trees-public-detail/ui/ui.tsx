@@ -6,18 +6,18 @@ import {
   TreeDetailView,
 } from '~/widgets/tree-visualization';
 
-// OWNER view — bare path, full permissions (server-guarded to the owner).
+// PUBLIC view — /public path, read-only, open to anonymous visitors.
 export const createModel = ({ route }: LazyPageFactoryParams<{ id: string }>) =>
   createTreeDetailModel<FamilyTreeResponseType>({
     route,
-    scope: 'owner',
-    requireAuth: true,
-    fetchTree: (id) => api.tree.findById(id),
+    scope: 'public',
+    requireAuth: false,
+    fetchTree: (id) => api.tree.findByIdPublic(id),
     resolvePermissions: () => ({
-      canAdd: true,
-      canEdit: true,
-      canDelete: true,
-      canManageSharedUsers: true,
+      canAdd: false,
+      canEdit: false,
+      canDelete: false,
+      canManageSharedUsers: false,
     }),
     getName: (tree) => tree.name,
   });

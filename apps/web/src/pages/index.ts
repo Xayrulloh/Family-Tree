@@ -7,6 +7,7 @@ import { SharedTreeUsers } from './shared-tree-users';
 import { SharedTreesDetail } from './shared-trees-detail';
 import { Trees } from './trees';
 import { TreesDetail } from './trees-detail';
+import { PublicTreesDetail } from './trees-public-detail';
 
 export const Routing = createRoutesView({
   routes: [
@@ -15,6 +16,7 @@ export const Routing = createRoutesView({
     Trees,
     TreesDetail,
     SharedTreesDetail,
+    PublicTreesDetail,
     SharedTreeUsers,
     NotFound,
   ],
