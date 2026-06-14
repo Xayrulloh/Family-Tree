@@ -13,6 +13,15 @@ import { type Observable, of, tap } from 'rxjs';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CacheService } from '../../config/cache/cache.service';
 
+// Route paths are prefix-agnostic: owner (bare), shared (/shared), and public
+// (/public) all resolve to the same treeId-keyed cache entry. The optional
+// `(?:public/|shared/)` segment is the only difference between the prefixes.
+const TREES_LIST_PATH = '/api/family-trees';
+const MEMBERS_PATH =
+  /^\/api\/family-trees\/:familyTreeId\/(?:public\/|shared\/)?members$/;
+const CONNECTIONS_PATH =
+  /^\/api\/family-trees\/:familyTreeId\/(?:public\/|shared\/)?members\/connections$/;
+
 @Injectable()
 export class FamilyTreeCacheInterceptor implements NestInterceptor {
   constructor(private readonly cacheService: CacheService) {}
@@ -26,12 +35,14 @@ export class FamilyTreeCacheInterceptor implements NestInterceptor {
     const treeId = params.familyTreeId || params.id;
     const path = request.route?.path || request.path || '';
 
-    if (!user) return next.handle();
+    const isTreesList = path === TREES_LIST_PATH;
+    const isMembers = MEMBERS_PATH.test(path);
+    const isConnections = CONNECTIONS_PATH.test(path);
 
     // GET requests - Check Cache
     if (method === 'GET') {
-      // /family-trees
-      if (path === '/api/family-trees') {
+      // /family-trees (per-user, owner only — needs an authenticated user)
+      if (isTreesList && user) {
         const cached = await this.cacheService.getUserFamilyTrees(
           user.id,
           query,
@@ -40,64 +51,46 @@ export class FamilyTreeCacheInterceptor implements NestInterceptor {
         if (cached) return of(cached);
       }
 
-      // /family-trees/:familyTreeId/members
-      if (path === '/api/family-trees/:familyTreeId/members') {
-        if (treeId) {
-          const cached = await this.cacheService.getFamilyTreeMembers(treeId);
+      // members list — treeId-keyed, shared across owner/public/shared
+      if (isMembers && treeId) {
+        const cached = await this.cacheService.getFamilyTreeMembers(treeId);
 
-          if (cached) return of(cached);
-        }
+        if (cached) return of(cached);
       }
 
-      // /family-trees/:familyTreeId/members/connections
-      if (path === '/api/family-trees/:familyTreeId/members/connections') {
-        if (treeId) {
-          const cached =
-            await this.cacheService.getFamilyTreeMemberConnections(treeId);
+      // connections — treeId-keyed, shared across owner/public/shared
+      if (isConnections && treeId) {
+        const cached =
+          await this.cacheService.getFamilyTreeMemberConnections(treeId);
 
-          if (cached) return of(cached);
-        }
+        if (cached) return of(cached);
       }
 
       return next.handle().pipe(
         tap(async (data) => {
-          switch (path) {
-            case '/api/family-trees': {
-              await this.cacheService.setUserFamilyTrees(
-                user.id,
-                query,
-                data as FamilyTreePaginationResponseType,
-              );
-
-              break;
-            }
-            case '/api/family-trees/:familyTreeId/members': {
-              if (treeId) {
-                await this.cacheService.setFamilyTreeMembers(
-                  treeId,
-                  data as FamilyTreeMemberGetAllResponseType,
-                );
-              }
-
-              break;
-            }
-            case '/api/family-trees/:familyTreeId/members/connections': {
-              if (treeId) {
-                await this.cacheService.setFamilyTreeMemberConnections(
-                  treeId,
-                  data as FamilyTreeMemberConnectionGetAllResponseType,
-                );
-              }
-
-              break;
-            }
-            default: {
-              break;
-            }
+          if (isTreesList && user) {
+            await this.cacheService.setUserFamilyTrees(
+              user.id,
+              query,
+              data as FamilyTreePaginationResponseType,
+            );
+          } else if (isConnections && treeId) {
+            await this.cacheService.setFamilyTreeMemberConnections(
+              treeId,
+              data as FamilyTreeMemberConnectionGetAllResponseType,
+            );
+          } else if (isMembers && treeId) {
+            await this.cacheService.setFamilyTreeMembers(
+              treeId,
+              data as FamilyTreeMemberGetAllResponseType,
+            );
           }
         }),
       );
     }
+
+    // Mutations only occur on authenticated (owner/shared) routes
+    if (!user) return next.handle();
 
     // Mutation requests - Invalidate Cache
     const isMutation = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method);

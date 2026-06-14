@@ -34,8 +34,12 @@ COOKIE_DOMAIN, COOKIE_CLIENT_URL
 ## Guards & Interceptors
 - `JWTAuthGuard` — validates JWT from cookie, attaches `req.user`
 - `GoogleOauthGuard` — Passport Google strategy
-- `FamilyTreeAccessGuard` (`common/guards/`) — centralizes owner/public/shared access for any route nested under a tree (params `familyTreeId` ?? `id`). Owner → full; public → read-only (rejects if any permission required); shared → must hold every required flag and not be blocked. Must run AFTER `JWTAuthGuard` (`@UseGuards(JWTAuthGuard, FamilyTreeAccessGuard)`). Reads required perms from `@RequirePermission(...)`.
-- `@RequirePermission('canAddMembers', ...)` decorator (`common/decorators/`) — declares which shared-tree flags a route needs; variadic (all must hold). Omit for read-only routes. Must add `FamilyTreeAccessGuard` to the module's `providers` so DI can resolve `DrizzleAsyncProvider`.
+- **Access isolation (Phase 2):** owner/public/shared are now separate route prefixes, each with its own guard (`common/guards/`):
+  - `OwnerGuard` — `createdBy === user.id`; bare path; after `JWTAuthGuard`.
+  - `PublicGuard` — `isPublic === true`; **no JWT** (anonymous + crawlers); `/public/*` prefix; read-only.
+  - `SharedAccessGuard` — non-blocked `shared_family_trees` record holding every `@RequirePermission(...)` flag; `/shared/*` prefix; after `JWTAuthGuard`. Owner does NOT pass here (owners use bare path).
+  - `FamilyTreeAccessGuard` — the original combined guard (owner→public→shared). **Still used, but only** for the shared-users RBAC PUT (the one genuinely "owner-OR-shared-with-all-perms" route).
+- `@RequirePermission('canAddMembers', ...)` decorator (`common/decorators/`) — declares which shared-tree flags a route needs; variadic (all must hold). Omit for read-only routes. Read by `SharedAccessGuard`/`FamilyTreeAccessGuard`. Every guard must be in the consuming module's `providers` so DI can resolve `DrizzleAsyncProvider`.
 - `FamilyTreeCacheInterceptor` — Redis cache for family tree endpoints
 - `UserCacheInterceptor` — Redis cache for user endpoints
 - `ZodResponseInterceptor` — response shape validation
@@ -75,17 +79,23 @@ Cache: `UserCacheInterceptor`
 |---|---|---|---|
 | GET | `/family-trees` | JWT | List own trees (paginated+search). If `?isPublic=true`: returns public trees |
 | GET | `/family-trees/:id/preview` | none | Public preview metadata (for OG crawlers) |
-| GET | `/family-trees/:id` | JWT | Get tree by id (403 if not owner and not public) |
+| GET | `/family-trees/:id/public` | PublicGuard (no JWT) | Get public tree metadata (anon visitors) |
+| GET | `/family-trees/:id` | JWT + OwnerGuard | Get tree by id — **owner only** now |
 | POST | `/family-trees` | JWT | Create tree + auto-create initial member from user |
-| PUT | `/family-trees/:id` | JWT | Update tree |
-| DELETE | `/family-trees/:id` | JWT | Delete tree |
+| PUT | `/family-trees/:id` | JWT + OwnerGuard | Update tree (service is pure — no userId) |
+| DELETE | `/family-trees/:id` | JWT + OwnerGuard | Delete tree (service is pure — no userId) |
 
 Cache: `FamilyTreeCacheInterceptor`
 
 ---
 
-### Family Tree Member (`/family-trees/:familyTreeId/members`)
-Access check on all routes via `SharedFamilyTreeService.checkAccessSharedFamilyTree()`.
+### Family Tree Member — isolated by prefix (Phase 2)
+Three controllers built from abstract base controllers (`*.base.controller.ts`: read tier + write tier), differing only in prefix + guard. Handler bodies written once.
+- **Owner**: `/family-trees/:familyTreeId/members` — JWT + OwnerGuard (read + write)
+- **Shared**: `/family-trees/:familyTreeId/shared/members` — JWT + SharedAccessGuard (read + write, RBAC-gated via `@RequirePermission`)
+- **Public**: `/family-trees/:familyTreeId/public/members` — PublicGuard, no JWT, **read-only** (extends read-tier base only)
+
+Routes below are the same on all three prefixes (writes only on owner/shared):
 
 | Method | Route | Guard | Permission check | Description |
 |---|---|---|---|---|
@@ -101,11 +111,12 @@ Cache: `FamilyTreeCacheInterceptor`
 
 ---
 
-### Family Tree Member Connection (`/family-trees/:familyTreeId/members`)
+### Family Tree Member Connection — isolated by prefix (Phase 2)
+Read-only on all three prefixes (one abstract base controller, three concretes with owner/shared/public guards as above). The connection module is registered **before** the member module in `app.module` so `members/connections` resolves before `members/:id` on every prefix — do not reorder.
 | Method | Route | Guard | Description |
 |---|---|---|---|
-| GET | `/family-trees/:familyTreeId/members/connections` | JWT | Get all connections in tree |
-| GET | `/family-trees/:familyTreeId/members/:memberUserId/connections` | JWT | Get connections for specific member |
+| GET | `/family-trees/:familyTreeId[/public|/shared]/members/connections` | per-prefix | Get all connections in tree |
+| GET | `/family-trees/:familyTreeId[/public|/shared]/members/:memberUserId/connections` | per-prefix | Get connections for specific member |
 
 Cache: `FamilyTreeCacheInterceptor`
 

@@ -1,12 +1,27 @@
 import { Module } from '@nestjs/common';
-import { FamilyTreeAccessGuard } from '~/common/guards/family-tree-access.guard';
+import { OwnerGuard } from '~/common/guards/owner.guard';
+import { PublicGuard } from '~/common/guards/public.guard';
+import { SharedAccessGuard } from '~/common/guards/shared-access.guard';
 import { DrizzleModule } from '~/database/drizzle.module';
-import { FamilyTreeMemberConnectionController } from './family-tree-member-connection.controller';
+import {
+  FamilyTreeMemberConnectionController,
+  PublicFamilyTreeMemberConnectionController,
+  SharedFamilyTreeMemberConnectionController,
+} from './family-tree-member-connection.controller';
 import { FamilyTreeMemberConnectionService } from './family-tree-member-connection.service';
 
 @Module({
   imports: [DrizzleModule],
-  controllers: [FamilyTreeMemberConnectionController],
-  providers: [FamilyTreeMemberConnectionService, FamilyTreeAccessGuard],
+  controllers: [
+    FamilyTreeMemberConnectionController,
+    SharedFamilyTreeMemberConnectionController,
+    PublicFamilyTreeMemberConnectionController,
+  ],
+  providers: [
+    FamilyTreeMemberConnectionService,
+    OwnerGuard,
+    PublicGuard,
+    SharedAccessGuard,
+  ],
 })
 export class FamilyTreeMemberConnectionModule {}

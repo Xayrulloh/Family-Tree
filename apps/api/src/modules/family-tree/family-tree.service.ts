@@ -129,15 +129,11 @@ export class FamilyTreeService {
   }
 
   async updateFamilyTree(
-    userId: string,
     id: string,
     body: FamilyTreeUpdateRequestDto,
   ): Promise<void> {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
-      where: and(
-        eq(schema.familyTreesSchema.id, id),
-        eq(schema.familyTreesSchema.createdBy, userId),
-      ),
+      where: eq(schema.familyTreesSchema.id, id),
     });
 
     if (!familyTree) {
@@ -158,12 +154,9 @@ export class FamilyTreeService {
       .where(eq(schema.familyTreesSchema.id, id));
   }
 
-  async deleteFamilyTree(userId: string, id: string): Promise<void> {
+  async deleteFamilyTree(id: string): Promise<void> {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
-      where: and(
-        eq(schema.familyTreesSchema.id, id),
-        eq(schema.familyTreesSchema.createdBy, userId),
-      ),
+      where: eq(schema.familyTreesSchema.id, id),
     });
 
     if (!familyTree) {

@@ -7,7 +7,6 @@ import {
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -28,6 +27,8 @@ import {
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
+import { OwnerGuard } from '~/common/guards/owner.guard';
+import { PublicGuard } from '~/common/guards/public.guard';
 import { FamilyTreeCacheInterceptor } from '~/common/interceptors/family-tree.cache.interceptor';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
@@ -85,26 +86,29 @@ export class FamilyTreeController {
     return this.familyTreeService.getFamilyTreeById(param.id);
   }
 
-  // Find family tree by id
+  // Find public family tree by id (read-only, no auth — for anon visitors)
+  @Get(':id/public')
+  @UseGuards(PublicGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: FamilyTreeResponseDto })
+  @ZodSerializerDto(FamilyTreeResponseSchema)
+  async getPublicFamilyTreeById(
+    @Param() param: FamilyTreeIdParamDto,
+  ): Promise<FamilyTreeResponseDto> {
+    return this.familyTreeService.getFamilyTreeById(param.id);
+  }
+
+  // Find family tree by id (owner only)
   @Get(':id')
-  @UseGuards(JWTAuthGuard)
+  @UseGuards(JWTAuthGuard, OwnerGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: FamilyTreeResponseDto })
   @ZodSerializerDto(FamilyTreeResponseSchema)
   async getFamilyTreeById(
-    @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeIdParamDto,
   ): Promise<FamilyTreeResponseDto> {
-    const familyTree = await this.familyTreeService.getFamilyTreeById(param.id);
-
-    if (req.user.id !== familyTree.createdBy && !familyTree.isPublic) {
-      throw new ForbiddenException(
-        'You are not allowed to access this family tree',
-      );
-    }
-
-    return familyTree;
+    return this.familyTreeService.getFamilyTreeById(param.id);
   }
 
   // Create family tree for user
@@ -132,30 +136,26 @@ export class FamilyTreeController {
     return familyTree;
   }
 
-  // Update family tree by id
+  // Update family tree by id (owner only)
   @Put(':id')
-  @UseGuards(JWTAuthGuard)
+  @UseGuards(JWTAuthGuard, OwnerGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   async updateFamilyTree(
-    @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeIdParamDto,
     @Body() body: FamilyTreeUpdateRequestDto,
   ): Promise<void> {
-    return this.familyTreeService.updateFamilyTree(req.user.id, param.id, body);
+    return this.familyTreeService.updateFamilyTree(param.id, body);
   }
 
-  // Delete family tree by id
+  // Delete family tree by id (owner only)
   @Delete(':id')
-  @UseGuards(JWTAuthGuard)
+  @UseGuards(JWTAuthGuard, OwnerGuard)
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
-  async deleteFamilyTree(
-    @Req() req: AuthenticatedRequest,
-    @Param() param: FamilyTreeIdParamDto,
-  ): Promise<void> {
-    return this.familyTreeService.deleteFamilyTree(req.user.id, param.id);
+  async deleteFamilyTree(@Param() param: FamilyTreeIdParamDto): Promise<void> {
+    return this.familyTreeService.deleteFamilyTree(param.id);
   }
 }
