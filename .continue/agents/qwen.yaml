@@ -1,0 +1,28 @@
+name: Qwen Local Code Setup
+version: 1.0.0
+schema: v1
+
+# Define which models can be used
+models:
+  # 1. Your Heavy-Lifter Chat/Agent Model (Runs via CPU/GPU Split)
+  - name: Qwen2.5 Coder 7B Chat
+    provider: openai
+    model: qwen2.5-coder-7b-instruct
+    apiBase: http://localhost:1234/v1
+    roles:
+      - chat
+      - edit
+      - apply
+
+  # 2. Your Ultra-Fast Autocomplete Model (Runs 100% in VRAM)
+  - name: Qwen2.5 Coder 1.5B Tab Complete
+    provider: openai
+    model: qwen2.5-coder-1.5b-instruct
+    apiBase: http://localhost:1234/v1
+    roles:
+      - autocomplete
+
+# Optional: Add fine-tuned configurations for your tab completions
+autocompleteOptions:
+  debounceDelay: 250         
+  maxPromptTokens: 2048

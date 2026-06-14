@@ -32,9 +32,27 @@ const renderPreviewHtml = (
   fallbackImage: string,
 ): string => {
   const title = escapeHtml(preview.name);
-  const description = escapeHtml(`${preview.name} — family tree on famtree.uz`);
+  const description = escapeHtml(
+    `Explore the ${preview.name} family tree on famtree.uz`,
+  );
   const image = escapeHtml(preview.image ?? fallbackImage);
   const url = escapeHtml(pageUrl);
+
+  // JSON.stringify handles all escaping safely for embedding in <script type="application/ld+json">
+  const jsonLd = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: preview.name,
+    description: `Explore the ${preview.name} family tree on famtree.uz`,
+    image: preview.image ?? fallbackImage,
+    url: pageUrl,
+    inLanguage: 'en',
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'famtree.uz',
+      url: 'https://www.famtree.uz',
+    },
+  });
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -48,7 +66,10 @@ const renderPreviewHtml = (
 <meta property="og:title" content="${title}">
 <meta property="og:description" content="${description}">
 <meta property="og:image" content="${image}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:url" content="${url}">
+<meta property="og:locale" content="en_US">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${title}">
@@ -56,6 +77,8 @@ const renderPreviewHtml = (
 <meta name="twitter:image" content="${image}">
 
 <link rel="canonical" href="${url}">
+
+<script type="application/ld+json">${jsonLd}</script>
 </head>
 <body></body>
 </html>`;
