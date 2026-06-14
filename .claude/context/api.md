@@ -34,6 +34,8 @@ COOKIE_DOMAIN, COOKIE_CLIENT_URL
 ## Guards & Interceptors
 - `JWTAuthGuard` — validates JWT from cookie, attaches `req.user`
 - `GoogleOauthGuard` — Passport Google strategy
+- `FamilyTreeAccessGuard` (`common/guards/`) — centralizes owner/public/shared access for any route nested under a tree (params `familyTreeId` ?? `id`). Owner → full; public → read-only (rejects if any permission required); shared → must hold every required flag and not be blocked. Must run AFTER `JWTAuthGuard` (`@UseGuards(JWTAuthGuard, FamilyTreeAccessGuard)`). Reads required perms from `@RequirePermission(...)`.
+- `@RequirePermission('canAddMembers', ...)` decorator (`common/decorators/`) — declares which shared-tree flags a route needs; variadic (all must hold). Omit for read-only routes. Must add `FamilyTreeAccessGuard` to the module's `providers` so DI can resolve `DrizzleAsyncProvider`.
 - `FamilyTreeCacheInterceptor` — Redis cache for family tree endpoints
 - `UserCacheInterceptor` — Redis cache for user endpoints
 - `ZodResponseInterceptor` — response shape validation
@@ -143,8 +145,11 @@ Returns: `{ message, path }` where path = `CLOUDFLARE_URL/folder/randomKey`
 | DELETE | `/fcm-tokens` | JWT | Remove FCM token |
 
 ## Shared access check logic
-`SharedFamilyTreeService.checkAccessSharedFamilyTree(userId, familyTreeId, permissions?)`:
-- If user is tree owner → always allowed
-- Else looks up `shared_family_trees` record for this user+tree
-- If blocked → throws 403
-- Checks requested permissions (`canAddMembers`, `canEditMembers`, `canDeleteMembers`)
+Handled by `FamilyTreeAccessGuard` + `@RequirePermission` (see Guards section). The old
+`SharedFamilyTreeService.checkAccessSharedFamilyTree()` god-method was removed (Phase 1 of the
+Isolation ticket — see `.claude/context/isolation-plan.md`):
+- Owner → always allowed
+- Public tree → read-only (any required permission → 403)
+- Shared → looks up `shared_family_trees`; missing/blocked → 403; then every required flag must be true
+- Members + connections + the shared-users RBAC PUT all enforce via the guard now.
+- NOTE: `family-tree.controller` `GET/:id` (inline owner|public check) and `PUT`/`DELETE` (service-level `WHERE createdBy`) were intentionally left as-is — they get dedicated guards in Phase 2 route isolation.

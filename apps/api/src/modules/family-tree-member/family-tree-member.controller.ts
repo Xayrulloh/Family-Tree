@@ -12,7 +12,6 @@ import {
   Param,
   Post,
   Put,
-  Req,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -24,12 +23,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
+import { RequirePermission } from '~/common/decorators/require-permission.decorator';
+import { FamilyTreeAccessGuard } from '~/common/guards/family-tree-access.guard';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import { FamilyTreeCacheInterceptor } from '~/common/interceptors/family-tree.cache.interceptor';
-import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { SharedFamilyTreeService } from '../shared-family-tree/shared-family-tree.service';
 // biome-ignore lint/style/useImportType: <query/param doesn't work>
 import {
   FamilyTreeMemberCreateChildRequestDto,
@@ -45,35 +43,25 @@ import {
 import { FamilyTreeMemberService } from './family-tree-member.service';
 
 @ApiTags('Family Tree Member')
+@ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
 @Controller('family-trees/:familyTreeId/members')
+@UseGuards(JWTAuthGuard, FamilyTreeAccessGuard)
 @UseInterceptors(FamilyTreeCacheInterceptor)
 export class FamilyTreeMemberController {
   constructor(
     private readonly familyTreeMemberService: FamilyTreeMemberService,
-    private readonly sharedFamilyTreeService: SharedFamilyTreeService,
   ) {}
 
   // add member create (child)
   @Post('child')
-  @UseGuards(JWTAuthGuard)
-  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @RequirePermission('canAddMembers')
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ type: FamilyTreeMemberGetResponseDto })
   @ZodSerializerDto(FamilyTreeMemberGetResponseSchema)
   async createFamilyTreeMemberChild(
-    @Req() req: AuthenticatedRequest,
     @Body() body: FamilyTreeMemberCreateChildRequestDto,
     @Param() param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
-    // check access
-    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
-      req.user.id,
-      param.familyTreeId,
-      {
-        canAddMembers: true,
-      },
-    );
-
     return this.familyTreeMemberService.createFamilyTreeMemberChild(
       param.familyTreeId,
       body,
@@ -82,25 +70,14 @@ export class FamilyTreeMemberController {
 
   // add member create (spouse)
   @Post('spouse')
-  @UseGuards(JWTAuthGuard)
-  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @RequirePermission('canAddMembers')
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ type: FamilyTreeMemberGetResponseDto })
   @ZodSerializerDto(FamilyTreeMemberGetResponseSchema)
   async createFamilyTreeMemberSpouse(
-    @Req() req: AuthenticatedRequest,
     @Body() body: FamilyTreeMemberCreateSpouseRequestDto,
     @Param() param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
-    // check access
-    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
-      req.user.id,
-      param.familyTreeId,
-      {
-        canAddMembers: true,
-      },
-    );
-
     return this.familyTreeMemberService.createFamilyTreeMemberSpouse(
       param.familyTreeId,
       body,
@@ -109,25 +86,14 @@ export class FamilyTreeMemberController {
 
   // add member create (parents)
   @Post('parents')
-  @UseGuards(JWTAuthGuard)
-  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @RequirePermission('canAddMembers')
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ type: FamilyTreeMemberGetResponseDto })
   @ZodSerializerDto(FamilyTreeMemberGetResponseSchema)
   async createFamilyTreeMemberParents(
-    @Req() req: AuthenticatedRequest,
     @Body() body: FamilyTreeMemberCreateParentsRequestDto,
     @Param() param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
-    // check access
-    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
-      req.user.id,
-      param.familyTreeId,
-      {
-        canAddMembers: true,
-      },
-    );
-
     return this.familyTreeMemberService.createFamilyTreeMemberParents(
       param.familyTreeId,
       body,
@@ -136,86 +102,46 @@ export class FamilyTreeMemberController {
 
   // edit member user
   @Put(':id')
-  @UseGuards(JWTAuthGuard)
-  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @RequirePermission('canEditMembers')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   async updateFamilyTreeMember(
-    @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeMemberGetParamDto,
     @Body() body: FamilyTreeMemberUpdateRequestDto,
   ): Promise<void> {
-    // check access
-    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
-      req.user.id,
-      param.familyTreeId,
-      {
-        canEditMembers: true,
-      },
-    );
-
     return this.familyTreeMemberService.updateFamilyTreeMember(param, body);
   }
 
   // delete member user
   @Delete(':id')
-  @UseGuards(JWTAuthGuard)
-  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
+  @RequirePermission('canDeleteMembers')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   async deleteFamilyTreeMember(
-    @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeMemberGetParamDto,
   ): Promise<void> {
-    // check access
-    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
-      req.user.id,
-      param.familyTreeId,
-      {
-        canDeleteMembers: true,
-      },
-    );
-
     return this.familyTreeMemberService.deleteFamilyTreeMember(param);
   }
 
   // get all nodes of tree
   @Get()
-  @UseGuards(JWTAuthGuard)
-  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: FamilyTreeMemberGetAllResponseDto })
   @ZodSerializerDto(FamilyTreeMemberGetAllResponseSchema)
   async getAllFamilyTreeMembers(
-    @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeMemberGetAllParamDto,
   ): Promise<FamilyTreeMemberGetAllResponseDto> {
-    // check access
-    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
-      req.user.id,
-      param.familyTreeId,
-    );
-
     return this.familyTreeMemberService.getAllFamilyTreeMembers(param);
   }
 
   // get node by id and tree
   @Get(':id')
-  @UseGuards(JWTAuthGuard)
-  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: FamilyTreeMemberGetResponseDto })
   @ZodSerializerDto(FamilyTreeMemberGetResponseSchema)
   async getFamilyTreeMember(
-    @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeMemberGetParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
-    // check access
-    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
-      req.user.id,
-      param.familyTreeId,
-    );
-
     return this.familyTreeMemberService.getFamilyTreeMember(param);
   }
 }

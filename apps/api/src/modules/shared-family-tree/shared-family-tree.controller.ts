@@ -22,6 +22,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
+import { RequirePermission } from '~/common/decorators/require-permission.decorator';
+import { FamilyTreeAccessGuard } from '~/common/guards/family-tree-access.guard';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
@@ -99,28 +101,17 @@ export class SharedFamilyTreeController {
   }
 
   // Update RBAC of the user which is shared with
+  // TODO: in future we might have another option smth like canEditRBAC, so we need to check that one
   @Put(':familyTreeId/shared-users/:userId')
-  @UseGuards(JWTAuthGuard)
+  @UseGuards(JWTAuthGuard, FamilyTreeAccessGuard)
+  @RequirePermission('canEditMembers', 'canAddMembers', 'canDeleteMembers')
   @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   async updateSharedFamilyTreeById(
-    @Req() req: AuthenticatedRequest,
     @Param() param: SharedFamilyTreeUpdateParamDto,
     @Body() body: SharedFamilyTreeUpdateRequestDto,
   ): Promise<void> {
-    // check access (whether he can modify)
-    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
-      req.user.id,
-      param.familyTreeId,
-      {
-        // TODO: in future we might have another option smth like canEditRBAC, so we need to check that one
-        canEditMembers: true,
-        canAddMembers: true,
-        canDeleteMembers: true,
-      },
-    );
-
     return this.sharedFamilyTreeService.updateSharedFamilyTreeById(
       param.userId,
       param.familyTreeId,

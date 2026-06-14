@@ -1,4 +1,3 @@
-import type { SharedFamilyTreeSchemaType } from '@family-tree/shared';
 import {
   ForbiddenException,
   Inject,
@@ -248,74 +247,6 @@ export class SharedFamilyTreeService {
       totalCount,
       totalPages,
     };
-  }
-
-  async checkAccessSharedFamilyTree(
-    userId: string,
-    familyTreeId: string,
-    access?: Partial<
-      Pick<
-        SharedFamilyTreeSchemaType,
-        'canAddMembers' | 'canEditMembers' | 'canDeleteMembers'
-      >
-    >,
-  ): Promise<void> {
-    const familyTree = await this.db.query.familyTreesSchema.findFirst({
-      where: eq(schema.familyTreesSchema.id, familyTreeId),
-      columns: { createdBy: true, isPublic: true },
-    });
-
-    if (!familyTree) {
-      throw new NotFoundException(
-        `Family tree with id ${familyTreeId} not found`,
-      );
-    }
-
-    if (familyTree.createdBy === userId) {
-      return;
-    }
-
-    // public trees: anyone can read, only the owner can write
-    if (familyTree.isPublic) {
-      console.log('what the fuck');
-      if (access) {
-        throw new ForbiddenException(`You don't have a permission`);
-      }
-      return;
-    }
-
-    const sharedFamilyTreeUserAccess =
-      await this.db.query.sharedFamilyTreesSchema.findFirst({
-        where: and(
-          eq(schema.sharedFamilyTreesSchema.familyTreeId, familyTreeId),
-          eq(schema.sharedFamilyTreesSchema.userId, userId),
-        ),
-        columns: {
-          canAddMembers: true,
-          canEditMembers: true,
-          canDeleteMembers: true,
-          isBlocked: true,
-        },
-      });
-
-    if (!sharedFamilyTreeUserAccess || sharedFamilyTreeUserAccess.isBlocked) {
-      throw new ForbiddenException(`You don't have a permission`);
-    }
-
-    if (access?.canAddMembers && !sharedFamilyTreeUserAccess.canAddMembers) {
-      throw new ForbiddenException(`You don't have a permission`);
-    }
-
-    if (access?.canEditMembers && !sharedFamilyTreeUserAccess.canEditMembers) {
-      throw new ForbiddenException(`You don't have a permission`);
-    }
-
-    if (
-      access?.canDeleteMembers &&
-      !sharedFamilyTreeUserAccess.canDeleteMembers
-    ) {
-      throw new ForbiddenException(`You don't have a permission`);
-    }
   }
 
   async updateSharedFamilyTreeById(

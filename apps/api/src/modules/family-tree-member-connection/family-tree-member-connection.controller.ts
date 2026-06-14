@@ -5,7 +5,6 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Req,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -15,12 +14,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger/dist/decorators';
 import { ZodSerializerDto } from 'nestjs-zod';
+import { FamilyTreeAccessGuard } from '~/common/guards/family-tree-access.guard';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import { FamilyTreeCacheInterceptor } from '~/common/interceptors/family-tree.cache.interceptor';
-import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
 import { COOKIES_ACCESS_TOKEN_KEY } from '~/utils/constants';
-// biome-ignore lint/style/useImportType: <throws an error if put type>
-import { SharedFamilyTreeService } from '../shared-family-tree/shared-family-tree.service';
 // biome-ignore lint/style/useImportType: <query/param doesn't work>
 import {
   FamilyTreeMemberConnectionGetAllParamDto,
@@ -31,31 +28,23 @@ import {
 import { FamilyTreeMemberConnectionService } from './family-tree-member-connection.service';
 
 @ApiTags('Family Tree Member Connection')
+@ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
 @Controller('family-trees/:familyTreeId/members')
+@UseGuards(JWTAuthGuard, FamilyTreeAccessGuard)
 @UseInterceptors(FamilyTreeCacheInterceptor)
 export class FamilyTreeMemberConnectionController {
   constructor(
     private readonly familyTreeMemberConnectionService: FamilyTreeMemberConnectionService,
-    private readonly sharedFamilyTreeService: SharedFamilyTreeService,
   ) {}
 
   // get all connections of tree
   @Get('connections')
-  @UseGuards(JWTAuthGuard)
-  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: FamilyTreeMemberConnectionGetAllResponseDto })
   @ZodSerializerDto(FamilyTreeMemberConnectionGetAllResponseSchema)
   async getAllFamilyTreeMemberConnections(
-    @Req() req: AuthenticatedRequest,
     @Param() param: FamilyTreeMemberConnectionGetAllParamDto,
   ): Promise<FamilyTreeMemberConnectionGetAllResponseDto> {
-    // check access
-    await this.sharedFamilyTreeService.checkAccessSharedFamilyTree(
-      req.user.id,
-      param.familyTreeId,
-    );
-
     return this.familyTreeMemberConnectionService.getAllFamilyTreeMemberConnections(
       param,
     );
@@ -63,8 +52,6 @@ export class FamilyTreeMemberConnectionController {
 
   // get connection of member in tree
   @Get(':memberUserId/connections')
-  @UseGuards(JWTAuthGuard)
-  @ApiCookieAuth(COOKIES_ACCESS_TOKEN_KEY)
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: FamilyTreeMemberConnectionGetAllResponseDto })
   @ZodSerializerDto(FamilyTreeMemberConnectionGetAllResponseSchema)
