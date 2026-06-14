@@ -18,13 +18,13 @@ type ByMemberParam = FamilyTreeMemberConnectionGetByMemberParamType & {
 export const treeMemberConnection = {
   findAll: (param: AllParam, config?: AxiosRequestConfig) => {
     return base.get<FamilyTreeMemberConnectionGetAllResponseType>(
-      `/family-trees/${param.familyTreeId}${scopeSegment(param.scope)}/members/connections`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/connections`,
       config,
     );
   },
   findById: (param: ByMemberParam, config?: AxiosRequestConfig) => {
     return base.get<FamilyTreeMemberConnectionGetAllResponseType>(
-      `/family-trees/${param.familyTreeId}${scopeSegment(param.scope)}/members/${param.memberUserId}/connections`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/${param.memberUserId}/connections`,
       config,
     );
   },

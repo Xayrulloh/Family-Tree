@@ -56,6 +56,36 @@ Append a bullet here after each session with: date, what was built/changed, and 
 
 ---
 
+## 2026-06-14 — Isolation ticket: Phases 2–4 (frontend API, renames, wiring)
+
+Branch `feature/isolation-routes` continued (all phases on same branch, no merge until done).
+
+**Phase 2 — Frontend API clients + routing + share button:**
+- Flipped URL namespace: scope segment now goes BEFORE the id everywhere. `scopeSegment()` helper returns the same values (`''`/`'/shared'`/`'/public'`) but is now inserted before the id in all URL templates: `/family-trees${scope}/${id}/members`.
+- `tree.ts`: removed `isPublic` from `findAll`, fixed `findByIdPublic` → `/family-trees/public/${id}`, added `findAllPublic` → `GET /family-trees/public`.
+- `shared-tree.ts`: all 3 URLs updated (`findById`, `findUsers`, `update`) to new prefix-before-id shape.
+- `routing.ts`: added `publicTreeList` + `sharedTreeList` routes; fixed paths for `sharedTreesDetail`, `publicTreesDetail`, `sharedTreeUsers`; listed literal paths (`/family-trees/public`, `/family-trees/shared`) BEFORE `/family-trees/:id` to prevent param route matching the literals.
+- `share/model.ts` + `visualization.tsx`: `shareTrigger` now accepts `{ id }` and builds `${window.location.origin}/family-trees/shared/${id}` (previously appended `/shared` to `window.location.href` which is wrong for the new URL shape).
+- `pages/tree-list/model.ts` (`fetchPublicTreesFx`): switched from `api.tree.findAll({ isPublic: true })` to `api.tree.findAllPublic(...)`.
+
+**Phase 3 — Frontend renames:**
+- `pages/trees` → `pages/tree-list`, export `Trees` → `TreeList`
+- `pages/trees-detail` → `pages/tree-detail`, export `TreesDetail` → `TreeDetail`
+- `pages/trees-public-detail` → `pages/public-tree-detail` (export `PublicTreesDetail` unchanged)
+- `pages/shared-trees-detail` → `pages/shared-tree-detail`, export `SharedTreesDetail` → `SharedTreeDetail`
+- `features/tree-detail/share` → `features/tree/share` (entire `tree-detail/` parent folder removed)
+
+**Phase 4 — New routes wired:**
+- `tree-list/model.ts` factory accepts `initialMode?: TreesMode` (default `'my-trees'`); resets `$mode` to `initialMode` on every route open so each entry URL lands on the correct tab.
+- `tree-list/ui/index.ts` now exports `TreeList`, `PublicTreeList`, `SharedTreeList` — three `createLazyPage` entries with `staticDeps: { initialMode }`, sharing the same lazy chunk but each getting its own model instance.
+- `pages/index.ts` wires all three into `createRoutesView`.
+
+**Key note (route ordering in atomic-router):** Literal routes (`/family-trees/public`, `/family-trees/shared`) MUST appear before parameterized routes (`/family-trees/:id`) in `routesMap`. If `:id` is listed first, the router matches the string `"public"` or `"shared"` as the id and the dedicated routes never activate.
+**Key note (`createLazyPage` + `staticDeps`):** The built-in `staticDeps` mechanism passes arbitrary config from page setup into `createModel`. Use `staticDeps: { initialMode: 'public-trees' as const }` to serve the same `ui.tsx` from multiple routes with different initial state — no extra infrastructure needed.
+**Key note (share URL):** Building a share URL by appending to `window.location.href` is fragile (breaks if user is already on a scoped path). Always build from `window.location.origin + hardcoded path + id`.
+
+---
+
 ## 2026-06-14 — Isolation ticket: Phase 3 (frontend)
 - Branch `feature/isolation-routes` (continued, same branch as Phase 2).
 - Created `shared/config/tree-scope.ts` — `TreeScope` type (`'owner' | 'shared' | 'public'`), global `$treeScope` store + `treeScopeChanged` event, `scopeSegment()` helper that maps scope to URL infix.

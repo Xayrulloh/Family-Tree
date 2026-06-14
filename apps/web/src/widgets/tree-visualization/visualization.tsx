@@ -11,7 +11,7 @@ import * as f3 from 'family-chart';
 import 'family-chart/styles/family-chart.css';
 import html2canvas from 'html2canvas';
 import { useCallback, useEffect, useRef } from 'react';
-import { ShareTreeModal, shareTreeModel } from '~/features/tree-detail/share';
+import { ShareTreeModal, shareTreeModel } from '~/features/tree/share';
 import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
 import { routes } from '~/shared/config/routing';
@@ -338,9 +338,7 @@ export const Visualization: React.FC<Props> = ({ model }) => {
         )}
         <button
           type="button"
-          onClick={() =>
-            shareTreeModel.shareTrigger({ url: window.location.href })
-          }
+          onClick={() => shareTreeModel.shareTrigger({ id: id ?? '' })}
           className="p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors border border-gray-200 cursor-pointer"
           title="Share Tree"
         >

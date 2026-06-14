@@ -2,20 +2,22 @@ import { createRoutesView } from 'atomic-router-react';
 import { FullscreenLoading } from '~/shared/ui/loading';
 import { Home } from './home';
 import { NotFound } from './not-found';
+import { PublicTreesDetail } from './public-tree-detail';
 import { Registration } from './registration';
+import { SharedTreeDetail } from './shared-tree-detail';
 import { SharedTreeUsers } from './shared-tree-users';
-import { SharedTreesDetail } from './shared-trees-detail';
-import { Trees } from './trees';
-import { TreesDetail } from './trees-detail';
-import { PublicTreesDetail } from './trees-public-detail';
+import { TreeDetail } from './tree-detail';
+import { PublicTreeList, SharedTreeList, TreeList } from './tree-list';
 
 export const Routing = createRoutesView({
   routes: [
     Home,
     Registration,
-    Trees,
-    TreesDetail,
-    SharedTreesDetail,
+    TreeList,
+    PublicTreeList,
+    SharedTreeList,
+    TreeDetail,
+    SharedTreeDetail,
     PublicTreesDetail,
     SharedTreeUsers,
     NotFound,

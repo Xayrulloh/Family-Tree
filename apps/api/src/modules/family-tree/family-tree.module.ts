@@ -1,20 +1,32 @@
 import { Module } from '@nestjs/common';
+import { FamilyTreeAccessGuard } from '~/common/guards/family-tree-access.guard';
 import { OwnerGuard } from '~/common/guards/owner.guard';
 import { PublicGuard } from '~/common/guards/public.guard';
 import { CloudflareModule } from '~/config/cloudflare/cloudflare.module';
 import { DrizzleModule } from '~/database/drizzle.module';
-import { FamilyTreeMemberService } from '../family-tree-member/family-tree-member.service';
-import { FamilyTreeController } from './family-tree.controller';
-import { FamilyTreeService } from './family-tree.service';
+import { FamilyTreeMemberService } from '../family-tree-member/services/family-tree-member.service';
+import { FamilyTreeController } from './controllers/family-tree.controller';
+import { FamilyTreePublicController } from './controllers/family-tree-public.controller';
+import { FamilyTreeSharedController } from './controllers/family-tree-shared.controller';
+import { FamilyTreeService } from './services/family-tree.service';
+import { SharedFamilyTreeService } from './services/shared-family-tree.service';
 
 @Module({
   imports: [DrizzleModule, CloudflareModule],
-  controllers: [FamilyTreeController],
+  // Public/shared before owner so literal segments resolve before :id
+  controllers: [
+    FamilyTreePublicController,
+    FamilyTreeSharedController,
+    FamilyTreeController,
+  ],
   providers: [
     FamilyTreeService,
+    SharedFamilyTreeService,
     FamilyTreeMemberService,
     OwnerGuard,
     PublicGuard,
+    FamilyTreeAccessGuard,
   ],
+  exports: [FamilyTreeService],
 })
 export class FamilyTreeModule {}

@@ -11,7 +11,8 @@ interface FamilyTreePreview {
 const BOT_UA =
   /facebookexternalhit|facebookcatalog|Twitterbot|WhatsApp|TelegramBot|Discordbot|Slackbot|LinkedInBot|Googlebot|bingbot|Applebot|Pinterest|redditbot|Embedly|SkypeUriPreview|vkShare|W3C_Validator|XING-contenttabreceiver/i;
 
-const TREE_ROUTE = /^\/family-trees\/([0-9a-f-]{36})(?:\/shared|\/public)?\/?$/;
+const TREE_ROUTE =
+  /^\/family-trees\/(?:(?:public|shared)\/)?([0-9a-f-]{36})\/?$/;
 
 const escapeHtml = (s: string | null | undefined): string =>
   String(s ?? '').replace(

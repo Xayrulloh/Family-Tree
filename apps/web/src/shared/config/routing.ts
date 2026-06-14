@@ -10,8 +10,10 @@ export const routes = {
   registration: createRoute(),
   trees: createRoute(),
   treesDetail: createRoute<{ id: string }>(),
-  sharedTreesDetail: createRoute<{ id: string }>(),
+  publicTreeList: createRoute(),
   publicTreesDetail: createRoute<{ id: string }>(),
+  sharedTreeList: createRoute(),
+  sharedTreesDetail: createRoute<{ id: string }>(),
   sharedTreeUsers: createRoute<{ id: string }>(),
 };
 
@@ -29,20 +31,28 @@ export const routesMap = [
     route: routes.trees,
   },
   {
-    path: '/family-trees/:id',
-    route: routes.treesDetail,
+    path: '/family-trees/public',
+    route: routes.publicTreeList,
   },
   {
-    path: '/family-trees/:id/shared',
-    route: routes.sharedTreesDetail,
-  },
-  {
-    path: '/family-trees/:id/public',
+    path: '/family-trees/public/:id',
     route: routes.publicTreesDetail,
   },
   {
-    path: '/family-trees/:id/shared-users',
+    path: '/family-trees/shared',
+    route: routes.sharedTreeList,
+  },
+  {
+    path: '/family-trees/shared/:id',
+    route: routes.sharedTreesDetail,
+  },
+  {
+    path: '/family-trees/shared/:id/users',
     route: routes.sharedTreeUsers,
+  },
+  {
+    path: '/family-trees/:id',
+    route: routes.treesDetail,
   },
 ];
 

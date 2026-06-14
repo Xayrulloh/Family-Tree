@@ -25,7 +25,7 @@ export const sharedTree = {
     config?: AxiosRequestConfig,
   ) => {
     return base.get<SharedFamilyTreeResponseType>(
-      `/family-trees/${param.familyTreeId}/shared`,
+      `/family-trees/shared/${param.familyTreeId}`,
       config,
     );
   },
@@ -35,7 +35,7 @@ export const sharedTree = {
     config?: AxiosRequestConfig,
   ) => {
     return base.get<SharedFamilyTreeUsersPaginationResponseType>(
-      `/family-trees/${param.familyTreeId}/shared-users?page=${query.page}&perPage=${query.perPage}${query.name ? `&name=${query.name}` : ''}`,
+      `/family-trees/shared/${param.familyTreeId}/users?page=${query.page}&perPage=${query.perPage}${query.name ? `&name=${query.name}` : ''}`,
       config,
     );
   },
@@ -45,7 +45,7 @@ export const sharedTree = {
     config?: AxiosRequestConfig,
   ) => {
     return base.put<void>(
-      `/family-trees/${param.familyTreeId}/shared-users/${param.userId}`,
+      `/family-trees/shared/${param.familyTreeId}/users/${param.userId}`,
       body,
       config,
     );

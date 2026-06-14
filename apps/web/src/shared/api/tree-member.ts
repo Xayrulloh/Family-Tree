@@ -19,7 +19,7 @@ type IdParam = FamilyTreeMemberGetParamType & { scope?: TreeScope };
 export const treeMember = {
   findAll: (param: AllParam, config?: AxiosRequestConfig) => {
     return base.get<FamilyTreeMemberGetAllResponseType>(
-      `/family-trees/${param.familyTreeId}${scopeSegment(param.scope)}/members`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members`,
       config,
     );
   },
@@ -29,7 +29,7 @@ export const treeMember = {
     config?: AxiosRequestConfig,
   ) => {
     return base.post<FamilyTreeMemberGetResponseType>(
-      `/family-trees/${param.familyTreeId}${scopeSegment(param.scope)}/members/child`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/child`,
       body,
       config,
     );
@@ -40,7 +40,7 @@ export const treeMember = {
     config?: AxiosRequestConfig,
   ) => {
     return base.post<FamilyTreeMemberGetResponseType>(
-      `/family-trees/${param.familyTreeId}${scopeSegment(param.scope)}/members/spouse`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/spouse`,
       body,
       config,
     );
@@ -51,7 +51,7 @@ export const treeMember = {
     config?: AxiosRequestConfig,
   ) => {
     return base.post<FamilyTreeMemberGetResponseType>(
-      `/family-trees/${param.familyTreeId}${scopeSegment(param.scope)}/members/parents`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/parents`,
       body,
       config,
     );
@@ -62,20 +62,20 @@ export const treeMember = {
     config?: AxiosRequestConfig,
   ) => {
     return base.put(
-      `/family-trees/${param.familyTreeId}${scopeSegment(param.scope)}/members/${param.id}`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/${param.id}`,
       body,
       config,
     );
   },
   delete: (param: IdParam, config?: AxiosRequestConfig) => {
     return base.delete(
-      `/family-trees/${param.familyTreeId}${scopeSegment(param.scope)}/members/${param.id}`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/${param.id}`,
       config,
     );
   },
   findById: (param: IdParam, config?: AxiosRequestConfig) => {
     return base.get<FamilyTreeMemberGetResponseType>(
-      `/family-trees/${param.familyTreeId}${scopeSegment(param.scope)}/members/${param.id}`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/${param.id}`,
       config,
     );
   },

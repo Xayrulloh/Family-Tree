@@ -13,14 +13,16 @@ import { type Observable, of, tap } from 'rxjs';
 // biome-ignore lint/style/useImportType: <throws an error if put type>
 import { CacheService } from '../../config/cache/cache.service';
 
-// Route paths are prefix-agnostic: owner (bare), shared (/shared), and public
-// (/public) all resolve to the same treeId-keyed cache entry. The optional
-// `(?:public/|shared/)` segment is the only difference between the prefixes.
+// Route paths matched against request.route.path (the template, not the real URL).
+// Owner:  /api/family-trees/:familyTreeId/members
+// Shared: /api/family-trees/shared/:familyTreeId/members
+// Public: /api/family-trees/public/:familyTreeId/members
+// All three key the cache by treeId so they share the same cached payload.
 const TREES_LIST_PATH = '/api/family-trees';
 const MEMBERS_PATH =
-  /^\/api\/family-trees\/:familyTreeId\/(?:public\/|shared\/)?members$/;
+  /^\/api\/family-trees\/(?:public\/|shared\/)?:familyTreeId\/members$/;
 const CONNECTIONS_PATH =
-  /^\/api\/family-trees\/:familyTreeId\/(?:public\/|shared\/)?members\/connections$/;
+  /^\/api\/family-trees\/(?:public\/|shared\/)?:familyTreeId\/members\/connections$/;
 
 @Injectable()
 export class FamilyTreeCacheInterceptor implements NestInterceptor {
