@@ -9,6 +9,8 @@
       "Bash(git diff:*)",
       "Bash(git status:*)",
       "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
       "Bash(gh:*)",
       "Bash(pnpm:*)",
       "Bash(nx:*)",
