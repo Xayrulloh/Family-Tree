@@ -114,13 +114,8 @@ export class SharedFamilyTreeService {
         },
       });
 
-    if (sharedFamilyTree?.isBlocked) {
+    if (!sharedFamilyTree || sharedFamilyTree.isBlocked) {
       throw new ForbiddenException(`You don't have a permission`);
-    }
-
-    if (!sharedFamilyTree) {
-      await this.createSharedFamilyTree({ familyTreeId, userId });
-      return this.getSharedFamilyTreeById(userId, familyTreeId);
     }
 
     return { ...sharedFamilyTree, ...sharedFamilyTree.familyTree };

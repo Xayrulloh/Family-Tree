@@ -16,7 +16,7 @@ export const sharedTree = {
     config?: AxiosRequestConfig,
   ) => {
     return base.get<SharedFamilyTreePaginationResponseType>(
-      `/family-trees/shared?page=${query.page}&perPage=${query.perPage}${query.name ? `&name=${query.name}` : ''}`,
+      `/family-trees/shared?page=${query.page}&perPage=${query.perPage}${query.name ? `&name=${encodeURIComponent(query.name)}` : ''}`,
       config,
     );
   },
@@ -35,7 +35,7 @@ export const sharedTree = {
     config?: AxiosRequestConfig,
   ) => {
     return base.get<SharedFamilyTreeUsersPaginationResponseType>(
-      `/family-trees/shared/${param.familyTreeId}/users?page=${query.page}&perPage=${query.perPage}${query.name ? `&name=${query.name}` : ''}`,
+      `/family-trees/shared/${param.familyTreeId}/users?page=${query.page}&perPage=${query.perPage}${query.name ? `&name=${encodeURIComponent(query.name)}` : ''}`,
       config,
     );
   },

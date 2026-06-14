@@ -20,7 +20,7 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
-} from '@nestjs/swagger/dist/decorators';
+} from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { RequirePermission } from '~/common/decorators/require-permission.decorator';
 import { FamilyTreeAccessGuard } from '~/common/guards/family-tree-access.guard';

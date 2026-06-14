@@ -1,7 +1,6 @@
 import {
   type CanActivate,
   type ExecutionContext,
-  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
@@ -41,7 +40,9 @@ export class PublicGuard implements CanActivate {
     }
 
     if (!familyTree.isPublic) {
-      throw new ForbiddenException(`You don't have a permission`);
+      throw new NotFoundException(
+        `Family tree with id ${familyTreeId} not found`,
+      );
     }
 
     return true;

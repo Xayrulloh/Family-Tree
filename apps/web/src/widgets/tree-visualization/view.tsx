@@ -33,6 +33,7 @@ export const TreeDetailView: React.FC<Props> = ({ model }) => {
           permissions.canEdit && (
             <Button
               type="text"
+              aria-label="Edit member"
               icon={<EditOutlined style={{ fontSize: 18 }} />}
               onClick={() => editMemberModel.editTrigger(member)}
             />
@@ -43,6 +44,7 @@ export const TreeDetailView: React.FC<Props> = ({ model }) => {
             <Button
               type="text"
               danger
+              aria-label="Delete member"
               icon={<DeleteOutlined style={{ fontSize: 18 }} />}
               onClick={() => deleteMemberModel.deleteTrigger(member)}
             />

@@ -70,23 +70,25 @@ export class FamilyTreeCacheInterceptor implements NestInterceptor {
 
       return next.handle().pipe(
         tap(async (data) => {
-          if (isTreesList && user) {
-            await this.cacheService.setUserFamilyTrees(
-              user.id,
-              query,
-              data as FamilyTreePaginationResponseType,
-            );
-          } else if (isConnections && treeId) {
-            await this.cacheService.setFamilyTreeMemberConnections(
-              treeId,
-              data as FamilyTreeMemberConnectionGetAllResponseType,
-            );
-          } else if (isMembers && treeId) {
-            await this.cacheService.setFamilyTreeMembers(
-              treeId,
-              data as FamilyTreeMemberGetAllResponseType,
-            );
-          }
+          try {
+            if (isTreesList && user) {
+              await this.cacheService.setUserFamilyTrees(
+                user.id,
+                query,
+                data as FamilyTreePaginationResponseType,
+              );
+            } else if (isConnections && treeId) {
+              await this.cacheService.setFamilyTreeMemberConnections(
+                treeId,
+                data as FamilyTreeMemberConnectionGetAllResponseType,
+              );
+            } else if (isMembers && treeId) {
+              await this.cacheService.setFamilyTreeMembers(
+                treeId,
+                data as FamilyTreeMemberGetAllResponseType,
+              );
+            }
+          } catch {}
         }),
       );
     }
@@ -100,33 +102,39 @@ export class FamilyTreeCacheInterceptor implements NestInterceptor {
     if (isMutation) {
       return next.handle().pipe(
         tap(async () => {
-          const isMemberMutation = path.includes('/members');
-          const isConnectionMutation = path.includes('/connections');
+          try {
+            const isMemberMutation = path.includes('/members');
+            const isConnectionMutation = path.includes('/connections');
 
-          const isDeleteMutation = method === 'DELETE';
+            const isDeleteMutation = method === 'DELETE';
 
-          // if tree is deleted. clear cache (tree, members, connection)
-          if (!isMemberMutation && !isConnectionMutation && isDeleteMutation) {
-            await Promise.all([
-              this.cacheService.cleanUserFamilyTrees(user.id),
-              this.cacheService.cleanFamilyTreeMembers(treeId),
-              this.cacheService.cleanFamilyTreeMemberConnections(treeId),
-            ]);
-          } else if (!isMemberMutation && !isConnectionMutation) {
-            // if tree is not deleted but mutated. clear cache (tree)
-            await this.cacheService.cleanUserFamilyTrees(user.id);
-          } else if (isMemberMutation) {
-            // if member is mutated. clear cache (members)
-            if (method === 'PUT') {
-              await this.cacheService.cleanFamilyTreeMembers(treeId);
-            } else {
-              // if member is added or deleted. clear cache (members, connections)
+            // if tree is deleted. clear cache (tree, members, connection)
+            if (
+              !isMemberMutation &&
+              !isConnectionMutation &&
+              isDeleteMutation
+            ) {
               await Promise.all([
+                this.cacheService.cleanUserFamilyTrees(user.id),
                 this.cacheService.cleanFamilyTreeMembers(treeId),
                 this.cacheService.cleanFamilyTreeMemberConnections(treeId),
               ]);
+            } else if (!isMemberMutation && !isConnectionMutation) {
+              // if tree is not deleted but mutated. clear cache (tree)
+              await this.cacheService.cleanUserFamilyTrees(user.id);
+            } else if (isMemberMutation) {
+              // if member is mutated. clear cache (members)
+              if (method === 'PUT') {
+                await this.cacheService.cleanFamilyTreeMembers(treeId);
+              } else {
+                // if member is added or deleted. clear cache (members, connections)
+                await Promise.all([
+                  this.cacheService.cleanFamilyTreeMembers(treeId),
+                  this.cacheService.cleanFamilyTreeMemberConnections(treeId),
+                ]);
+              }
             }
-          }
+          } catch {}
         }),
       );
     }

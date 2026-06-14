@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 // biome-ignore lint/style/useImportType: <Reflector is injected via DI>
 import { Reflector } from '@nestjs/core';
@@ -41,6 +42,21 @@ export class SharedAccessGuard implements CanActivate {
         REQUIRE_PERMISSION_KEY,
         [context.getHandler(), context.getClass()],
       ) ?? [];
+
+    const familyTree = await this.db.query.familyTreesSchema.findFirst({
+      where: eq(schema.familyTreesSchema.id, familyTreeId),
+      columns: { createdBy: true },
+    });
+
+    if (!familyTree) {
+      throw new NotFoundException(
+        `Family tree with id ${familyTreeId} not found`,
+      );
+    }
+
+    if (familyTree.createdBy === request.user.id) {
+      throw new ForbiddenException(`Owners must use the owner path`);
+    }
 
     const access = await this.db.query.sharedFamilyTreesSchema.findFirst({
       where: and(

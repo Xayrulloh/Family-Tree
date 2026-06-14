@@ -127,6 +127,11 @@ export const createTreeDetailModel = <TreeData>({
   });
 
   sample({
+    clock: fetchTreeFx.fail,
+    target: [$members.reinit, $connections.reinit, $tree.reinit],
+  });
+
+  sample({
     clock: fetchMembersFx.doneData,
     fn: (response) => response.data,
     target: $members,
@@ -170,6 +175,10 @@ export const createTreeDetailModel = <TreeData>({
     $id,
     $treeName,
     $permissions,
-    $loading: or(fetchMembersFx.pending, fetchConnectionsFx.pending),
+    $loading: or(
+      fetchTreeFx.pending,
+      fetchMembersFx.pending,
+      fetchConnectionsFx.pending,
+    ),
   };
 };

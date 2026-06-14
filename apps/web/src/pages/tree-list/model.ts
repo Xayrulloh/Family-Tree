@@ -19,6 +19,8 @@ export const factory = ({
   initialMode = 'my-trees',
 }: LazyPageFactoryParams & { initialMode?: TreesMode }) => {
   const authorizedRoute = userModel.chainAuthorized({ route });
+  // Public tree list is accessible without auth; other modes require a session.
+  const triggerRoute = initialMode === 'public-trees' ? route : authorizedRoute;
 
   // Stores
   const $mode = createStore<TreesMode>(initialMode);
@@ -124,15 +126,21 @@ export const factory = ({
   // Samples
 
   sample({
-    clock: authorizedRoute.opened,
+    clock: triggerRoute.opened,
     fn: () => initialMode,
     target: $mode,
   });
 
   sample({
+    clock: triggerRoute.opened,
+    fn: () => ({ page: 1, perPage: 15 }),
+    target: fetchPublicTreesFx,
+  });
+
+  sample({
     clock: authorizedRoute.opened,
     fn: () => ({ page: 1, perPage: 15 }),
-    target: [fetchTreesFx, fetchSharedTreesFx, fetchPublicTreesFx],
+    target: [fetchTreesFx, fetchSharedTreesFx],
   });
 
   sample({
@@ -294,7 +302,7 @@ export const factory = ({
 
   // Reset stores on route close
   sample({
-    clock: authorizedRoute.closed,
+    clock: triggerRoute.closed,
     fn: () => ({
       page: 1,
       perPage: 15,
@@ -306,7 +314,7 @@ export const factory = ({
   });
 
   sample({
-    clock: authorizedRoute.closed,
+    clock: triggerRoute.closed,
     fn: () => ({
       page: 1,
       perPage: 15,
@@ -318,7 +326,7 @@ export const factory = ({
   });
 
   sample({
-    clock: authorizedRoute.closed,
+    clock: triggerRoute.closed,
     fn: () => 1,
     target: [$myTreesPage, $sharedTreesPage, $publicTreesPage],
   });

@@ -11,7 +11,7 @@ import {
   ApiCookieAuth,
   ApiOkResponse,
   ApiTags,
-} from '@nestjs/swagger/dist/decorators';
+} from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';

@@ -17,7 +17,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiTags,
-} from '@nestjs/swagger/dist/decorators';
+} from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 import type { EnvType } from '~/config/env/env-validation';
 import generateRandomString from '~/helpers/random-string.helper';

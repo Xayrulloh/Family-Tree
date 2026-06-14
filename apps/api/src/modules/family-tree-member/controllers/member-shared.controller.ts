@@ -21,7 +21,7 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
-} from '@nestjs/swagger/dist/decorators';
+} from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { RequirePermission } from '~/common/decorators/require-permission.decorator';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
