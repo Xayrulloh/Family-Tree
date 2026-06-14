@@ -46,3 +46,6 @@ family-tree/
 - All DB tables use soft-delete via `deletedAt` timestamp
 - Response validation uses `nestjs-zod` + `ZodSerializerDto` on every controller method
 - Cookie name for JWT: `COOKIES_ACCESS_TOKEN_KEY` constant
+
+## Build gotchas
+- API build uses `@nx/rspack:rspack`; the `production` config keeps `optimization: false` **on purpose**. Enabling minification mangles DTO class names, which `nestjs-zod` + `@nestjs/swagger` use as OpenAPI schema names → breaks Swagger (one shared schema for all endpoints, missing params). Configure build optimization in `apps/api/project.json`, NOT `rspack.config.js` (the executor's `optimization` flag overrides the rspack config).
