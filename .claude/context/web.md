@@ -73,7 +73,7 @@ src/
 ```
 
 ## Visualization widget (`src/widgets/tree-visualization/`)
-- `model.ts` — `createTreeDetailModel<T>(config)` generic factory; takes `scope`, `requireAuth`, `fetchTree`, `resolvePermissions`, `getName`; returns `TreeDetailModel` (`$members`, `$connections`, `$id`, `$treeName`, `$permissions`, `$loading`)
+- `model.ts` — `createTreeDetailModel<T>(config)` generic factory; takes `scope`, `requireAuth`, `fetchTree`, `resolvePermissions`, `getName`; returns `TreeDetailModel` (`$members`, `$connections`, `$id`, `$treeName`, `$permissions`, `$loading`). All three fetch effects (`fetchTreeFx`, `fetchMembersFx`, `fetchConnectionsFx`) have both done and fail handlers — fail reinits the affected stores.
 - `visualization.tsx` — canvas component; reads `permissions.canAdd/canEdit/canDelete/canManageSharedUsers`
 - `view.tsx` — `TreeDetailView` (edit/delete buttons gated on permissions)
 - All 3 tree-detail pages (`tree-detail`, `shared-tree-detail`, `public-tree-detail`) are thin wrappers: `createModel` delegates to this factory, `component = TreeDetailView`
@@ -89,7 +89,7 @@ All scoped endpoints use `prefix-before-id`:
 - Shared: `/family-trees/shared/${id}/members`
 - Public: `/family-trees/public/${id}/members`
 
-`tree-list` page: `api.tree.findAll` for own trees, `api.tree.findAllPublic` for public list (separate endpoints), `api.sharedTree.findAll` for shared list.
+`tree-list` page: `api.tree.findAll` for own trees, `api.tree.findAllPublic` for public list (separate endpoints), `api.sharedTree.findAll` for shared list. `PublicTreeList` uses `triggerRoute = route` (not `authorizedRoute`) so anonymous users can browse without being redirected to login.
 
 ## Key patterns
 - Tree detail pages: no separate `model.ts`; `createModel` inline in `ui/ui.tsx`, `component = TreeDetailView`

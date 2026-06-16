@@ -86,6 +86,35 @@ Branch `feature/isolation-routes` continued (all phases on same branch, no merge
 
 ---
 
+## 2026-06-16 — CodeRabbit + user review fixes (PR #500)
+
+**Security fixes:**
+- `shared-family-tree.service.ts`: removed auto-create on missing shared record (privilege escalation — any auth user could self-provision read access to any tree by ID). Now throws `ForbiddenException` immediately.
+- `public.guard.ts`: private trees now return `404` instead of `403` (prevents ID existence probing via the public endpoint).
+- `shared-access.guard.ts`: owners are now explicitly blocked with `ForbiddenException` before the shared-record lookup (owner exclusion was documented but not enforced in code).
+
+**Correctness fixes:**
+- `tree-list/model.ts`: `PublicTreeList` page now uses `triggerRoute = route` instead of `authorizedRoute` — anonymous users can browse `/family-trees/public` without being redirected to login.
+- `tree-visualization/model.ts`: added `fetchTreeFx.pending` to `$loading`; added fail handlers for all three fetch effects (`fetchTreeFx.fail`, `fetchMembersFx.fail`, `fetchConnectionsFx.fail`) to reinit stores and avoid stale UI on error.
+- Cache interceptor `tap` callbacks wrapped in `try/catch` so Redis write failures don't propagate as unhandled rejections.
+- `@nestjs/swagger/dist/decorators` import replaced with public `@nestjs/swagger` in all 13 controllers.
+- `aria-label` added to icon-only Edit/Delete buttons in `view.tsx`.
+- `name` param URL-encoded in `shared-tree.ts` API client.
+
+**Architecture refactor (user review):**
+- `REQUIRE_PERMISSION_KEY` → `SHARED_TREE_PERMISSION_KEY` moved to `src/utils/constants.ts`.
+- Created `src/common/common.module.ts` (`@Global()`) providing `OwnerGuard`, `PublicGuard`, `SharedAccessGuard`, `FamilyTreeAccessGuard` — guards no longer repeated in every feature module's `providers[]`.
+- Controller classes renamed to carry `FamilyTree` prefix matching DTO/service convention: `MemberController` → `FamilyTreeMemberOwnerController`, `MemberPublicController` → `FamilyTreeMemberPublicController`, `MemberSharedController` → `FamilyTreeMemberSharedController`, `ConnectionController` → `FamilyTreeMemberConnectionOwnerController`.
+- `$mode` init in `tree-list/model.ts` converted from `sample` to idiomatic `.on()`.
+
+**Key note (public list without auth):** When a factory uses `authorizedRoute = chainAuthorized({ route })` but needs to serve anonymous users for one mode, derive a `triggerRoute` conditionally (`initialMode === 'public-trees' ? route : authorizedRoute`) and clock lifecycle samples off `triggerRoute`. The auth-required fetches (`fetchTreesFx`, `fetchSharedTreesFx`) still clock off `authorizedRoute.opened` — only the public fetch and store resets move to `triggerRoute`.
+
+**Key note (global guards via CommonModule):** Guards that inject `DrizzleAsyncProvider` must be provided in a module that imports `DrizzleModule`. Wrapping them in a `@Global()` `CommonModule` (which imports `DrizzleModule`) means they're available app-wide without being repeated in feature module `providers`. Import `CommonModule` early in `AppModule.imports` before feature modules.
+
+**Key note (empty `catch {}` in tap):** RxJS `tap` does not await returned Promises. An async tap callback that throws will produce an unhandled rejection — it does NOT propagate through the observable stream. The `try/catch` inside prevents the unhandled rejection; an empty catch is intentional when cache failures must not affect the response. Add a comment if the empty catch looks suspicious.
+
+---
+
 ## 2026-06-14 — Isolation ticket: Phase 3 (frontend)
 - Branch `feature/isolation-routes` (continued, same branch as Phase 2).
 - Created `shared/config/tree-scope.ts` — `TreeScope` type (`'owner' | 'shared' | 'public'`), global `$treeScope` store + `treeScopeChanged` event, `scopeSegment()` helper that maps scope to URL infix.

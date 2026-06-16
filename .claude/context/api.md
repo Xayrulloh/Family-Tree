@@ -39,7 +39,8 @@ COOKIE_DOMAIN, COOKIE_CLIENT_URL
   - `PublicGuard` — `isPublic === true`; **no JWT** (anonymous + crawlers); `/public/*` prefix; read-only.
   - `SharedAccessGuard` — non-blocked `shared_family_trees` record holding every `@RequirePermission(...)` flag; `/shared/*` prefix; after `JWTAuthGuard`. Owner does NOT pass here (owners use bare path).
   - `FamilyTreeAccessGuard` — the original combined guard (owner→public→shared). **Still used, but only** for the shared-users RBAC PUT (the one genuinely "owner-OR-shared-with-all-perms" route).
-- `@RequirePermission('canAddMembers', ...)` decorator (`common/decorators/`) — declares which shared-tree flags a route needs; variadic (all must hold). Omit for read-only routes. Read by `SharedAccessGuard`/`FamilyTreeAccessGuard`. Every guard must be in the consuming module's `providers` so DI can resolve `DrizzleAsyncProvider`.
+- `@RequirePermission('canAddMembers', ...)` decorator (`common/decorators/`) — declares which shared-tree flags a route needs; uses `SHARED_TREE_PERMISSION_KEY` from `src/utils/constants.ts`. Read by `SharedAccessGuard`/`FamilyTreeAccessGuard`.
+- **Guards are global** via `common/common.module.ts` (`@Global()`, imports `DrizzleModule`). Feature modules no longer need to list guards in `providers[]`. `CommonModule` is imported in `AppModule` before all feature modules.
 - `FamilyTreeCacheInterceptor` — Redis cache for family tree endpoints
 - `UserCacheInterceptor` — Redis cache for user endpoints
 - `ZodResponseInterceptor` — response shape validation
