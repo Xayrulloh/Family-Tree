@@ -8,11 +8,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import {
-  ApiCookieAuth,
-  ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiCookieAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 import { JWTAuthGuard } from '~/common/guards/jwt-auth.guard';
 import { SharedAccessGuard } from '~/common/guards/shared-access.guard';
