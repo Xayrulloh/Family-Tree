@@ -46,7 +46,7 @@ import { FamilyTreeMemberService } from '../services/family-tree-member.service'
 @Controller('family-trees/:familyTreeId/members')
 @UseGuards(JWTAuthGuard, OwnerGuard)
 @UseInterceptors(FamilyTreeCacheInterceptor)
-export class MemberController {
+export class FamilyTreeMemberOwnerController {
   constructor(
     private readonly familyTreeMemberService: FamilyTreeMemberService,
   ) {}

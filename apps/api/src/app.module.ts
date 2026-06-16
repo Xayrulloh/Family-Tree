@@ -3,6 +3,7 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { ZodValidationPipe } from 'nestjs-zod';
+import { CommonModule } from './common/common.module';
 import { HttpExceptionFilter } from './common/filters/http.filter';
 import { ZodValidationExceptionFilter } from './common/filters/zod.filter';
 import { ZodSerializerInterceptorCustom } from './common/interceptors/zod.response.interceptor';
@@ -31,6 +32,7 @@ import { UserModule } from './modules/user/user.module';
       ],
     }),
     RedisCacheModule,
+    CommonModule,
     AuthModule,
     UserModule,
     CookiesModule,

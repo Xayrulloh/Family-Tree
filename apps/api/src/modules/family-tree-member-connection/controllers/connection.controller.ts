@@ -32,7 +32,7 @@ import { FamilyTreeMemberConnectionService } from '../services/family-tree-membe
 @Controller('family-trees/:familyTreeId/members')
 @UseGuards(JWTAuthGuard, OwnerGuard)
 @UseInterceptors(FamilyTreeCacheInterceptor)
-export class ConnectionController {
+export class FamilyTreeMemberConnectionOwnerController {
   constructor(
     private readonly familyTreeMemberConnectionService: FamilyTreeMemberConnectionService,
   ) {}

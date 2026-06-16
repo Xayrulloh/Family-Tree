@@ -125,11 +125,7 @@ export const factory = ({
 
   // Samples
 
-  sample({
-    clock: triggerRoute.opened,
-    fn: () => initialMode,
-    target: $mode,
-  });
+  $mode.on(triggerRoute.opened, () => initialMode);
 
   sample({
     clock: triggerRoute.opened,

@@ -1,7 +1,4 @@
 import { Module } from '@nestjs/common';
-import { FamilyTreeAccessGuard } from '~/common/guards/family-tree-access.guard';
-import { OwnerGuard } from '~/common/guards/owner.guard';
-import { PublicGuard } from '~/common/guards/public.guard';
 import { CloudflareModule } from '~/config/cloudflare/cloudflare.module';
 import { DrizzleModule } from '~/database/drizzle.module';
 import { FamilyTreeMemberService } from '../family-tree-member/services/family-tree-member.service';
@@ -23,9 +20,6 @@ import { SharedFamilyTreeService } from './services/shared-family-tree.service';
     FamilyTreeService,
     SharedFamilyTreeService,
     FamilyTreeMemberService,
-    OwnerGuard,
-    PublicGuard,
-    FamilyTreeAccessGuard,
   ],
   exports: [FamilyTreeService],
 })

@@ -13,10 +13,8 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
 import type { AuthenticatedRequest } from '~/shared/types/request-with-user';
-import {
-  type FamilyTreePermission,
-  REQUIRE_PERMISSION_KEY,
-} from '../decorators/require-permission.decorator';
+import { SHARED_TREE_PERMISSION_KEY } from '~/utils/constants';
+import type { FamilyTreePermission } from '../decorators/require-permission.decorator';
 
 /**
  * Centralizes owner / public / shared access for any route nested under a
@@ -43,7 +41,7 @@ export class FamilyTreeAccessGuard implements CanActivate {
 
     const requiredPermissions =
       this.reflector.getAllAndOverride<FamilyTreePermission[]>(
-        REQUIRE_PERMISSION_KEY,
+        SHARED_TREE_PERMISSION_KEY,
         [context.getHandler(), context.getClass()],
       ) ?? [];
 

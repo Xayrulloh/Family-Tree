@@ -29,7 +29,7 @@ import { FamilyTreeMemberService } from '../services/family-tree-member.service'
 @Controller('family-trees/public/:familyTreeId/members')
 @UseGuards(PublicGuard)
 @UseInterceptors(FamilyTreeCacheInterceptor)
-export class MemberPublicController {
+export class FamilyTreeMemberPublicController {
   constructor(
     private readonly familyTreeMemberService: FamilyTreeMemberService,
   ) {}

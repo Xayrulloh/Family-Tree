@@ -132,6 +132,16 @@ export const createTreeDetailModel = <TreeData>({
   });
 
   sample({
+    clock: fetchMembersFx.fail,
+    target: $members.reinit,
+  });
+
+  sample({
+    clock: fetchConnectionsFx.fail,
+    target: $connections.reinit,
+  });
+
+  sample({
     clock: fetchMembersFx.doneData,
     fn: (response) => response.data,
     target: $members,

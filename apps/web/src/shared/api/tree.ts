@@ -32,6 +32,7 @@ export const tree = {
       page: String(query.page),
       perPage: String(query.perPage),
     });
+
     if (query.name) params.set('name', query.name);
 
     return base.get<FamilyTreePaginationResponseType>(
