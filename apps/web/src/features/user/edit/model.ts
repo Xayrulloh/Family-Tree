@@ -116,7 +116,30 @@ sample({
   target: uploadImageFx,
 });
 
-// If image is already a URL, skip upload and go directly to edit
+// Show info message when no changes detected (not a blob, and values match original)
+sample({
+  clock: formValidated,
+  source: {
+    original: userModel.$user,
+    edited: form.$formValues,
+  },
+  filter: ({ original, edited }) =>
+    !edited.image?.startsWith('blob') &&
+    !!edited.image?.startsWith('https') &&
+    isEqual(
+      {
+        dob: original?.dob,
+        gender: original?.gender,
+        name: original?.name,
+        image: original?.image,
+      },
+      edited,
+    ),
+  fn: () => 'No changes detected' as const,
+  target: infoFx,
+});
+
+// If image is already a URL and values changed, skip upload and go directly to edit
 sample({
   clock: formValidated,
   source: {
@@ -124,13 +147,9 @@ sample({
     edited: form.$formValues,
   },
   filter: ({ original, edited }) => {
-    if (!!edited.image && edited.image.startsWith('blob')) {
-      return false;
-    }
-
+    if (edited.image?.startsWith('blob')) return false;
     if (
-      !!edited.image &&
-      edited.image.startsWith('https') &&
+      edited.image?.startsWith('https') &&
       isEqual(
         {
           dob: original?.dob,
@@ -140,12 +159,8 @@ sample({
         },
         edited,
       )
-    ) {
-      infoFx('No changes detected');
-
+    )
       return false;
-    }
-
     return true;
   },
   target: editProfileFx,

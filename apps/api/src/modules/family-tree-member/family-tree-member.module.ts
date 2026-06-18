@@ -1,13 +1,20 @@
 import { Module } from '@nestjs/common';
 import { CloudflareModule } from '~/config/cloudflare/cloudflare.module';
 import { DrizzleModule } from '~/database/drizzle.module';
-import { SharedFamilyTreeService } from '../shared-family-tree/shared-family-tree.service';
-import { FamilyTreeMemberController } from './family-tree-member.controller';
-import { FamilyTreeMemberService } from './family-tree-member.service';
+import { FamilyTreeMemberOwnerController } from './controllers/member.controller';
+import { FamilyTreeMemberPublicController } from './controllers/member-public.controller';
+import { FamilyTreeMemberSharedController } from './controllers/member-shared.controller';
+import { FamilyTreeMemberService } from './services/family-tree-member.service';
 
 @Module({
   imports: [DrizzleModule, CloudflareModule],
-  controllers: [FamilyTreeMemberController],
-  providers: [FamilyTreeMemberService, SharedFamilyTreeService],
+  // Public/shared before owner so literal prefix segments resolve before :familyTreeId
+  controllers: [
+    FamilyTreeMemberPublicController,
+    FamilyTreeMemberSharedController,
+    FamilyTreeMemberOwnerController,
+  ],
+  providers: [FamilyTreeMemberService],
+  exports: [FamilyTreeMemberService],
 })
 export class FamilyTreeMemberModule {}

@@ -9,6 +9,16 @@ Steps:
 6. Based on the commits and diff, draft:
    - A concise PR title (under 70 chars)
    - A PR body with: ## Summary (3–5 bullets), ## Changes (key files), ## Test plan (checklist)
-7. If branch not pushed: run `git push -u origin HEAD`
-8. Create the PR: `gh pr create --title "..." --body "..." --base develop`
-9. Return the PR URL
+7. Determine labels from the changed files and commit types:
+   - `Frontend` — any changes under `apps/web/` or `packages/shared/`
+   - `Backend` — any changes under `apps/api/` or `packages/shared/`
+   - `enhancement` — new features (feat commits or new files)
+   - `bug` — bug fixes (fix commits)
+   - `documentation` — docs-only changes
+   - `pnpm` — changes to `package.json` or `pnpm-lock.yaml`
+   - `Claude` — always add this label (PR is created by Claude)
+   - Multiple labels can apply at once
+8. If branch not pushed: run `git push -u origin HEAD`
+9. Create the PR with all metadata in one command:
+   `gh pr create --title "..." --body "..." --base develop --assignee "@me" --label "Claude" --label "<other-label>" ...`
+10. Return the PR URL

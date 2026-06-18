@@ -9,77 +9,73 @@ import type {
   FamilyTreeMemberUpdateRequestType,
 } from '@family-tree/shared';
 import type { AxiosRequestConfig } from 'axios';
+import { scopeSegment, type TreeScope } from '~/shared/config/tree-scope';
 import { base } from './base';
 
+// `scope` selects the access prefix (owner/shared/public). Defaults to owner.
+type AllParam = FamilyTreeMemberGetAllParamType & { scope?: TreeScope };
+type IdParam = FamilyTreeMemberGetParamType & { scope?: TreeScope };
+
 export const treeMember = {
-  findAll: (
-    param: FamilyTreeMemberGetAllParamType,
-    config?: AxiosRequestConfig,
-  ) => {
+  findAll: (param: AllParam, config?: AxiosRequestConfig) => {
     return base.get<FamilyTreeMemberGetAllResponseType>(
-      `/family-trees/${param.familyTreeId}/members`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members`,
       config,
     );
   },
   createChild: (
-    param: FamilyTreeMemberGetAllParamType,
+    param: AllParam,
     body: FamilyTreeMemberCreateChildRequestType,
     config?: AxiosRequestConfig,
   ) => {
     return base.post<FamilyTreeMemberGetResponseType>(
-      `/family-trees/${param.familyTreeId}/members/child`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/child`,
       body,
       config,
     );
   },
   createSpouse: (
-    param: FamilyTreeMemberGetAllParamType,
+    param: AllParam,
     body: FamilyTreeMemberCreateSpouseRequestType,
     config?: AxiosRequestConfig,
   ) => {
     return base.post<FamilyTreeMemberGetResponseType>(
-      `/family-trees/${param.familyTreeId}/members/spouse`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/spouse`,
       body,
       config,
     );
   },
   createParents: (
-    param: FamilyTreeMemberGetAllParamType,
+    param: AllParam,
     body: FamilyTreeMemberCreateParentsRequestType,
     config?: AxiosRequestConfig,
   ) => {
     return base.post<FamilyTreeMemberGetResponseType>(
-      `/family-trees/${param.familyTreeId}/members/parents`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/parents`,
       body,
       config,
     );
   },
   update: (
-    param: FamilyTreeMemberGetParamType,
+    param: IdParam,
     body: FamilyTreeMemberUpdateRequestType,
     config?: AxiosRequestConfig,
   ) => {
     return base.put(
-      `/family-trees/${param.familyTreeId}/members/${param.id}`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/${param.id}`,
       body,
       config,
     );
   },
-  delete: (
-    param: FamilyTreeMemberGetParamType,
-    config?: AxiosRequestConfig,
-  ) => {
+  delete: (param: IdParam, config?: AxiosRequestConfig) => {
     return base.delete(
-      `/family-trees/${param.familyTreeId}/members/${param.id}`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/${param.id}`,
       config,
     );
   },
-  findById: (
-    param: FamilyTreeMemberGetParamType,
-    config?: AxiosRequestConfig,
-  ) => {
+  findById: (param: IdParam, config?: AxiosRequestConfig) => {
     return base.get<FamilyTreeMemberGetResponseType>(
-      `/family-trees/${param.familyTreeId}/members/${param.id}`,
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/${param.id}`,
       config,
     );
   },

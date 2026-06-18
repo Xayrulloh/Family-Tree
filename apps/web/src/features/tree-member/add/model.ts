@@ -4,6 +4,7 @@ import {
 } from '@family-tree/shared';
 import { attach, createEvent, createStore, sample } from 'effector';
 import { api } from '~/shared/api';
+import { $treeScope } from '~/shared/config/tree-scope';
 
 // Events
 export const addBoyTrigger = createEvent<FamilyTreeMemberGetResponseType>(); // Mother
@@ -21,58 +22,58 @@ export const $lastAddedMemberId = createStore<string | null>(null);
 
 // Effects
 const addBoyFx = attach({
-  source: $member,
-  effect: (value) => {
-    if (!value) throw new Error('Member is not initialized');
+  source: { member: $member, scope: $treeScope },
+  effect: ({ member, scope }) => {
+    if (!member) throw new Error('Member is not initialized');
 
     return api.treeMember.createChild(
-      { familyTreeId: value.familyTreeId },
+      { familyTreeId: member.familyTreeId, scope },
       {
         gender: UserGenderEnum.MALE,
-        fromMemberId: value.id,
+        fromMemberId: member.id,
       },
     );
   },
 });
 
 const addGirlFx = attach({
-  source: $member,
-  effect: (value) => {
-    if (!value) throw new Error('Member is not initialized');
+  source: { member: $member, scope: $treeScope },
+  effect: ({ member, scope }) => {
+    if (!member) throw new Error('Member is not initialized');
 
     return api.treeMember.createChild(
-      { familyTreeId: value.familyTreeId },
+      { familyTreeId: member.familyTreeId, scope },
       {
         gender: UserGenderEnum.FEMALE,
-        fromMemberId: value.id,
+        fromMemberId: member.id,
       },
     );
   },
 });
 
 const addSpouseFx = attach({
-  source: $member,
-  effect: (value) => {
-    if (!value) throw new Error('Member is not initialized');
+  source: { member: $member, scope: $treeScope },
+  effect: ({ member, scope }) => {
+    if (!member) throw new Error('Member is not initialized');
 
     return api.treeMember.createSpouse(
-      { familyTreeId: value.familyTreeId },
+      { familyTreeId: member.familyTreeId, scope },
       {
-        fromMemberId: value.id,
+        fromMemberId: member.id,
       },
     );
   },
 });
 
 const addParentsFx = attach({
-  source: $member,
-  effect: (value) => {
-    if (!value) throw new Error('Member is not initialized');
+  source: { member: $member, scope: $treeScope },
+  effect: ({ member, scope }) => {
+    if (!member) throw new Error('Member is not initialized');
 
     return api.treeMember.createParents(
-      { familyTreeId: value.familyTreeId },
+      { familyTreeId: member.familyTreeId, scope },
       {
-        fromMemberId: value.id,
+        fromMemberId: member.id,
       },
     );
   },

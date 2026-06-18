@@ -248,14 +248,15 @@ The following endpoints utilize Interceptor-based caching:
   - `GET /users/:id` - User cache by ID
 
 - **Family Trees**
-  - `GET /family-trees` - Paginated family trees list (supports `name` search)
-  - `GET /family-trees/:id` - Single tree metadata
+  - `GET /family-trees` - Paginated own trees list
+  - `GET /family-trees/public` - Paginated public trees list
+  - `GET /family-trees/:id` / `GET /family-trees/public/:id` / `GET /family-trees/shared/:id` - Single tree metadata
 
 - **Family Tree Members**
-  - `GET /family-trees/:familyTreeId/members` - Full member list cache
+  - `GET /family-trees[/public|/shared]/:familyTreeId/members` - Full member list (all three prefixes)
 
 - **Member Connections**
-  - `GET /family-trees/:familyTreeId/members/connections` - Full connection list cache
+  - `GET /family-trees[/public|/shared]/:familyTreeId/members/connections` - Full connection list (all three prefixes)
 
 ### Cache Invalidation
 
@@ -344,33 +345,50 @@ await this.cacheService.delByPattern('family-trees:*');
 
 ### Family Trees (`/family-trees`)
 
-- `GET /family-trees` - Get user's trees (Supports pagination: `page`, `perPage`, search: `name`)
-- `GET /family-trees/:id` - Get tree by ID
+Scope prefix is placed **before** the id: `/family-trees/public/:id`, `/family-trees/shared/:id`.
+
+- `GET /family-trees` - Get own trees (pagination: `page`, `perPage`, search: `name`)
+- `GET /family-trees/:id` - Get tree by ID (owner only, requires auth)
+- `GET /family-trees/:id/preview` - Public OG/meta preview (no auth, used by Cloudflare Worker)
 - `POST /family-trees` - Create new family tree
-- `PUT /family-trees/:id` - Update tree
-- `DELETE /family-trees/:id` - Delete tree
+- `PUT /family-trees/:id` - Update tree (owner only)
+- `DELETE /family-trees/:id` - Delete tree (owner only)
 
-### Shared Family Trees (`/family-trees`)
+### Public Family Trees (`/family-trees/public`)
 
-- `GET /family-trees/shared` - Trees shared **with** you (Supports pagination & search)
-- `GET /family-trees/:familyTreeId/shared` - Single shared tree detail
-- `GET /family-trees/:familyTreeId/shared-users` - Users who have access to your tree (Supports pagination & search)
-- `PUT /family-trees/:familyTreeId/shared-users/:userId` - Update access (RBAC) for a specific user
+- `GET /family-trees/public` - List all public trees (no auth, pagination & search)
+- `GET /family-trees/public/:id` - Get public tree by ID (no auth)
 
-### Family Tree Members (`/family-trees/:familyTreeId/members`)
+### Shared Family Trees (`/family-trees/shared`)
 
-- `GET /family-trees/:familyTreeId/members` - Get all members in tree
-- `GET /family-trees/:familyTreeId/members/:id` - Get member by ID
-- `POST /family-trees/:familyTreeId/members/child` - Add child member
-- `POST /family-trees/:familyTreeId/members/spouse` - Add spouse member
-- `POST /family-trees/:familyTreeId/members/parents` - Add parents
-- `PUT /family-trees/:familyTreeId/members/:id` - Update member
-- `DELETE /family-trees/:familyTreeId/members/:id` - Delete member
+- `GET /family-trees/shared` - Trees shared with you (pagination & search)
+- `GET /family-trees/shared/:id` - Single shared tree record
+- `GET /family-trees/shared/:id/users` - Users with access to the tree (pagination & search)
+- `PUT /family-trees/shared/:id/users/:userId` - Update RBAC for a specific user
 
-### Member Connections (`/family-trees/:familyTreeId/members`)
+### Family Tree Members
 
-- `GET /family-trees/:familyTreeId/members/connections` - Get all connections in tree
-- `GET /family-trees/:familyTreeId/members/:memberUserId/connections` - Get connections for specific member
+Three access tiers, each with its own prefix + guard:
+
+- **Owner** `GET|POST|PUT|DELETE /family-trees/:familyTreeId/members[/...]` (JWT, owner-only)
+- **Shared** `GET|POST|PUT|DELETE /family-trees/shared/:familyTreeId/members[/...]` (JWT, RBAC flags)
+- **Public** `GET /family-trees/public/:familyTreeId/members[/...]` (no auth, read-only)
+
+Full routes on each prefix:
+- `GET /members` - All members
+- `GET /members/:id` - Member by ID
+- `POST /members/child` - Add child (write tiers only)
+- `POST /members/spouse` - Add spouse (write tiers only)
+- `POST /members/parents` - Add parents (write tiers only)
+- `PUT /members/:id` - Update member (write tiers only)
+- `DELETE /members/:id` - Delete member (write tiers only)
+
+### Member Connections
+
+Same three prefixes as members (owner / shared / public), read-only on all:
+
+- `GET /members/connections` - All connections in tree
+- `GET /members/:memberUserId/connections` - Connections for specific member
 
 ### File Upload (`/files`)
 
@@ -583,10 +601,16 @@ apps/api/
 │   ├── modules/              # Feature modules
 │   │   ├── auth/             # Authentication (Google OAuth, JWT)
 │   │   ├── user/             # User management
-│   │   ├── family-tree/      # Family tree CRUD
-│   │   ├── shared-family-tree/ # Tree sharing & Access Management (RBAC)
-│   │   ├── family-tree-member/           # Member management
-│   │   ├── family-tree-member-connection/ # Relationship management
+│   │   ├── family-tree/      # Family tree CRUD + shared-tree service
+│   │   │   ├── controllers/  # family-tree.controller, family-tree-public.controller, family-tree-shared.controller
+│   │   │   ├── services/     # family-tree.service, shared-family-tree.service
+│   │   │   └── dto/          # family-tree.dto, shared-family-tree.dto
+│   │   ├── family-tree-member/           # Member management (owner / shared / public controllers)
+│   │   │   ├── controllers/  # member.controller, member-shared.controller, member-public.controller
+│   │   │   └── services/     # family-tree-member.service
+│   │   ├── family-tree-member-connection/ # Relationship management (owner / shared / public)
+│   │   │   ├── controllers/  # connection.controller, connection-shared.controller, connection-public.controller
+│   │   │   └── services/     # family-tree-member-connection.service
 │   │   ├── file/             # File upload (Cloudflare R2)
 │   │   ├── notification/     # Push notifications
 │   │   └── fcm-token/        # FCM token management
@@ -597,9 +621,9 @@ apps/api/
 │   │   ├── env/              # Environment validation
 │   │   └── ...
 │   ├── common/               # Shared resources
-│   │   ├── guards/           # Auth guards (JWT, Google OAuth)
-│   │   ├── interceptors/     # Request/response interceptors
-│   │   └── decorators/       # Custom decorators
+│   │   ├── guards/           # JWTAuthGuard, OwnerGuard, PublicGuard, SharedAccessGuard, FamilyTreeAccessGuard
+│   │   ├── interceptors/     # FamilyTreeCacheInterceptor, UserCacheInterceptor, ZodResponseInterceptor
+│   │   └── decorators/       # @RequirePermission, @Cookies
 │   ├── helpers/              # Utility functions
 │   ├── utils/                # Constants and utilities
 │   └── main.ts               # Application entry point

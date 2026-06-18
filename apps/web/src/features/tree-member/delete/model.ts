@@ -1,6 +1,7 @@
 import type { FamilyTreeMemberGetResponseType } from '@family-tree/shared';
 import { attach, createEvent, createStore, sample } from 'effector';
 import { api } from '~/shared/api';
+import { $treeScope } from '~/shared/config/tree-scope';
 import { createDisclosure } from '~/shared/lib/disclosure';
 
 // Initialization of Events
@@ -19,8 +20,8 @@ export const disclosure = createDisclosure();
 // Attaching
 // Deletes tree
 const deleteTreeFx = attach({
-  source: $member,
-  effect: (member) => {
+  source: { member: $member, scope: $treeScope },
+  effect: ({ member, scope }) => {
     if (!member) {
       throw new Error('Local: no member');
     }
@@ -28,6 +29,7 @@ const deleteTreeFx = attach({
     return api.treeMember.delete({
       familyTreeId: member.familyTreeId,
       id: member.id,
+      scope,
     });
   },
 });
