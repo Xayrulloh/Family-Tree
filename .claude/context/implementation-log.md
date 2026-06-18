@@ -115,24 +115,6 @@ Branch `feature/isolation-routes` continued (all phases on same branch, no merge
 
 ---
 
-## 2026-06-18 — Full naming convention refactor (FamilyTree[Domain][Scope])
-
-- Applied `FamilyTree[Domain][Scope]` prefix uniformly across **all** controllers, services, DTOs, Zod schemas, and TypeScript types. Methods are the only exception.
-- Controllers renamed: `ConnectionPublicController` → `FamilyTreeMemberConnectionPublicController`, `ConnectionSharedController` → `FamilyTreeMemberConnectionSharedController`, `FamilyTreeController` → `FamilyTreeOwnerController`.
-- Service renamed: `SharedFamilyTreeService` → `FamilyTreeSharedService`.
-- All 8 DTO classes in `shared-family-tree.dto.ts`: `SharedFamilyTree*Dto` → `FamilyTreeShared*Dto`.
-- Base Zod schema: `SharedFamilyTreeSchema` → `FamilyTreeSharedSchema`; all request/response schemas + inferred types in `shared-family-tree.request.ts` / `shared-family-tree.response.ts`.
-- Consumers updated: `shared-tree.ts` (web API client), `features/shared-tree-users/edit/model.ts`, `pages/shared-tree-users/model.ts`, `pages/tree-list/model.ts`.
-- Fixed RBAC PUT guard (CodeRabbit #3409730663): `PUT /family-trees/shared/:id/users/:userId` changed from `FamilyTreeAccessGuard + @RequirePermission` to `JWTAuthGuard + OwnerGuard` — only the owner may manage other users' RBAC.
-- Added `.on(fail)` handlers for all three fetch effects in `tree-list/model.ts` so the UI doesn't stall on error.
-- Added `Logger` to `FamilyTreeCacheInterceptor`; empty `catch {}` blocks now log at `warn` level.
-
-**Key note (naming convention — canonical rule):** The project-wide pattern is `FamilyTree[Domain][Scope]` for everything: controllers, services, DTOs, Zod schemas, inferred TS types. Domain examples: `Member`, `MemberConnection`, `Shared`. Scope examples: `Owner`, `Public`, `Shared`. Method names are the only exception (they stay descriptive, e.g. `getSharedFamilyTrees`).
-
-**Key note (schema rename cascade):** When renaming a Zod schema in `libs/shared/`, the rename must cascade through four layers: (1) the base schema file in `schema/`, (2) `request.ts`/`response.ts` files that `.pick()` from it, (3) DTO files in the API that import schemas from `@family-tree/shared`, (4) web files that import inferred types from `@family-tree/shared`. All four must be updated in the same change or the build breaks.
-
----
-
 ## 2026-06-14 — Isolation ticket: Phase 3 (frontend)
 - Branch `feature/isolation-routes` (continued, same branch as Phase 2).
 - Created `shared/config/tree-scope.ts` — `TreeScope` type (`'owner' | 'shared' | 'public'`), global `$treeScope` store + `treeScopeChanged` event, `scopeSegment()` helper that maps scope to URL infix.
@@ -147,3 +129,22 @@ Branch `feature/isolation-routes` continued (all phases on same branch, no merge
 - **Key note (`Effector attach` + nullable source):** When an `attach` reads a store that can be `null`, you MUST widen the `effect` param type to `string | null` and guard eagerly (`if (!id) throw ...`). TypeScript won't catch the mismatch because Effector's `attach` types the effect param from the provided `effect` function, not the source store. The bug manifests as `GET /family-trees/null/members` at runtime.
 - **Key note (public page + Layout):** `UserDropdown` already guards `if (!user) return <InlineLoading />`, so it's safe on unauthenticated public pages. No Layout changes needed.
 - **Key note (web tsc verification):** Run `npx tsc -p libs/shared/tsconfig.lib.json` first to build shared lib, then `npx tsc -p apps/web/tsconfig.json --noEmit`. Without building shared first, tsc reports TS6305 errors on every shared import. Two pre-existing `_authorizedRoute` warnings exist in untouched files — safe to ignore.
+
+---
+
+## 2026-06-18 — Full naming convention refactor + CodeRabbit fixes
+
+- Applied `FamilyTree[Domain][Scope]` prefix uniformly across **all** controllers, services, DTOs, Zod schemas, and TypeScript types. Methods are the only exception.
+- Controllers renamed: `ConnectionPublicController` → `FamilyTreeMemberConnectionPublicController`, `ConnectionSharedController` → `FamilyTreeMemberConnectionSharedController`, `FamilyTreeController` → `FamilyTreeOwnerController`.
+- Service renamed: `SharedFamilyTreeService` → `FamilyTreeSharedService`.
+- All 8 DTO classes in `shared-family-tree.dto.ts` + base Zod schema + all request/response schemas + inferred TS types: `SharedFamilyTree*` → `FamilyTreeShared*`.
+- Fixed RBAC PUT guard: `PUT /family-trees/shared/:id/users/:userId` changed from `FamilyTreeAccessGuard + @RequirePermission` to `JWTAuthGuard + OwnerGuard`.
+- Fixed share URL bug: `shareTrigger` now accepts `{ id, scope }`; URL is `/family-trees/public/:id` for public scope and `/family-trees/shared/:id` for owner/shared.
+- Added `.on(fail)` handlers for all three fetch effects in `tree-list/model.ts`.
+- Added `Logger` to `FamilyTreeCacheInterceptor`; GET catch logs `'Cache population failed'`, mutation catch logs `'Cache invalidation failed'`.
+
+**Key note (naming convention — canonical rule):** The project-wide pattern is `FamilyTree[Domain][Scope]` for everything: controllers, services, DTOs, Zod schemas, inferred TS types. Domain examples: `Member`, `MemberConnection`, `Shared`. Scope examples: `Owner`, `Public`, `Shared`. Method names are the only exception.
+
+**Key note (schema rename cascade):** When renaming a Zod schema in `libs/shared/`, the rename must cascade through four layers: (1) the base schema file in `schema/`, (2) `request.ts`/`response.ts` files that `.pick()` from it, (3) DTO files in the API that import schemas from `@family-tree/shared`, (4) web files that import inferred types from `@family-tree/shared`. All four must be updated in the same change or the build breaks.
+
+**Key note (share URL scope):** `shareTrigger` carries `{ id, scope }`. For `public` scope the link is `/family-trees/public/:id` (anon-accessible). For `owner` and `shared` scopes the link is `/family-trees/shared/:id` (recipient must be in `shared_family_trees`). Do NOT use `scopeSegment()` here — `scopeSegment('owner')` returns `''`, which would produce the owner-only bare path.

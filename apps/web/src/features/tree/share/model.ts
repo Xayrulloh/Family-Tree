@@ -1,4 +1,5 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
+import type { TreeScope } from '~/shared/config/tree-scope';
 import { createDisclosure } from '~/shared/lib/disclosure';
 import { errorFx, infoFx } from '~/shared/lib/message';
 
@@ -6,7 +7,7 @@ export const disclosure = createDisclosure();
 
 export const $shareUrl = createStore('');
 
-export const shareTrigger = createEvent<{ id: string }>();
+export const shareTrigger = createEvent<{ id: string; scope: TreeScope }>();
 export const copyTrigger = createEvent();
 
 export const copyToClipboardFx = createEffect(async (url: string) => {
@@ -15,7 +16,10 @@ export const copyToClipboardFx = createEffect(async (url: string) => {
 
 sample({
   clock: shareTrigger,
-  fn: ({ id }) => `${window.location.origin}/family-trees/shared/${id}`,
+  fn: ({ id, scope }) => {
+    const segment = scope === 'public' ? '/public' : '/shared';
+    return `${window.location.origin}/family-trees${segment}/${id}`;
+  },
   target: [$shareUrl, disclosure.opened],
 });
 

@@ -15,6 +15,7 @@ import { ShareTreeModal, shareTreeModel } from '~/features/tree/share';
 import { addMemberModel } from '~/features/tree-member/add';
 import { previewMemberModel } from '~/features/tree-member/preview';
 import { routes } from '~/shared/config/routing';
+import { $treeScope } from '~/shared/config/tree-scope';
 import type {
   F3Chart,
   F3Datum,
@@ -31,15 +32,23 @@ type F3Module = { createChart: (el: HTMLElement, data: F3Datum[]) => F3Chart };
 type Props = { model: TreeDetailModel };
 
 export const Visualization: React.FC<Props> = ({ model }) => {
-  const [connections, members, id, treeName, permissions, lastAddedMemberId] =
-    useUnit([
-      model.$connections,
-      model.$members,
-      model.$id,
-      model.$treeName,
-      model.$permissions,
-      addMemberModel.$lastAddedMemberId,
-    ]);
+  const [
+    connections,
+    members,
+    id,
+    treeName,
+    permissions,
+    lastAddedMemberId,
+    treeScope,
+  ] = useUnit([
+    model.$connections,
+    model.$members,
+    model.$id,
+    model.$treeName,
+    model.$permissions,
+    addMemberModel.$lastAddedMemberId,
+    $treeScope,
+  ]);
   const { token } = theme.useToken();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -338,7 +347,9 @@ export const Visualization: React.FC<Props> = ({ model }) => {
         )}
         <button
           type="button"
-          onClick={() => shareTreeModel.shareTrigger({ id: id ?? '' })}
+          onClick={() =>
+            shareTreeModel.shareTrigger({ id: id ?? '', scope: treeScope })
+          }
           className="p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors border border-gray-200 cursor-pointer"
           title="Share Tree"
         >

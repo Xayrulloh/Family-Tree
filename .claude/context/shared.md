@@ -68,6 +68,8 @@ FamilyTreeSharedSchema = { familyTreeId, userId, isBlocked, canEditMembers, canD
 ## Types
 - `JwtPayloadType`: `{ sub: string, email: string }` — JWT payload shape
 
+---
+
 ## Naming convention
 All schemas, types, and DTOs follow `FamilyTree[Domain][Scope]` prefix:
 - Domain: `Member`, `MemberConnection`, `Shared`
