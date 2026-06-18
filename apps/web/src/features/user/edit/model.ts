@@ -126,7 +126,15 @@ sample({
   filter: ({ original, edited }) =>
     !edited.image?.startsWith('blob') &&
     !!edited.image?.startsWith('https') &&
-    isEqual({ dob: original?.dob, gender: original?.gender, name: original?.name, image: original?.image }, edited),
+    isEqual(
+      {
+        dob: original?.dob,
+        gender: original?.gender,
+        name: original?.name,
+        image: original?.image,
+      },
+      edited,
+    ),
   fn: () => 'No changes detected' as const,
   target: infoFx,
 });
@@ -142,7 +150,15 @@ sample({
     if (edited.image?.startsWith('blob')) return false;
     if (
       edited.image?.startsWith('https') &&
-      isEqual({ dob: original?.dob, gender: original?.gender, name: original?.name, image: original?.image }, edited)
+      isEqual(
+        {
+          dob: original?.dob,
+          gender: original?.gender,
+          name: original?.name,
+          image: original?.image,
+        },
+        edited,
+      )
     )
       return false;
     return true;
