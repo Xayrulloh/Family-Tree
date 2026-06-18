@@ -18,11 +18,25 @@ export const tree = {
       perPage: String(query.perPage),
     });
     if (query.name) params.set('name', query.name);
-    if (query.isPublic !== undefined)
-      params.set('isPublic', String(query.isPublic));
 
     return base.get<FamilyTreePaginationResponseType>(
       `/family-trees?${params.toString()}`,
+      config,
+    );
+  },
+  findAllPublic: (
+    query: FamilyTreePaginationAndSearchQueryType,
+    config?: AxiosRequestConfig,
+  ) => {
+    const params = new URLSearchParams({
+      page: String(query.page),
+      perPage: String(query.perPage),
+    });
+
+    if (query.name) params.set('name', query.name);
+
+    return base.get<FamilyTreePaginationResponseType>(
+      `/family-trees/public?${params.toString()}`,
       config,
     );
   },
@@ -41,5 +55,11 @@ export const tree = {
   },
   findById: (id: string, config?: AxiosRequestConfig) => {
     return base.get<FamilyTreeResponseType>(`/family-trees/${id}`, config);
+  },
+  findByIdPublic: (id: string, config?: AxiosRequestConfig) => {
+    return base.get<FamilyTreeResponseType>(
+      `/family-trees/public/${id}`,
+      config,
+    );
   },
 };

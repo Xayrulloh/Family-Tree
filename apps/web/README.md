@@ -61,10 +61,8 @@ import {
 - **Dark/Light Mode** - Built-in theme switching with Ant Design's ConfigProvider
 
 ### Data Visualization
-- **D3.js** - Data-driven document manipulation
-- **d3-hierarchy** - Hierarchical layouts
-- **d3-shape** - SVG shape generators
-- **Custom SVG rendering** - Hand-crafted family tree connections
+- **family-chart** - Interactive family tree canvas library
+- **html2canvas** - DOM-to-PNG export for image download
 
 ### Forms & Validation
 - **React Hook Form** - Performant form management
@@ -83,88 +81,24 @@ import {
 
 ---
 
-## 🎨 D3 Family Tree Visualization
+## 🎨 Family Tree Visualization
 
-The family tree visualization is built with **custom SVG rendering** powered by D3.js utilities. Located in `apps/web/src/pages/trees-detail/ui/visualization.tsx`.
+The family tree visualization is powered by the **`family-chart`** library, located in `apps/web/src/widgets/tree-visualization/`.
 
-### Key Features
+### Widget architecture
 
-#### 1. **Custom Layout Engine**
-- Uses `d3-hierarchy` for tree structure calculations
-- Custom positioning algorithm for multi-generational trees
-- Responsive layout that adapts to container width
+The `tree-visualization` widget is shared across all three tree-detail pages (owner, shared, public). Each page wires its own `createTreeDetailModel` config and passes the resulting model to `TreeDetailView`.
 
-#### 2. **SVG-Based Rendering**
-All visual elements are rendered as native SVG for:
-- ✅ Infinite scalability without quality loss
-- ✅ Smooth zoom and pan interactions
-- ✅ Precise positioning and measurements
-- ✅ Hardware-accelerated rendering
+- **`model.ts`** — `createTreeDetailModel<T>(config)` generic factory; takes `scope`, `requireAuth`, `fetchTree`, `resolvePermissions`, `getName`
+- **`visualization.tsx`** — `family-chart`-powered canvas; action buttons (add child/spouse/parents) are gated on `permissions.canAdd`
+- **`view.tsx`** — `TreeDetailView` wrapper; toolbar with share, download, center-view, and managed-users link
 
-#### 3. **Connection Types**
+### Interactive features
 
-**Spouse Connections** (Green Lines)
-```typescript
-const CONNECTION = {
-  SPOUSE: { color: '#10b981', width: 3 },
-  PARENT_CHILD: { color: '#9ca3af', width: 2 },
-};
-```
-- Horizontal lines connecting married couples
-- Rendered between node edges, not centers
-
-**Parent-Child Connections** (Gray Lines)
-- Vertical stems from parents to children
-- Horizontal branches for multiple children
-- Zig-zag lines for single children with spouses
-- Straight lines for single children without spouses
-
-#### 4. **Interactive Features**
-
-**Pan & Zoom**
-- Mouse drag to pan across the tree
-- Mouse wheel to zoom in/out
-- Smooth, momentum-based interactions
-- ViewBox-based transformation for performance
-
-**Dynamic Centering**
-- Automatically centers tree on load
-- Calculates optimal viewBox based on node positions
-
-**Image Export**
-- SVG to PNG conversion via `save-svg-as-png`
-- Preserves layout, colors, and connections in a high-quality image
-- Customizable background and bounds calculation
-
-**Sharing & Collaboration**
-- Copy unique links to share your family tree with others.
-- Dedicated page to view and browse trees shared with you.
-- Manage granular permissions (edit, delete, add) for users who have access to your tree.
-
-### Visualization Code Structure
-
-```typescript
-// Main visualization component
-export const Visualization: React.FC<Props> = ({ model }) => {
-  // Effector state
-  const [connections, members] = useUnit([model.$connections, model.$members]);
-  
-  // D3-based position calculation
-  const positions = useMemo(
-    () => calculatePositions(members, connections, containerWidth),
-    [members, connections]
-  );
-  
-  // SVG rendering with pan/zoom
-  return (
-    <svg viewBox={...} onWheel={handleWheel}>
-      <CoupleConnections />      {/* Green spouse lines */}
-      <ParentChildConnections /> {/* Gray parent-child lines */}
-      <FamilyTreeNodes />        {/* Member cards */}
-    </svg>
-  );
-};
-```
+- **Pan, zoom, center** — built into `family-chart`
+- **Member cards** — custom `setOnCardUpdate` hook renders overlay action buttons per card
+- **Image export** — `html2canvas` captures the chart div and downloads as PNG
+- **Sharing** — share button constructs `${origin}/family-trees/shared/${id}` and copies to clipboard
 
 ---
 
@@ -329,24 +263,31 @@ Set these in your Vercel project settings:
 apps/web/
 ├── src/
 │   ├── app/              # App initialization, routing, providers
-│   ├── pages/            # Page-level components
-│   │   ├── trees-detail/ # Family tree visualization page
-│   │   ├── shared-tree-detail/ # Shared view of a family tree
-│   │   ├── shared-tree-users/ # Access management page
-│   │   ├── home/         # Landing page
-│   │   └── ...
-│   ├── widgets/          # Complex UI blocks (header, sidebar)
+│   ├── pages/            # Page-level components (each: ui/ui.tsx + ui/index.ts + index.ts)
+│   │   ├── tree-list/         # /family-trees, /family-trees/public, /family-trees/shared (tabs)
+│   │   ├── tree-detail/       # /family-trees/:id (owner, full permissions)
+│   │   ├── shared-tree-detail/ # /family-trees/shared/:id (shared RBAC)
+│   │   ├── public-tree-detail/ # /family-trees/public/:id (read-only, anonymous)
+│   │   ├── shared-tree-users/ # /family-trees/shared/:id/users (access management)
+│   │   ├── home/              # /
+│   │   ├── registration/      # /register
+│   │   └── not-found/
+│   ├── widgets/          # Complex UI blocks
+│   │   ├── tree-visualization/ # Shared family-chart widget + createTreeDetailModel factory
+│   │   └── layout/            # App shell (navbar, user dropdown)
 │   ├── features/         # Business logic features
-│   │   ├── auth/         # Authentication
-│   │   ├── shared-tree-users/ # Shared access logic
-│   │   ├── tree-detail/  # Tree detail operations (share, etc.)
-│   │   ├── tree-member/  # Member CRUD operations
-│   │   └── ...
-│   ├── entities/         # Business entities
+│   │   ├── auth/              # Google sign-in button
+│   │   ├── tree/              # create-edit, delete, share
+│   │   ├── tree-member/       # add, edit, delete, preview
+│   │   └── shared-tree-users/ # edit RBAC for shared user
+│   ├── entities/
+│   │   └── user/              # User entity store + chainAuthorized
 │   ├── shared/           # Shared utilities
-│   │   ├── api/          # API client configuration
-│   │   ├── lib/          # Utility functions (layout-engine, etc.)
-│   │   └── ui/           # Reusable UI components
+│   │   ├── api/               # Axios API modules (tree, tree-member, tree-member-connection, shared-tree, …)
+│   │   ├── config/            # routing.ts, tree-scope.ts, system.ts
+│   │   ├── lib/               # create-form, disclosure, family-chart-transformer, lazy-page, message, with-suspense
+│   │   ├── styles/            # family-chart-custom.css
+│   │   └── ui/                # field-wrapper, loading spinner
 │   ├── main.tsx          # Application entry point
 │   └── styles.css        # Global styles
 ├── public/               # Static assets

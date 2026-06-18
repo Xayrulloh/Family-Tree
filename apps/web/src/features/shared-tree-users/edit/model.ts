@@ -1,12 +1,12 @@
-import type { SharedFamilyTreeUserResponseType } from '@family-tree/shared';
+import type { FamilyTreeSharedUserResponseType } from '@family-tree/shared';
 import { attach, createEvent, createStore, sample } from 'effector';
 import { api } from '~/shared/api';
 
 // Initialization of Events
-export const editTrigger = createEvent<SharedFamilyTreeUserResponseType>();
+export const editTrigger = createEvent<FamilyTreeSharedUserResponseType>();
 
 // Stores created tree id
-export const $sharedTree = createStore<SharedFamilyTreeUserResponseType | null>(
+export const $sharedTree = createStore<FamilyTreeSharedUserResponseType | null>(
   null,
 );
 

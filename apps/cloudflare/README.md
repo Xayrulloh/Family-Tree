@@ -8,8 +8,9 @@ Real browsers are passed through to the SPA untouched.
 
 ## Routes covered
 
-- `www.famtree.uz/family-trees/:uuid`
-- `www.famtree.uz/family-trees/:uuid/shared`
+- `www.famtree.uz/family-trees/:uuid` — owner view
+- `www.famtree.uz/family-trees/public/:uuid` — public view
+- `www.famtree.uz/family-trees/shared/:uuid` — shared view
 
 ## One-time setup
 
@@ -32,7 +33,7 @@ Test it with a bot user-agent:
 
 ```bash
 curl -s -A "TelegramBot (like TwitterBot)" \
-  "http://localhost:8787/family-trees/76a8c772-6014-4cbd-a29c-e21e477a9f23/shared" \
+  "http://localhost:8787/family-trees/shared/76a8c772-6014-4cbd-a29c-e21e477a9f23" \
   | grep og:
 ```
 

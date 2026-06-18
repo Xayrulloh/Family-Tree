@@ -9,6 +9,7 @@ import { isEqual } from 'lodash';
 import { delay, or } from 'patronum';
 import type { z } from 'zod';
 import { api } from '~/shared/api';
+import { $treeScope } from '~/shared/config/tree-scope';
 import { createForm } from '~/shared/lib/create-form';
 import { createDisclosure } from '~/shared/lib/disclosure';
 import { infoFx } from '~/shared/lib/message';
@@ -65,11 +66,11 @@ const uploadImageFx = attach({
 
 // Sends form values to edit user profile
 const editProfileFx = attach({
-  source: form.$formValues,
-  effect: (value) =>
+  source: { values: form.$formValues, scope: $treeScope },
+  effect: ({ values, scope }) =>
     api.treeMember.update(
-      { familyTreeId: value.familyTreeId, id: value.id },
-      value,
+      { familyTreeId: values.familyTreeId, id: values.id, scope },
+      values,
     ),
 });
 

@@ -34,6 +34,13 @@ COOKIE_DOMAIN, COOKIE_CLIENT_URL
 ## Guards & Interceptors
 - `JWTAuthGuard` — validates JWT from cookie, attaches `req.user`
 - `GoogleOauthGuard` — Passport Google strategy
+- **Access isolation (Phase 2):** owner/public/shared are now separate route prefixes, each with its own guard (`common/guards/`):
+  - `OwnerGuard` — `createdBy === user.id`; bare path; after `JWTAuthGuard`.
+  - `PublicGuard` — `isPublic === true`; **no JWT** (anonymous + crawlers); `/public/*` prefix; read-only.
+  - `SharedAccessGuard` — non-blocked `shared_family_trees` record holding every `@RequirePermission(...)` flag; `/shared/*` prefix; after `JWTAuthGuard`. Owner does NOT pass here (owners use bare path).
+  - `FamilyTreeAccessGuard` — the original combined guard (owner→public→shared). **Still used, but only** for the shared-users RBAC PUT (the one genuinely "owner-OR-shared-with-all-perms" route).
+- `@RequirePermission('canAddMembers', ...)` decorator (`common/decorators/`) — declares which shared-tree flags a route needs; uses `SHARED_TREE_PERMISSION_KEY` from `src/utils/constants.ts`. Read by `SharedAccessGuard`/`FamilyTreeAccessGuard`.
+- **Guards are global** via `common/common.module.ts` (`@Global()`, imports `DrizzleModule`). Feature modules no longer need to list guards in `providers[]`. `CommonModule` is imported in `AppModule` before all feature modules.
 - `FamilyTreeCacheInterceptor` — Redis cache for family tree endpoints
 - `UserCacheInterceptor` — Redis cache for user endpoints
 - `ZodResponseInterceptor` — response shape validation
@@ -69,53 +76,60 @@ Cache: `UserCacheInterceptor`
 ---
 
 ### Family Tree (`/family-trees`)
+URL namespace: scope prefix goes **before** the id — `/family-trees/public/:id`, `/family-trees/shared/:id`.
+Controllers are registered in order: `FamilyTreePublicController` → `FamilyTreeSharedController` → `FamilyTreeOwnerController` (literals before params).
+
 | Method | Route | Guard | Description |
 |---|---|---|---|
-| GET | `/family-trees` | JWT | List own trees (paginated+search). If `?isPublic=true`: returns public trees |
-| GET | `/family-trees/:id/preview` | none | Public preview metadata (for OG crawlers) |
-| GET | `/family-trees/:id` | JWT | Get tree by id (403 if not owner and not public) |
-| POST | `/family-trees` | JWT | Create tree + auto-create initial member from user |
-| PUT | `/family-trees/:id` | JWT | Update tree |
-| DELETE | `/family-trees/:id` | JWT | Delete tree |
-
-Cache: `FamilyTreeCacheInterceptor`
-
----
-
-### Family Tree Member (`/family-trees/:familyTreeId/members`)
-Access check on all routes via `SharedFamilyTreeService.checkAccessSharedFamilyTree()`.
-
-| Method | Route | Guard | Permission check | Description |
-|---|---|---|---|---|
-| GET | `/family-trees/:familyTreeId/members` | JWT | read access | Get all members (nodes) |
-| GET | `/family-trees/:familyTreeId/members/:id` | JWT | read access | Get member by id |
-| POST | `/family-trees/:familyTreeId/members/child` | JWT | canAddMembers | Add child node |
-| POST | `/family-trees/:familyTreeId/members/spouse` | JWT | canAddMembers | Add spouse node |
-| POST | `/family-trees/:familyTreeId/members/parents` | JWT | canAddMembers | Add parent nodes |
-| PUT | `/family-trees/:familyTreeId/members/:id` | JWT | canEditMembers | Update member |
-| DELETE | `/family-trees/:familyTreeId/members/:id` | JWT | canDeleteMembers | Delete member |
-
-Cache: `FamilyTreeCacheInterceptor`
-
----
-
-### Family Tree Member Connection (`/family-trees/:familyTreeId/members`)
-| Method | Route | Guard | Description |
-|---|---|---|---|
-| GET | `/family-trees/:familyTreeId/members/connections` | JWT | Get all connections in tree |
-| GET | `/family-trees/:familyTreeId/members/:memberUserId/connections` | JWT | Get connections for specific member |
-
-Cache: `FamilyTreeCacheInterceptor`
-
----
-
-### Shared Family Tree (`/family-trees`)
-| Method | Route | Guard | Description |
-|---|---|---|---|
+| GET | `/family-trees` | JWT | List own trees (paginated+search, **no `isPublic` param**) |
+| GET | `/family-trees/public` | none | List all public trees (paginated+search, anonymous) |
+| GET | `/family-trees/public/:id` | PublicGuard (no JWT) | Get public tree by id (anon visitors) |
 | GET | `/family-trees/shared` | JWT | Get trees shared with me (paginated+search) |
-| GET | `/family-trees/:familyTreeId/shared` | JWT | Get single shared tree record |
-| GET | `/family-trees/:familyTreeId/shared-users` | JWT | Get users who have access (paginated+search) |
-| PUT | `/family-trees/:familyTreeId/shared-users/:userId` | JWT | Update RBAC for a shared user (requires canEdit+canAdd+canDelete) |
+| GET | `/family-trees/shared/:id` | JWT | Get single shared tree record |
+| GET | `/family-trees/shared/:id/users` | JWT | Get users with access to shared tree (paginated+search) |
+| PUT | `/family-trees/shared/:id/users/:userId` | JWT + OwnerGuard | Update RBAC for shared user (owner only) |
+| GET | `/family-trees/:id/preview` | none | Public preview metadata (for OG crawlers / Cloudflare Worker) |
+| GET | `/family-trees/:id` | JWT + OwnerGuard | Get tree by id — owner only |
+| POST | `/family-trees` | JWT | Create tree + auto-create initial member from user |
+| PUT | `/family-trees/:id` | JWT + OwnerGuard | Update tree |
+| DELETE | `/family-trees/:id` | JWT + OwnerGuard | Delete tree |
+
+Cache: `FamilyTreeCacheInterceptor`
+Module structure: `family-tree/controllers/` (3 controllers: `FamilyTreeOwnerController`, `FamilyTreePublicController`, `FamilyTreeSharedController`) + `family-tree/services/` (`FamilyTreeService`, `FamilyTreeSharedService`). `SharedFamilyTreeModule` is dissolved — its service + DTO live in `family-tree/`.
+
+---
+
+### Family Tree Member — isolated by prefix
+Three flat concrete controllers (no abstract base), each with its own prefix + guard. No class inheritance.
+- **Owner**: `@Controller('family-trees/:familyTreeId/members')` — JWT + OwnerGuard (read + write)
+- **Shared**: `@Controller('family-trees/shared/:familyTreeId/members')` — JWT + SharedAccessGuard (read + write, RBAC-gated via `@RequirePermission`)
+- **Public**: `@Controller('family-trees/public/:familyTreeId/members')` — PublicGuard, no JWT, read-only
+
+Controllers registered in order: Public → Shared → Owner (literals before params) in `family-tree-member.module.ts`.
+
+| Method | Route suffix | Owner | Shared | Public |
+|---|---|---|---|---|
+| GET | `/members` | ✓ | ✓ | ✓ |
+| GET | `/members/:id` | ✓ | ✓ | ✓ |
+| POST | `/members/child` | ✓ | canAddMembers | ✗ |
+| POST | `/members/spouse` | ✓ | canAddMembers | ✗ |
+| POST | `/members/parents` | ✓ | canAddMembers | ✗ |
+| PUT | `/members/:id` | ✓ | canEditMembers | ✗ |
+| DELETE | `/members/:id` | ✓ | canDeleteMembers | ✗ |
+
+Cache: `FamilyTreeCacheInterceptor`
+
+---
+
+### Family Tree Member Connection — isolated by prefix
+Three flat concrete controllers (same pattern as members). The connection module is registered **before** the member module in `app.module.ts` so `members/connections` resolves before `members/:id` — **do not reorder**.
+
+| Method | Route | Guard | Description |
+|---|---|---|---|
+| GET | `/family-trees[/public\|/shared]/:familyTreeId/members/connections` | per-prefix | All connections in tree |
+| GET | `/family-trees[/public\|/shared]/:familyTreeId/members/:memberUserId/connections` | per-prefix | Connections for specific member |
+
+Cache: `FamilyTreeCacheInterceptor`
 
 ---
 
@@ -143,8 +157,11 @@ Returns: `{ message, path }` where path = `CLOUDFLARE_URL/folder/randomKey`
 | DELETE | `/fcm-tokens` | JWT | Remove FCM token |
 
 ## Shared access check logic
-`SharedFamilyTreeService.checkAccessSharedFamilyTree(userId, familyTreeId, permissions?)`:
-- If user is tree owner → always allowed
-- Else looks up `shared_family_trees` record for this user+tree
-- If blocked → throws 403
-- Checks requested permissions (`canAddMembers`, `canEditMembers`, `canDeleteMembers`)
+Handled by `FamilyTreeAccessGuard` + `@RequirePermission` (see Guards section). The old
+`SharedFamilyTreeService.checkAccessSharedFamilyTree()` god-method was removed (Phase 1 of the
+Isolation ticket — see `.claude/context/isolation-plan.md`):
+- Owner → always allowed
+- Public tree → read-only (any required permission → 403)
+- Shared → looks up `shared_family_trees`; missing/blocked → 403; then every required flag must be true
+- Members + connections + the shared-users RBAC PUT all enforce via the guard now.
+- NOTE: `family-tree.controller` `GET/:id` (inline owner|public check) and `PUT`/`DELETE` (service-level `WHERE createdBy`) were intentionally left as-is — they get dedicated guards in Phase 2 route isolation.

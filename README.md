@@ -83,7 +83,7 @@ This project is built with modern, scalable technologies:
 - **PostgreSQL** - Robust relational database
 - **Drizzle ORM** - Type-safe database queries
 - **Passport.js** - OAuth authentication (Google)
-- **AWS S3** - Scalable media storage
+- **Cloudflare R2** - S3-compatible media storage
 - **Redis** - High-performance caching
 - **Sentry** - Error tracking and monitoring
 
@@ -104,6 +104,7 @@ This project is built with modern, scalable technologies:
 For detailed setup instructions:
 - **Backend (API)**: See [apps/api/README.md](apps/api/README.md)
 - **Frontend (Web)**: See [apps/web/README.md](apps/web/README.md)
+- **Cloudflare Worker**: See [apps/cloudflare/README.md](apps/cloudflare/README.md)
 
 ---
 
@@ -113,8 +114,10 @@ For detailed setup instructions:
 Family-Tree/
 ├── apps/
 │   ├── api/          # NestJS backend application
-│   └── web/          # React frontend application
-├── libs/             # Shared libraries and utilities
+│   ├── web/          # React frontend application
+│   └── cloudflare/   # Cloudflare Worker (OG meta injection for social crawlers)
+├── libs/
+│   └── shared/       # Shared Zod schemas and TypeScript types (@family-tree/shared)
 ├── .github/          # GitHub Actions workflows
 └── nx.json           # Nx workspace configuration
 ```

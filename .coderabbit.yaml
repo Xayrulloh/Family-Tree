@@ -18,6 +18,14 @@ reviews:
   poem: false
   collapse_walkthrough: false
 
+  # Auto-approve when review is clean and all comments are resolved
+  auto_approve:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+      - "DRAFT"
+
   auto_review:
     enabled: true
     drafts: false
@@ -42,6 +50,7 @@ reviews:
     - "!**/__snapshots__/**"
     - "!**/*.generated.ts"
     - "!**/biome.json" # Biome config, no need to review
+    - "!.claude/**"   # Claude Code context files, not production code
 
   # ── Per-path targeted instructions ──
   path_instructions:
@@ -49,6 +58,22 @@ reviews:
     - path: "apps/api/**/*.ts"
       instructions: |
         This is a NestJS v11 backend.
+
+        **Route isolation (Phase 2+):** Routes are split into three prefixes:
+        - Bare `/family-trees/:id` — owner only (`OwnerGuard` after `JWTAuthGuard`)
+        - `/family-trees/public/:id` — anonymous read (`PublicGuard`, no JWT required)
+        - `/family-trees/shared/:id` — shared-user access (`SharedAccessGuard` after `JWTAuthGuard`)
+        Each prefix has its own dedicated guard. `FamilyTreeAccessGuard` is retained for backwards-compat reference only — the shared-users RBAC PUT now uses `OwnerGuard` directly.
+
+        **Global guards:** All DB-backed guards (`OwnerGuard`, `PublicGuard`, `SharedAccessGuard`, `FamilyTreeAccessGuard`) are provided globally via `common/common.module.ts` (`@Global()`). Feature modules do NOT need to list these in their `providers[]` — do NOT flag missing guard providers in feature modules.
+
+        **Naming convention:** Everything follows `FamilyTree[Domain][Scope]` — controllers, services, DTOs, Zod schemas, inferred TS types. Domain: `Member`, `MemberConnection`, `Shared`. Scope: `Owner`, `Public`, `Shared`. Method names are exempt. Examples: `FamilyTreeOwnerController`, `FamilyTreeMemberConnectionSharedController`, `FamilyTreeSharedService`, `FamilyTreeSharedCreateRequestSchema`.
+
+        **RBAC decorator:** `@RequirePermission('canAddMembers', ...)` uses `SHARED_TREE_PERMISSION_KEY` from `~/utils/constants`. The key must NOT be inlined in decorator files.
+
+        **Swagger imports:** Always import from `@nestjs/swagger` (the public API), never from `@nestjs/swagger/dist/decorators` or any internal path.
+
+        General:
         - Ensure all route handlers have proper Guards (JWT/Google OAuth via Passport).
         - Check that DTOs use nestjs-zod / Zod schemas for validation — not plain class-validator.
         - Flag any missing @ApiProperty() decorators on Swagger-exposed DTOs.
@@ -80,29 +105,46 @@ reviews:
         - Flag missing indexes on filtered or joined columns.
         - Warn about N+1 patterns or unbounded queries without LIMIT.
 
+    - path: "apps/api/**/guards/**"
+      instructions: |
+        These are NestJS guards for the route isolation layer.
+        - `OwnerGuard`: must verify `createdBy === req.user.id`; return 404 for missing trees, 403 for non-owners.
+        - `PublicGuard`: no JWT required; must return 404 for both missing AND non-public trees (not 403 — prevents ID probing).
+        - `SharedAccessGuard`: must explicitly reject owners before checking `shared_family_trees` record (owners use the bare path, not `/shared`). Check `requiredPermissions` flags against the record.
+        - Never auto-create `shared_family_trees` rows inside a guard or read-path service — that is a privilege escalation vector.
+
     # --- React Frontend (apps/web) ---
     - path: "apps/web/**/*.tsx"
       instructions: |
         This is a React 18 frontend using Effector for state management and Ant Design + Tailwind v4 for UI.
         - Check React hooks rules: no conditional hooks, correct dependency arrays in useEffect/useCallback/useMemo.
         - Flag missing `key` props in list renders.
-        - Ensure accessibility: interactive elements should have aria labels, buttons should not be plain divs.
+        - Ensure accessibility: interactive elements should have aria labels, buttons (especially icon-only) should not be plain divs and must have aria-label.
         - Flag direct DOM manipulation or use of `document` / `window` without SSR guards.
         - For Ant Design forms, prefer react-hook-form + @hookform/resolvers with Zod schemas — flag manual validation.
 
     - path: "apps/web/**/model*"
       instructions: |
         This is an Effector model file (stores, events, effects).
-        - Ensure effects (createEffect) have proper error handling — both done and fail watched.
-        - Flag stores that hold server data without a reset event on route leave.
+        - Ensure effects (createEffect / attach) have BOTH done/doneData AND fail/failData handlers. Missing fail handlers leave the UI in a stale loading or empty state on error.
+        - Flag stores that hold server data without a reset/reinit on route leave (clock: pageRoute.closed).
         - Check that patronum helpers (pending, condition, etc.) are used where applicable to reduce boilerplate.
         - Verify no business logic leaks into UI components — it should live in model files.
+        - For the tree-list page factory: public mode (`initialMode: 'public-trees'`) must use `route.opened` as the clock (not `authorizedRoute.opened`) so anonymous users can load the public list.
+        - `$loading` stores in tree-detail models must include ALL fetch effect `.pending` flags (tree + members + connections).
 
     - path: "apps/web/**/router*"
       instructions: |
         This is an atomic-router routing file.
         - Ensure route guards check auth state before navigation.
         - Flag routes missing chainRoute for protected pages.
+        - Literal paths (e.g. `/family-trees/public`, `/family-trees/shared`) MUST be listed before parameterized paths (e.g. `/family-trees/:id`) in routesMap — otherwise the param route swallows the literals.
+
+    - path: "apps/web/**/api/**"
+      instructions: |
+        These are Axios API client modules.
+        - URL query parameters that come from user input (e.g. `name`) must be encoded with `encodeURIComponent` or built via `URLSearchParams` — never interpolated raw.
+        - Scoped API URLs follow prefix-before-id: `/family-trees${scopeSegment(scope)}/${id}/members`.
 
     # --- Shared Libraries (libs/) ---
     - path: "libs/**/*.ts"
@@ -142,8 +184,8 @@ reviews:
     - path: "**"
       instructions: |
         This is a family-tree NX monorepo with two apps:
-        - `apps/api`: NestJS v11 REST API with Drizzle ORM + PostgreSQL, Redis cache (Keyv), AWS S3, Passport JWT + Google OAuth2, Swagger, Sentry, Throttler.
-        - `apps/web`: React 18 SPA with Effector state management, Ant Design + Tailwind v4 UI, atomic-router, react-hook-form + Zod, D3 for tree visualization, Rspack bundler.
+        - `apps/api`: NestJS v11 REST API with Drizzle ORM + PostgreSQL, Redis cache (Keyv), Cloudflare R2 (S3-compatible media storage), Passport JWT + Google OAuth2, Swagger, Sentry, Throttler.
+        - `apps/web`: React 18 SPA with Effector state management, Ant Design + Tailwind v4 UI, atomic-router, react-hook-form + Zod, family-chart for interactive tree visualization, Rspack bundler.
 
         General rules:
         - Biome handles all formatting and basic linting — do NOT comment on formatting.
@@ -151,7 +193,8 @@ reviews:
         - TypeScript strict mode is enabled — flag any `any`, non-null assertions without justification, or type casting without a comment.
         - Nx affected commands are used for CI — do not suggest changes that break project boundaries.
         - pnpm is the package manager — flag any npm/yarn usage in scripts.
-        - Security is a priority: JWT, OAuth2, S3 presigned URLs, rate limiting — review these areas carefully.
+        - Security is a priority: JWT, OAuth2, Cloudflare R2 presigned URLs, rate limiting — review these areas carefully.
+        - Never auto-create database rows inside read-path service methods — this can be a privilege escalation vector.
 
 # ─────────────────────────────────────────────
 # 3. CHAT

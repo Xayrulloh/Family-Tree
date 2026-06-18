@@ -1,12 +1,18 @@
 import { Module } from '@nestjs/common';
 import { DrizzleModule } from '~/database/drizzle.module';
-import { SharedFamilyTreeService } from '../shared-family-tree/shared-family-tree.service';
-import { FamilyTreeMemberConnectionController } from './family-tree-member-connection.controller';
-import { FamilyTreeMemberConnectionService } from './family-tree-member-connection.service';
+import { FamilyTreeMemberConnectionOwnerController } from './controllers/connection.controller';
+import { FamilyTreeMemberConnectionPublicController } from './controllers/connection-public.controller';
+import { FamilyTreeMemberConnectionSharedController } from './controllers/connection-shared.controller';
+import { FamilyTreeMemberConnectionService } from './services/family-tree-member-connection.service';
 
 @Module({
   imports: [DrizzleModule],
-  controllers: [FamilyTreeMemberConnectionController],
-  providers: [FamilyTreeMemberConnectionService, SharedFamilyTreeService],
+  // Public/shared before owner so literal prefix segments resolve before :familyTreeId
+  controllers: [
+    FamilyTreeMemberConnectionPublicController,
+    FamilyTreeMemberConnectionSharedController,
+    FamilyTreeMemberConnectionOwnerController,
+  ],
+  providers: [FamilyTreeMemberConnectionService],
 })
 export class FamilyTreeMemberConnectionModule {}

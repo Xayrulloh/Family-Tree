@@ -1,0 +1,1 @@
+export { TreeDetail } from './ui';

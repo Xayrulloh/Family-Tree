@@ -3,6 +3,7 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { ZodValidationPipe } from 'nestjs-zod';
+import { CommonModule } from './common/common.module';
 import { HttpExceptionFilter } from './common/filters/http.filter';
 import { ZodValidationExceptionFilter } from './common/filters/zod.filter';
 import { ZodSerializerInterceptorCustom } from './common/interceptors/zod.response.interceptor';
@@ -16,7 +17,6 @@ import { FamilyTreeMemberConnectionModule } from './modules/family-tree-member-c
 import { FCMTokenModule } from './modules/fcm-token/fcm-token.module';
 import { FileModule } from './modules/file/file.module';
 import { NotificationModule } from './modules/notification/notification.module';
-import { SharedFamilyTreeModule } from './modules/shared-family-tree/shared-family-tree.module';
 import { UserModule } from './modules/user/user.module';
 
 @Module({
@@ -32,11 +32,11 @@ import { UserModule } from './modules/user/user.module';
       ],
     }),
     RedisCacheModule,
+    CommonModule,
     AuthModule,
     UserModule,
     CookiesModule,
     FCMTokenModule,
-    SharedFamilyTreeModule,
     FamilyTreeModule,
     FamilyTreeMemberConnectionModule,
     FamilyTreeMemberModule,
