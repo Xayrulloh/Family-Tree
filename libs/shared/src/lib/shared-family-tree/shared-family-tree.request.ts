@@ -1,58 +1,58 @@
 import type { z } from 'zod';
 import { PaginationQuerySchema } from '../pagination';
-import { SharedFamilyTreeSchema } from '../schema';
+import { FamilyTreeSharedSchema } from '../schema';
 import { SearchByNameQuerySchema } from '../search';
 
-const SharedFamilyTreeCreateRequestSchema = SharedFamilyTreeSchema.pick({
+const FamilyTreeSharedCreateRequestSchema = FamilyTreeSharedSchema.pick({
   familyTreeId: true,
   userId: true,
 });
 
-const SharedFamilyTreeIdParamSchema = SharedFamilyTreeSchema.pick({
+const FamilyTreeSharedIdParamSchema = FamilyTreeSharedSchema.pick({
   familyTreeId: true,
 });
 
-const SharedFamilyTreePaginationAndSearchQuerySchema =
+const FamilyTreeSharedPaginationAndSearchQuerySchema =
   PaginationQuerySchema.merge(SearchByNameQuerySchema);
 
-const SharedFamilyTreeUpdateRequestSchema = SharedFamilyTreeSchema.pick({
+const FamilyTreeSharedUpdateRequestSchema = FamilyTreeSharedSchema.pick({
   canAddMembers: true,
   canDeleteMembers: true,
   canEditMembers: true,
   isBlocked: true,
 });
 
-const SharedFamilyTreeUpdateParamSchema = SharedFamilyTreeCreateRequestSchema;
+const FamilyTreeSharedUpdateParamSchema = FamilyTreeSharedCreateRequestSchema;
 
-type SharedFamilyTreeCreateRequestType = z.infer<
-  typeof SharedFamilyTreeCreateRequestSchema
+type FamilyTreeSharedCreateRequestType = z.infer<
+  typeof FamilyTreeSharedCreateRequestSchema
 >;
 
-type SharedFamilyTreeIdParamType = z.infer<
-  typeof SharedFamilyTreeIdParamSchema
+type FamilyTreeSharedIdParamType = z.infer<
+  typeof FamilyTreeSharedIdParamSchema
 >;
 
-type SharedFamilyTreePaginationAndSearchQueryType = z.infer<
-  typeof SharedFamilyTreePaginationAndSearchQuerySchema
+type FamilyTreeSharedPaginationAndSearchQueryType = z.infer<
+  typeof FamilyTreeSharedPaginationAndSearchQuerySchema
 >;
 
-type SharedFamilyTreeUpdateRequestType = z.infer<
-  typeof SharedFamilyTreeUpdateRequestSchema
+type FamilyTreeSharedUpdateRequestType = z.infer<
+  typeof FamilyTreeSharedUpdateRequestSchema
 >;
 
-type SharedFamilyTreeUpdateParamType = z.infer<
-  typeof SharedFamilyTreeUpdateParamSchema
+type FamilyTreeSharedUpdateParamType = z.infer<
+  typeof FamilyTreeSharedUpdateParamSchema
 >;
 
 export {
-  SharedFamilyTreeCreateRequestSchema,
-  type SharedFamilyTreeCreateRequestType,
-  SharedFamilyTreeIdParamSchema,
-  type SharedFamilyTreeIdParamType,
-  SharedFamilyTreePaginationAndSearchQuerySchema,
-  type SharedFamilyTreePaginationAndSearchQueryType,
-  SharedFamilyTreeUpdateParamSchema,
-  type SharedFamilyTreeUpdateParamType,
-  SharedFamilyTreeUpdateRequestSchema,
-  type SharedFamilyTreeUpdateRequestType,
+  FamilyTreeSharedCreateRequestSchema,
+  type FamilyTreeSharedCreateRequestType,
+  FamilyTreeSharedIdParamSchema,
+  type FamilyTreeSharedIdParamType,
+  FamilyTreeSharedPaginationAndSearchQuerySchema,
+  type FamilyTreeSharedPaginationAndSearchQueryType,
+  FamilyTreeSharedUpdateParamSchema,
+  type FamilyTreeSharedUpdateParamType,
+  FamilyTreeSharedUpdateRequestSchema,
+  type FamilyTreeSharedUpdateRequestType,
 };

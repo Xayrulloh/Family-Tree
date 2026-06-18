@@ -7,6 +7,7 @@ import {
   type CallHandler,
   type ExecutionContext,
   Injectable,
+  Logger,
   type NestInterceptor,
 } from '@nestjs/common';
 import { type Observable, of, tap } from 'rxjs';
@@ -26,6 +27,8 @@ const CONNECTIONS_PATH =
 
 @Injectable()
 export class FamilyTreeCacheInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(FamilyTreeCacheInterceptor.name);
+
   constructor(private readonly cacheService: CacheService) {}
 
   async intercept(
@@ -88,7 +91,9 @@ export class FamilyTreeCacheInterceptor implements NestInterceptor {
                 data as FamilyTreeMemberGetAllResponseType,
               );
             }
-          } catch {}
+          } catch (err) {
+            this.logger.warn('Cache write failed', err);
+          }
         }),
       );
     }
@@ -134,7 +139,9 @@ export class FamilyTreeCacheInterceptor implements NestInterceptor {
                 ]);
               }
             }
-          } catch {}
+          } catch (err) {
+            this.logger.warn('Cache write failed', err);
+          }
         }),
       );
     }

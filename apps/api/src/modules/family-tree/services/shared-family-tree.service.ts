@@ -9,16 +9,16 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
 import type {
-  SharedFamilyTreeCreateRequestDto,
-  SharedFamilyTreePaginationAndSearchQueryDto,
-  SharedFamilyTreePaginationResponseDto,
-  SharedFamilyTreeResponseDto,
-  SharedFamilyTreeUpdateRequestDto,
-  SharedFamilyTreeUsersPaginationResponseDto,
+  FamilyTreeSharedCreateRequestDto,
+  FamilyTreeSharedPaginationAndSearchQueryDto,
+  FamilyTreeSharedPaginationResponseDto,
+  FamilyTreeSharedResponseDto,
+  FamilyTreeSharedUpdateRequestDto,
+  FamilyTreeSharedUsersPaginationResponseDto,
 } from '../dto/shared-family-tree.dto';
 
 @Injectable()
-export class SharedFamilyTreeService {
+export class FamilyTreeSharedService {
   constructor(
     @Inject(DrizzleAsyncProvider)
     private db: NodePgDatabase<typeof schema>,
@@ -26,8 +26,8 @@ export class SharedFamilyTreeService {
 
   async getSharedFamilyTrees(
     userId: string,
-    { page, perPage, name }: SharedFamilyTreePaginationAndSearchQueryDto,
-  ): Promise<SharedFamilyTreePaginationResponseDto> {
+    { page, perPage, name }: FamilyTreeSharedPaginationAndSearchQueryDto,
+  ): Promise<FamilyTreeSharedPaginationResponseDto> {
     const offset = (page - 1) * perPage;
 
     const [sharedFamilyTrees, countResult] = await Promise.all([
@@ -96,7 +96,7 @@ export class SharedFamilyTreeService {
   async getSharedFamilyTreeById(
     userId: string,
     familyTreeId: string,
-  ): Promise<SharedFamilyTreeResponseDto> {
+  ): Promise<FamilyTreeSharedResponseDto> {
     const sharedFamilyTree =
       await this.db.query.sharedFamilyTreesSchema.findFirst({
         where: and(
@@ -122,7 +122,7 @@ export class SharedFamilyTreeService {
   }
 
   async createSharedFamilyTree(
-    body: SharedFamilyTreeCreateRequestDto,
+    body: FamilyTreeSharedCreateRequestDto,
   ): Promise<void> {
     const isFamilyTreeExist = await this.db.query.familyTreesSchema.findFirst({
       where: and(eq(schema.familyTreesSchema.id, body.familyTreeId)),
@@ -143,8 +143,8 @@ export class SharedFamilyTreeService {
   async getSharedFamilyTreeUsersById(
     userId: string,
     familyTreeId: string,
-    { page, perPage, name }: SharedFamilyTreePaginationAndSearchQueryDto,
-  ): Promise<SharedFamilyTreeUsersPaginationResponseDto> {
+    { page, perPage, name }: FamilyTreeSharedPaginationAndSearchQueryDto,
+  ): Promise<FamilyTreeSharedUsersPaginationResponseDto> {
     const familyTree = await this.db.query.familyTreesSchema.findFirst({
       where: and(
         eq(schema.familyTreesSchema.id, familyTreeId),
@@ -216,7 +216,7 @@ export class SharedFamilyTreeService {
   async updateSharedFamilyTreeById(
     userId: string,
     familyTreeId: string,
-    body: SharedFamilyTreeUpdateRequestDto,
+    body: FamilyTreeSharedUpdateRequestDto,
   ): Promise<void> {
     await this.db
       .update(schema.sharedFamilyTreesSchema)

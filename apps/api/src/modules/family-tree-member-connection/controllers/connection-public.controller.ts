@@ -25,7 +25,7 @@ import { FamilyTreeMemberConnectionService } from '../services/family-tree-membe
 @Controller('family-trees/public/:familyTreeId/members')
 @UseGuards(PublicGuard)
 @UseInterceptors(FamilyTreeCacheInterceptor)
-export class ConnectionPublicController {
+export class FamilyTreeMemberConnectionPublicController {
   constructor(
     private readonly familyTreeMemberConnectionService: FamilyTreeMemberConnectionService,
   ) {}

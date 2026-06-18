@@ -77,7 +77,7 @@ Cache: `UserCacheInterceptor`
 
 ### Family Tree (`/family-trees`)
 URL namespace: scope prefix goes **before** the id — `/family-trees/public/:id`, `/family-trees/shared/:id`.
-Controllers are registered in order: `FamilyTreePublicController` → `FamilyTreeSharedController` → `FamilyTreeController` (literals before params).
+Controllers are registered in order: `FamilyTreePublicController` → `FamilyTreeSharedController` → `FamilyTreeOwnerController` (literals before params).
 
 | Method | Route | Guard | Description |
 |---|---|---|---|
@@ -87,7 +87,7 @@ Controllers are registered in order: `FamilyTreePublicController` → `FamilyTre
 | GET | `/family-trees/shared` | JWT | Get trees shared with me (paginated+search) |
 | GET | `/family-trees/shared/:id` | JWT | Get single shared tree record |
 | GET | `/family-trees/shared/:id/users` | JWT | Get users with access to shared tree (paginated+search) |
-| PUT | `/family-trees/shared/:id/users/:userId` | JWT + FamilyTreeAccessGuard | Update RBAC for shared user |
+| PUT | `/family-trees/shared/:id/users/:userId` | JWT + OwnerGuard | Update RBAC for shared user (owner only) |
 | GET | `/family-trees/:id/preview` | none | Public preview metadata (for OG crawlers / Cloudflare Worker) |
 | GET | `/family-trees/:id` | JWT + OwnerGuard | Get tree by id — owner only |
 | POST | `/family-trees` | JWT | Create tree + auto-create initial member from user |
@@ -95,7 +95,7 @@ Controllers are registered in order: `FamilyTreePublicController` → `FamilyTre
 | DELETE | `/family-trees/:id` | JWT + OwnerGuard | Delete tree |
 
 Cache: `FamilyTreeCacheInterceptor`
-Module structure: `family-tree/controllers/` (3 controllers) + `family-tree/services/` (2 services). `SharedFamilyTreeModule` is dissolved — its service + DTO live in `family-tree/`.
+Module structure: `family-tree/controllers/` (3 controllers: `FamilyTreeOwnerController`, `FamilyTreePublicController`, `FamilyTreeSharedController`) + `family-tree/services/` (`FamilyTreeService`, `FamilyTreeSharedService`). `SharedFamilyTreeModule` is dissolved — its service + DTO live in `family-tree/`.
 
 ---
 

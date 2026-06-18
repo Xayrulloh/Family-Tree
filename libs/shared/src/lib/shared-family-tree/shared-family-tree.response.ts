@@ -2,15 +2,15 @@ import type { z } from 'zod';
 import { PaginationResponseSchema } from '../pagination';
 import {
   FamilyTreeSchema,
-  SharedFamilyTreeSchema,
+  FamilyTreeSharedSchema,
   UserSchema,
 } from '../schema';
 
-const SharedFamilyTreeResponseSchema = FamilyTreeSchema.omit({
+const FamilyTreeSharedResponseSchema = FamilyTreeSchema.omit({
   id: true,
   isPublic: true,
 }).merge(
-  SharedFamilyTreeSchema.pick({
+  FamilyTreeSharedSchema.pick({
     familyTreeId: true,
     userId: true,
     canAddMembers: true,
@@ -20,16 +20,16 @@ const SharedFamilyTreeResponseSchema = FamilyTreeSchema.omit({
   }),
 );
 
-const SharedFamilyTreePaginationResponseSchema =
+const FamilyTreeSharedPaginationResponseSchema =
   PaginationResponseSchema.extend({
-    sharedFamilyTrees: SharedFamilyTreeResponseSchema.array(),
+    sharedFamilyTrees: FamilyTreeSharedResponseSchema.array(),
   });
 
-const SharedFamilyTreeUserResponseSchema = UserSchema.omit({
+const FamilyTreeSharedUserResponseSchema = UserSchema.omit({
   id: true,
   username: true,
 }).merge(
-  SharedFamilyTreeSchema.pick({
+  FamilyTreeSharedSchema.pick({
     familyTreeId: true,
     userId: true,
     canAddMembers: true,
@@ -39,34 +39,34 @@ const SharedFamilyTreeUserResponseSchema = UserSchema.omit({
   }),
 );
 
-const SharedFamilyTreeUsersPaginationResponseSchema =
+const FamilyTreeSharedUsersPaginationResponseSchema =
   PaginationResponseSchema.extend({
-    sharedFamilyTreeUsers: SharedFamilyTreeUserResponseSchema.array(),
+    sharedFamilyTreeUsers: FamilyTreeSharedUserResponseSchema.array(),
   });
 
-type SharedFamilyTreeResponseType = z.infer<
-  typeof SharedFamilyTreeResponseSchema
+type FamilyTreeSharedResponseType = z.infer<
+  typeof FamilyTreeSharedResponseSchema
 >;
 
-type SharedFamilyTreePaginationResponseType = z.infer<
-  typeof SharedFamilyTreePaginationResponseSchema
+type FamilyTreeSharedPaginationResponseType = z.infer<
+  typeof FamilyTreeSharedPaginationResponseSchema
 >;
 
-type SharedFamilyTreeUserResponseType = z.infer<
-  typeof SharedFamilyTreeUserResponseSchema
+type FamilyTreeSharedUserResponseType = z.infer<
+  typeof FamilyTreeSharedUserResponseSchema
 >;
 
-type SharedFamilyTreeUsersPaginationResponseType = z.infer<
-  typeof SharedFamilyTreeUsersPaginationResponseSchema
+type FamilyTreeSharedUsersPaginationResponseType = z.infer<
+  typeof FamilyTreeSharedUsersPaginationResponseSchema
 >;
 
 export {
-  SharedFamilyTreePaginationResponseSchema,
-  type SharedFamilyTreePaginationResponseType,
-  SharedFamilyTreeResponseSchema,
-  type SharedFamilyTreeResponseType,
-  SharedFamilyTreeUserResponseSchema,
-  type SharedFamilyTreeUserResponseType,
-  SharedFamilyTreeUsersPaginationResponseSchema,
-  type SharedFamilyTreeUsersPaginationResponseType,
+  FamilyTreeSharedPaginationResponseSchema,
+  type FamilyTreeSharedPaginationResponseType,
+  FamilyTreeSharedResponseSchema,
+  type FamilyTreeSharedResponseType,
+  FamilyTreeSharedUserResponseSchema,
+  type FamilyTreeSharedUserResponseType,
+  FamilyTreeSharedUsersPaginationResponseSchema,
+  type FamilyTreeSharedUsersPaginationResponseType,
 };

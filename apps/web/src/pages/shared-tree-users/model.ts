@@ -1,4 +1,4 @@
-import type { SharedFamilyTreeUsersPaginationResponseType } from '@family-tree/shared';
+import type { FamilyTreeSharedUsersPaginationResponseType } from '@family-tree/shared';
 import { attach, createEvent, createStore, sample } from 'effector';
 import { debounce } from 'patronum';
 import { userModel } from '~/entities/user';
@@ -11,7 +11,7 @@ export const factory = ({ route }: LazyPageFactoryParams<{ id: string }>) => {
 
   // Stores
   const $paginatedUsers =
-    createStore<SharedFamilyTreeUsersPaginationResponseType>({
+    createStore<FamilyTreeSharedUsersPaginationResponseType>({
       page: 1,
       perPage: 15,
       totalCount: 0,

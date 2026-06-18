@@ -55,7 +55,7 @@ FamilyTreeMemberConnectionSchema = { fromMemberId: uuid, toMemberId: uuid, type:
 
 ### `shared-family-tree.schema.ts`
 ```ts
-SharedFamilyTreeSchema = { familyTreeId, userId, isBlocked, canEditMembers, canDeleteMembers, canAddMembers } + BaseSchema
+FamilyTreeSharedSchema = { familyTreeId, userId, isBlocked, canEditMembers, canDeleteMembers, canAddMembers } + BaseSchema
 ```
 
 ### Others
@@ -67,3 +67,11 @@ SharedFamilyTreeSchema = { familyTreeId, userId, isBlocked, canEditMembers, canD
 
 ## Types
 - `JwtPayloadType`: `{ sub: string, email: string }` — JWT payload shape
+
+## Naming convention
+All schemas, types, and DTOs follow `FamilyTree[Domain][Scope]` prefix:
+- Domain: `Member`, `MemberConnection`, `Shared`
+- Scope: `Owner`, `Public`, `Shared` (omitted when there's only one scope)
+- Examples: `FamilyTreeSharedSchema`, `FamilyTreeSharedCreateRequestSchema`, `FamilyTreeMemberOwnerController`
+- **Method names are exempt** — they stay descriptive (e.g. `getSharedFamilyTrees`)
+- When adding a new schema in `schema/`, the rename cascades: base schema → request/response files → DTO imports → web type imports

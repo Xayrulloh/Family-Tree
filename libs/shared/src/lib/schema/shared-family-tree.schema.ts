@@ -1,7 +1,7 @@
 import * as z from 'zod';
 import { BaseSchema } from './base.schema';
 
-const SharedFamilyTreeSchema = z
+const FamilyTreeSharedSchema = z
   .object({
     familyTreeId: z.string().describe('Id of family tree'),
     userId: z.string().describe('Id of user who accessed this family tree'),
@@ -13,6 +13,6 @@ const SharedFamilyTreeSchema = z
   .merge(BaseSchema)
   .describe('Shared family tree');
 
-type SharedFamilyTreeSchemaType = z.infer<typeof SharedFamilyTreeSchema>;
+type FamilyTreeSharedSchemaType = z.infer<typeof FamilyTreeSharedSchema>;
 
-export { SharedFamilyTreeSchema, type SharedFamilyTreeSchemaType };
+export { FamilyTreeSharedSchema, type FamilyTreeSharedSchemaType };

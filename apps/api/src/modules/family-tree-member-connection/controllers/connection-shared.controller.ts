@@ -28,7 +28,7 @@ import { FamilyTreeMemberConnectionService } from '../services/family-tree-membe
 @Controller('family-trees/shared/:familyTreeId/members')
 @UseGuards(JWTAuthGuard, SharedAccessGuard)
 @UseInterceptors(FamilyTreeCacheInterceptor)
-export class ConnectionSharedController {
+export class FamilyTreeMemberConnectionSharedController {
   constructor(
     private readonly familyTreeMemberConnectionService: FamilyTreeMemberConnectionService,
   ) {}

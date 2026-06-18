@@ -1,8 +1,8 @@
 import type {
   FamilyTreePaginationAndSearchQueryType,
   FamilyTreePaginationResponseType,
-  SharedFamilyTreePaginationAndSearchQueryType,
-  SharedFamilyTreePaginationResponseType,
+  FamilyTreeSharedPaginationAndSearchQueryType,
+  FamilyTreeSharedPaginationResponseType,
 } from '@family-tree/shared';
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { debounce, or } from 'patronum';
@@ -34,7 +34,7 @@ export const factory = ({
   });
 
   const $paginatedSharedTrees =
-    createStore<SharedFamilyTreePaginationResponseType>({
+    createStore<FamilyTreeSharedPaginationResponseType>({
       page: 1,
       perPage: 15,
       totalCount: 0,
@@ -114,7 +114,7 @@ export const factory = ({
       page,
       perPage,
       name,
-    }: SharedFamilyTreePaginationAndSearchQueryType) =>
+    }: FamilyTreeSharedPaginationAndSearchQueryType) =>
       api.sharedTree.findAll({ page, perPage, name }),
   );
 
@@ -284,17 +284,23 @@ export const factory = ({
     target: $paginatedUserTrees,
   });
 
+  $paginatedUserTrees.on(fetchTreesFx.fail, (state) => state);
+
   sample({
     clock: fetchSharedTreesFx.doneData,
     fn: (response) => response.data,
     target: $paginatedSharedTrees,
   });
 
+  $paginatedSharedTrees.on(fetchSharedTreesFx.fail, (state) => state);
+
   sample({
     clock: fetchPublicTreesFx.doneData,
     fn: (response) => response.data,
     target: $paginatedPublicTrees,
   });
+
+  $paginatedPublicTrees.on(fetchPublicTreesFx.fail, (state) => state);
 
   // Reset stores on route close
   sample({

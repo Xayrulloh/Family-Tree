@@ -49,7 +49,7 @@ import { FamilyTreeService } from '../services/family-tree.service';
 @ApiTags('Family Tree')
 @Controller('family-trees')
 @UseInterceptors(FamilyTreeCacheInterceptor)
-export class FamilyTreeController {
+export class FamilyTreeOwnerController {
   constructor(
     private readonly familyTreeService: FamilyTreeService,
     private readonly familyTreeMemberService: FamilyTreeMemberService,

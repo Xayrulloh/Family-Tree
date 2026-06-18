@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { CloudflareModule } from '~/config/cloudflare/cloudflare.module';
 import { DrizzleModule } from '~/database/drizzle.module';
 import { FamilyTreeMemberService } from '../family-tree-member/services/family-tree-member.service';
-import { FamilyTreeController } from './controllers/family-tree.controller';
+import { FamilyTreeOwnerController } from './controllers/family-tree.controller';
 import { FamilyTreePublicController } from './controllers/family-tree-public.controller';
 import { FamilyTreeSharedController } from './controllers/family-tree-shared.controller';
 import { FamilyTreeService } from './services/family-tree.service';
-import { SharedFamilyTreeService } from './services/shared-family-tree.service';
+import { FamilyTreeSharedService } from './services/shared-family-tree.service';
 
 @Module({
   imports: [DrizzleModule, CloudflareModule],
@@ -14,11 +14,11 @@ import { SharedFamilyTreeService } from './services/shared-family-tree.service';
   controllers: [
     FamilyTreePublicController,
     FamilyTreeSharedController,
-    FamilyTreeController,
+    FamilyTreeOwnerController,
   ],
   providers: [
     FamilyTreeService,
-    SharedFamilyTreeService,
+    FamilyTreeSharedService,
     FamilyTreeMemberService,
   ],
   exports: [FamilyTreeService],

@@ -63,11 +63,11 @@ reviews:
         - Bare `/family-trees/:id` — owner only (`OwnerGuard` after `JWTAuthGuard`)
         - `/family-trees/public/:id` — anonymous read (`PublicGuard`, no JWT required)
         - `/family-trees/shared/:id` — shared-user access (`SharedAccessGuard` after `JWTAuthGuard`)
-        Each prefix has its own dedicated guard. `FamilyTreeAccessGuard` is retained only for the one mixed-scope route (shared-users RBAC PUT).
+        Each prefix has its own dedicated guard. `FamilyTreeAccessGuard` is retained for backwards-compat reference only — the shared-users RBAC PUT now uses `OwnerGuard` directly.
 
         **Global guards:** All DB-backed guards (`OwnerGuard`, `PublicGuard`, `SharedAccessGuard`, `FamilyTreeAccessGuard`) are provided globally via `common/common.module.ts` (`@Global()`). Feature modules do NOT need to list these in their `providers[]` — do NOT flag missing guard providers in feature modules.
 
-        **Controller naming:** Controllers follow the `FamilyTree[Domain][Scope]Controller` convention (e.g. `FamilyTreeMemberOwnerController`, `FamilyTreeMemberPublicController`, `FamilyTreeMemberConnectionOwnerController`).
+        **Naming convention:** Everything follows `FamilyTree[Domain][Scope]` — controllers, services, DTOs, Zod schemas, inferred TS types. Domain: `Member`, `MemberConnection`, `Shared`. Scope: `Owner`, `Public`, `Shared`. Method names are exempt. Examples: `FamilyTreeOwnerController`, `FamilyTreeMemberConnectionSharedController`, `FamilyTreeSharedService`, `FamilyTreeSharedCreateRequestSchema`.
 
         **RBAC decorator:** `@RequirePermission('canAddMembers', ...)` uses `SHARED_TREE_PERMISSION_KEY` from `~/utils/constants`. The key must NOT be inlined in decorator files.
 

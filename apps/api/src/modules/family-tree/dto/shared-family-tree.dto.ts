@@ -1,58 +1,58 @@
 import {
-  SharedFamilyTreeCreateRequestSchema,
-  SharedFamilyTreeIdParamSchema,
-  SharedFamilyTreePaginationAndSearchQuerySchema,
-  SharedFamilyTreePaginationResponseSchema,
-  SharedFamilyTreeResponseSchema,
-  SharedFamilyTreeUpdateParamSchema,
-  SharedFamilyTreeUpdateRequestSchema,
-  SharedFamilyTreeUsersPaginationResponseSchema,
+  FamilyTreeSharedCreateRequestSchema,
+  FamilyTreeSharedIdParamSchema,
+  FamilyTreeSharedPaginationAndSearchQuerySchema,
+  FamilyTreeSharedPaginationResponseSchema,
+  FamilyTreeSharedResponseSchema,
+  FamilyTreeSharedUpdateParamSchema,
+  FamilyTreeSharedUpdateRequestSchema,
+  FamilyTreeSharedUsersPaginationResponseSchema,
 } from '@family-tree/shared';
 import { createZodDto } from 'nestjs-zod';
 
 // request
-class SharedFamilyTreeCreateRequestDto extends createZodDto(
-  SharedFamilyTreeCreateRequestSchema,
+class FamilyTreeSharedCreateRequestDto extends createZodDto(
+  FamilyTreeSharedCreateRequestSchema,
 ) {}
 
-class SharedFamilyTreeUpdateRequestDto extends createZodDto(
-  SharedFamilyTreeUpdateRequestSchema,
+class FamilyTreeSharedUpdateRequestDto extends createZodDto(
+  FamilyTreeSharedUpdateRequestSchema,
 ) {}
 
 // param
-class SharedFamilyTreeIdParamDto extends createZodDto(
-  SharedFamilyTreeIdParamSchema,
+class FamilyTreeSharedIdParamDto extends createZodDto(
+  FamilyTreeSharedIdParamSchema,
 ) {}
 
-class SharedFamilyTreeUpdateParamDto extends createZodDto(
-  SharedFamilyTreeUpdateParamSchema,
+class FamilyTreeSharedUpdateParamDto extends createZodDto(
+  FamilyTreeSharedUpdateParamSchema,
 ) {}
 
 // query
-class SharedFamilyTreePaginationAndSearchQueryDto extends createZodDto(
-  SharedFamilyTreePaginationAndSearchQuerySchema,
+class FamilyTreeSharedPaginationAndSearchQueryDto extends createZodDto(
+  FamilyTreeSharedPaginationAndSearchQuerySchema,
 ) {}
 
 // response
-class SharedFamilyTreeResponseDto extends createZodDto(
-  SharedFamilyTreeResponseSchema,
+class FamilyTreeSharedResponseDto extends createZodDto(
+  FamilyTreeSharedResponseSchema,
 ) {}
 
-class SharedFamilyTreePaginationResponseDto extends createZodDto(
-  SharedFamilyTreePaginationResponseSchema,
+class FamilyTreeSharedPaginationResponseDto extends createZodDto(
+  FamilyTreeSharedPaginationResponseSchema,
 ) {}
 
-class SharedFamilyTreeUsersPaginationResponseDto extends createZodDto(
-  SharedFamilyTreeUsersPaginationResponseSchema,
+class FamilyTreeSharedUsersPaginationResponseDto extends createZodDto(
+  FamilyTreeSharedUsersPaginationResponseSchema,
 ) {}
 
 export {
-  SharedFamilyTreeCreateRequestDto,
-  SharedFamilyTreeIdParamDto,
-  SharedFamilyTreePaginationAndSearchQueryDto,
-  SharedFamilyTreePaginationResponseDto,
-  SharedFamilyTreeResponseDto,
-  SharedFamilyTreeUpdateParamDto,
-  SharedFamilyTreeUpdateRequestDto,
-  SharedFamilyTreeUsersPaginationResponseDto,
+  FamilyTreeSharedCreateRequestDto,
+  FamilyTreeSharedIdParamDto,
+  FamilyTreeSharedPaginationAndSearchQueryDto,
+  FamilyTreeSharedPaginationResponseDto,
+  FamilyTreeSharedResponseDto,
+  FamilyTreeSharedUpdateParamDto,
+  FamilyTreeSharedUpdateRequestDto,
+  FamilyTreeSharedUsersPaginationResponseDto,
 };
