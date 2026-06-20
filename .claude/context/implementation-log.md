@@ -148,3 +148,16 @@ Branch `feature/isolation-routes` continued (all phases on same branch, no merge
 **Key note (schema rename cascade):** When renaming a Zod schema in `libs/shared/`, the rename must cascade through four layers: (1) the base schema file in `schema/`, (2) `request.ts`/`response.ts` files that `.pick()` from it, (3) DTO files in the API that import schemas from `@family-tree/shared`, (4) web files that import inferred types from `@family-tree/shared`. All four must be updated in the same change or the build breaks.
 
 **Key note (share URL scope):** `shareTrigger` carries `{ id, scope }`. For `public` scope the link is `/family-trees/public/:id` (anon-accessible). For `owner` and `shared` scopes the link is `/family-trees/shared/:id` (recipient must be in `shared_family_trees`). Do NOT use `scopeSegment()` here — `scopeSegment('owner')` returns `''`, which would produce the owner-only bare path.
+
+---
+
+## 2026-06-20 — Guest avatar, CodeRabbit fixes + session-load spinner (PR #507)
+
+- Fixed `UserDropdown` showing `<InlineLoading />` for unauthenticated users on public tree pages — replaced with a random `notionists` avatar (guest) or `<Spin>` while session is loading.
+- `generateRandomAvatar(gender?: UserGenderEnum)` moved to `libs/shared/src/lib/helpers/random-avatar.ts` — single source of truth for API and web; both old duplicates (`apps/api/src/helpers/random-avatar.helper.ts`, `apps/web/src/shared/lib/random-avatar.ts`) deleted. Signature changed from `'male' | 'female' | undefined` to `UserGenderEnum | undefined`; `UNKNOWN` and `undefined` resolve to random 50/50.
+- Fixed `BROWS = BEARDS.slice(0, 13)` → `BEARDS.slice()` (BEARDS has 12 items; `13` was a misleading magic number).
+- Fixed `avatarSource` for logged-in users without a stored image being computed inline → regenerated on every render (avatar flicker). Wrapped in `useMemo([user?.image, user?.gender])`.
+- Fixed avatar flash on page refresh: `$session` starts at `Initial`, so `$user` is null on first render even for authenticated users. Fix: fire `sessionFx` on `appStarted` globally (`filter: sessionStatus.$isInitial`), and render `<Spin size="small" />` in `UserDropdown` while `$session === Initial || Pending`.
+- **Key note (guest avatar stability):** Guest avatar must be in `useMemo([])` — inline call regenerates a new URL on every render causing flicker.
+- **Key note (session check on appStarted):** Without this, public pages (no `chainAuthorized`) never resolve `$session` — stays `Initial` forever. The `$isInitial` filter prevents double-calling on auth-guarded routes.
+- **Key note (use `$session` not `sessionFx.pending` for loading):** `sessionFx.pending` starts `false` and is still `false` on first render before the effect fires — so you'd still see a flash. `$session === Initial` catches the pre-fire period.

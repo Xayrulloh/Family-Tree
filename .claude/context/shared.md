@@ -21,7 +21,9 @@ libs/shared/src/lib/
 ├── shared-family-tree/
 ├── notification/
 ├── fcm-token/
-└── file/
+├── file/
+└── helpers/        # Shared utility functions
+    └── random-avatar.ts  # generateRandomAvatar(gender?: UserGenderEnum): string
 ```
 
 ## Zod Schemas (`src/lib/schema/`)
