@@ -331,6 +331,10 @@ export class FamilyTreeMemberService {
     const [children, hasParents, spouseConn] = await Promise.all([
       this.db.query.familyTreeMemberConnectionsSchema.findMany({
         where: and(
+          eq(
+            schema.familyTreeMemberConnectionsSchema.familyTreeId,
+            familyTreeId,
+          ),
           eq(schema.familyTreeMemberConnectionsSchema.fromMemberId, member.id),
           eq(
             schema.familyTreeMemberConnectionsSchema.type,
@@ -341,6 +345,10 @@ export class FamilyTreeMemberService {
       }),
       this.db.query.familyTreeMemberConnectionsSchema.findFirst({
         where: and(
+          eq(
+            schema.familyTreeMemberConnectionsSchema.familyTreeId,
+            familyTreeId,
+          ),
           eq(schema.familyTreeMemberConnectionsSchema.toMemberId, member.id),
           eq(
             schema.familyTreeMemberConnectionsSchema.type,
@@ -350,6 +358,10 @@ export class FamilyTreeMemberService {
       }),
       this.db.query.familyTreeMemberConnectionsSchema.findFirst({
         where: and(
+          eq(
+            schema.familyTreeMemberConnectionsSchema.familyTreeId,
+            familyTreeId,
+          ),
           or(
             eq(
               schema.familyTreeMemberConnectionsSchema.fromMemberId,
@@ -393,6 +405,10 @@ export class FamilyTreeMemberService {
       const spouseHasParents =
         await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
           where: and(
+            eq(
+              schema.familyTreeMemberConnectionsSchema.familyTreeId,
+              familyTreeId,
+            ),
             eq(
               schema.familyTreeMemberConnectionsSchema.toMemberId,
               potentialSpouse.id,
@@ -474,7 +490,12 @@ export class FamilyTreeMemberService {
 
     await this.db
       .delete(schema.familyTreeMembersSchema)
-      .where(inArray(schema.familyTreeMembersSchema.id, idsToDelete));
+      .where(
+        and(
+          eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
+          inArray(schema.familyTreeMembersSchema.id, idsToDelete),
+        ),
+      );
   }
 
   async getAllFamilyTreeMembers(

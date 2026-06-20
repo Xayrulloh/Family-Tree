@@ -61,11 +61,25 @@ sample({
   target: $preview,
 });
 
+// On preview error: show blocked state so the modal renders a message instead of spinning
+sample({
+  clock: fetchPreviewFx.fail,
+  fn: () => ({
+    canDelete: false as const,
+    blockReason: 'Failed to load delete preview. Please try again.',
+    spouseToDelete: null,
+  }),
+  target: $preview,
+});
+
 // On confirm: delete (attach reads $member and $treeScope from its own source)
 sample({ clock: deleted, target: deleteTreeFx });
 
 // On done: close modal
 sample({ clock: mutated, target: disclosure.closed });
+
+// On delete error: close modal (Axios interceptor already shows the error toast)
+sample({ clock: deleteTreeFx.fail, target: disclosure.closed });
 
 // On close: reset stores
 sample({ clock: disclosure.closed, target: [$member.reinit, $preview.reinit] });
