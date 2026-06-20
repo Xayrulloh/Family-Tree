@@ -7,36 +7,46 @@ import {
   UserOutlined,
   WomanOutlined,
 } from '@ant-design/icons';
-import { UserGenderEnum } from '@family-tree/shared';
-import { Avatar, Dropdown, type MenuProps, Space, Typography } from 'antd';
+import { generateRandomAvatar, UserGenderEnum } from '@family-tree/shared';
+import {
+  Avatar,
+  Dropdown,
+  type MenuProps,
+  Space,
+  Spin,
+  Typography,
+} from 'antd';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 import { $theme, themeToggled } from '~/app/model';
 import { userModel } from '~/entities/user';
 import { editProfileModel } from '~/features/user/edit';
-import { generateRandomAvatar } from '~/shared/lib/random-avatar';
 
 export const UserDropdown = () => {
-  const [user, logout, theme] = useUnit([
+  const [user, logout, theme, session] = useUnit([
     userModel.$user,
     userModel.loggedOut,
     $theme,
+    userModel.$session,
   ]);
 
   const guestAvatar = useMemo(() => generateRandomAvatar(), []);
+  const avatarSource = useMemo(
+    () => user?.image || generateRandomAvatar(user?.gender),
+    [user?.image, user?.gender],
+  );
+
+  const isLoading =
+    session === userModel.SessionStatus.Initial ||
+    session === userModel.SessionStatus.Pending;
+
+  if (isLoading) {
+    return <Spin size="small" />;
+  }
 
   if (!user) {
     return <Avatar size="large" src={guestAvatar} icon={<UserOutlined />} />;
   }
-
-  const userGender =
-    user.gender === UserGenderEnum.MALE
-      ? 'male'
-      : user.gender === UserGenderEnum.FEMALE
-        ? 'female'
-        : undefined;
-
-  const avatarSource = user.image || generateRandomAvatar(userGender);
 
   const getGenderIcon = (gender: string) => {
     switch (gender) {

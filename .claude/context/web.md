@@ -102,5 +102,5 @@ All scoped endpoints use `prefix-before-id`:
 - `shared/lib/create-form.ts` — generic form factory
 - `shared/lib/disclosure.ts` — open/close state for modals/drawers
 - Lazy loading via `shared/lib/lazy-page.ts` + `with-suspense` HOC
-- `appStarted` event fires on app boot to initialize router history
+- `appStarted` event fires on app boot to initialize router history and trigger `sessionFx` (so session is resolved on all pages, including public ones that don't use `chainAuthorized`)
 - `shared/lib/family-chart-transformer.ts` — transforms API member/connection data into family-chart format

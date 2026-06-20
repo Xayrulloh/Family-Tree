@@ -1,5 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import { UserGenderEnum, type UserResponseType } from '@family-tree/shared';
+import {
+  generateRandomAvatar,
+  UserGenderEnum,
+  type UserResponseType,
+} from '@family-tree/shared';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -7,7 +11,6 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { CloudflareConfig } from '~/config/cloudflare/cloudflare.config';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
-import generateRandomAvatar from '~/helpers/random-avatar.helper';
 import { DICEBEAR_URL } from '~/utils/constants';
 import type { UserUpdateRequestDto } from './dto/user.dto';
 

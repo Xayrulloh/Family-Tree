@@ -1,3 +1,5 @@
+import { UserGenderEnum } from '../schema/user.schema';
+
 const DICEBEAR_URL = 'https://api.dicebear.com';
 
 const BEARDS = [
@@ -15,7 +17,7 @@ const BEARDS = [
   'variant12',
 ];
 
-const BROWS = BEARDS.slice(0, 13);
+const BROWS = BEARDS.slice();
 const GLASSES = BEARDS.slice(0, 11);
 
 const MALE_HAIRS = [
@@ -134,11 +136,17 @@ const NOSES = [
   'variant20',
 ];
 
-export function generateRandomAvatar(gender?: 'male' | 'female'): string {
+export function generateRandomAvatar(gender?: UserGenderEnum): string {
   const seed = Math.random().toString(36).substring(7);
-  const isMale = gender ? gender === 'male' : Math.random() < 0.5;
+  const isMale =
+    gender === UserGenderEnum.MALE
+      ? true
+      : gender === UserGenderEnum.FEMALE
+        ? false
+        : Math.random() < 0.5;
 
   const params = new URLSearchParams();
+
   params.append('seed', seed);
   params.append('brows', BROWS.join(','));
   params.append('glasses', GLASSES.join(','));
