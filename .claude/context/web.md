@@ -67,7 +67,7 @@ src/
 └── shared/
     ├── api/        # Axios API modules
     ├── config/     # routing.ts, tree-scope.ts, system.ts (appStarted event)
-    ├── lib/        # create-form, disclosure, family-chart-transformer, lazy-page, message, time-ago, with-suspense
+    ├── lib/        # create-form, disclosure, family-chart-transformer, lazy-page, message, random-avatar, time-ago, with-suspense
     ├── styles/     # family-chart-custom.css
     └── ui/         # field-wrapper, loading spinner
 ```

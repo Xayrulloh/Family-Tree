@@ -148,3 +148,15 @@ Branch `feature/isolation-routes` continued (all phases on same branch, no merge
 **Key note (schema rename cascade):** When renaming a Zod schema in `libs/shared/`, the rename must cascade through four layers: (1) the base schema file in `schema/`, (2) `request.ts`/`response.ts` files that `.pick()` from it, (3) DTO files in the API that import schemas from `@family-tree/shared`, (4) web files that import inferred types from `@family-tree/shared`. All four must be updated in the same change or the build breaks.
 
 **Key note (share URL scope):** `shareTrigger` carries `{ id, scope }`. For `public` scope the link is `/family-trees/public/:id` (anon-accessible). For `owner` and `shared` scopes the link is `/family-trees/shared/:id` (recipient must be in `shared_family_trees`). Do NOT use `scopeSegment()` here — `scopeSegment('owner')` returns `''`, which would produce the owner-only bare path.
+
+---
+
+## 2026-06-20 — Guest avatar + web random-avatar helper
+
+- Fixed `UserDropdown` showing `<InlineLoading />` for unauthenticated users on public tree pages — replaced with a random `notionists` avatar.
+- Created `apps/web/src/shared/lib/random-avatar.ts` — mirrors `apps/api/src/helpers/random-avatar.helper.ts` exactly (same DiceBear `notionists` style, same variant lists for beards/brows/glasses/lips/nose/hair, same gender-specific logic).
+- `generateRandomAvatar(gender?: 'male' | 'female')` — optional gender; omitting it picks randomly (50/50). Returns a full DiceBear URL with all params.
+- `UserDropdown` uses `useMemo(() => generateRandomAvatar(), [])` for guests so the avatar is stable per mount (doesn't regenerate on re-renders). For logged-in users without `user.image`, falls back to `generateRandomAvatar(userGender)`.
+- Removed `InlineLoading` import from `user-dropdown.tsx` (was the only consumer).
+- **Key note (guest avatar stability):** The guest avatar must be generated inside `useMemo([])`, not inline — otherwise it regenerates a new random URL on every render, causing an image flicker loop as the `<Avatar>` repeatedly fetches a new URL.
+- **Key note (web random-avatar parity):** The web helper is intentionally kept in sync with the API helper — same style (`notionists`), same variant lists. If the API helper is updated (new variants added, style changed), update `apps/web/src/shared/lib/random-avatar.ts` in the same PR.

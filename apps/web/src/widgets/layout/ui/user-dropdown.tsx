@@ -10,10 +10,11 @@ import {
 import { UserGenderEnum } from '@family-tree/shared';
 import { Avatar, Dropdown, type MenuProps, Space, Typography } from 'antd';
 import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
 import { $theme, themeToggled } from '~/app/model';
 import { userModel } from '~/entities/user';
 import { editProfileModel } from '~/features/user/edit';
-import { InlineLoading } from '~/shared/ui/loading';
+import { generateRandomAvatar } from '~/shared/lib/random-avatar';
 
 export const UserDropdown = () => {
   const [user, logout, theme] = useUnit([
@@ -22,11 +23,20 @@ export const UserDropdown = () => {
     $theme,
   ]);
 
+  const guestAvatar = useMemo(() => generateRandomAvatar(), []);
+
   if (!user) {
-    return <InlineLoading />;
+    return <Avatar size="large" src={guestAvatar} icon={<UserOutlined />} />;
   }
 
-  const avatarSource = user.image || `https://api.dicebear.com/9.x/lorelei/svg`;
+  const userGender =
+    user.gender === UserGenderEnum.MALE
+      ? 'male'
+      : user.gender === UserGenderEnum.FEMALE
+        ? 'female'
+        : undefined;
+
+  const avatarSource = user.image || generateRandomAvatar(userGender);
 
   const getGenderIcon = (gender: string) => {
     switch (gender) {
