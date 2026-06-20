@@ -8,7 +8,14 @@ import {
   WomanOutlined,
 } from '@ant-design/icons';
 import { generateRandomAvatar, UserGenderEnum } from '@family-tree/shared';
-import { Avatar, Dropdown, type MenuProps, Space, Typography } from 'antd';
+import {
+  Avatar,
+  Dropdown,
+  type MenuProps,
+  Space,
+  Spin,
+  Typography,
+} from 'antd';
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 import { $theme, themeToggled } from '~/app/model';
@@ -16,10 +23,11 @@ import { userModel } from '~/entities/user';
 import { editProfileModel } from '~/features/user/edit';
 
 export const UserDropdown = () => {
-  const [user, logout, theme] = useUnit([
+  const [user, logout, theme, session] = useUnit([
     userModel.$user,
     userModel.loggedOut,
     $theme,
+    userModel.$session,
   ]);
 
   const guestAvatar = useMemo(() => generateRandomAvatar(), []);
@@ -27,6 +35,14 @@ export const UserDropdown = () => {
     () => user?.image || generateRandomAvatar(user?.gender),
     [user?.image, user?.gender],
   );
+
+  const isLoading =
+    session === userModel.SessionStatus.Initial ||
+    session === userModel.SessionStatus.Pending;
+
+  if (isLoading) {
+    return <Spin size="small" />;
+  }
 
   if (!user) {
     return <Avatar size="large" src={guestAvatar} icon={<UserOutlined />} />;

@@ -17,6 +17,7 @@ import {
 import { reshape } from 'patronum';
 import { api } from '~/shared/api';
 import { routes } from '~/shared/config/routing';
+import { appStarted } from '~/shared/config/system';
 
 export enum SessionStatus {
   Initial,
@@ -46,6 +47,12 @@ export const logoutFx = createEffect(() => api.auth.logout());
 
 const authorized = sessionFx.doneData;
 const notAuthorized = sessionFx.failData;
+
+sample({
+  clock: appStarted,
+  filter: sessionStatus.$isInitial,
+  target: sessionFx,
+});
 
 $session.reset([loggedOut]);
 $user.on(sessionFx.doneData, (_, response) => response.data).reset([loggedOut]);
