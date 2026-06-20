@@ -4,6 +4,7 @@ export * from './family-tree-member/index';
 export * from './family-tree-member-connection/index';
 export * from './fcm-token/index';
 export * from './file';
+export * from './helpers/index';
 export * from './notification/index';
 export * from './pagination/index';
 export * from './schema/index';

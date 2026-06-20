@@ -58,7 +58,12 @@ src/
 ├── features/      # User-triggered actions (each: model.ts + ui.tsx + index.ts)
 │   ├── auth/                     # Google sign-in button
 │   ├── tree/create-edit, delete, share   # share moved here from tree-detail/share
-│   ├── tree-member/add, edit, delete, preview
+│   ├── tree-member/add, edit, preview
+│   │   └── delete/               # Two-phase delete: fetchPreviewFx → modal → deleteTreeFx
+│   │       ├── model.ts          # deleteTrigger sets $member, opens disclosure, fires fetchPreviewFx
+│   │       │                     # fetchPreviewFx.doneData → $preview via fn: r => r.data
+│   │       │                     # deleted → deleteTreeFx (attach reads $member + $treeScope)
+│   │       └── ui.tsx            # Three-state modal: spinner / blocked+Close / confirm+Delete
 │   └── shared-tree-users/edit    # Edit RBAC for shared user
 ├── entities/
 │   └── user/                     # User entity store
@@ -67,7 +72,7 @@ src/
 └── shared/
     ├── api/        # Axios API modules
     ├── config/     # routing.ts, tree-scope.ts, system.ts (appStarted event)
-    ├── lib/        # create-form, disclosure, family-chart-transformer, lazy-page, message, time-ago, with-suspense
+    ├── lib/        # create-form, disclosure, family-chart-transformer, lazy-page, message, random-avatar, time-ago, with-suspense
     ├── styles/     # family-chart-custom.css
     └── ui/         # field-wrapper, loading spinner
 ```
@@ -97,5 +102,5 @@ All scoped endpoints use `prefix-before-id`:
 - `shared/lib/create-form.ts` — generic form factory
 - `shared/lib/disclosure.ts` — open/close state for modals/drawers
 - Lazy loading via `shared/lib/lazy-page.ts` + `with-suspense` HOC
-- `appStarted` event fires on app boot to initialize router history
+- `appStarted` event fires on app boot to initialize router history and trigger `sessionFx` (so session is resolved on all pages, including public ones that don't use `chainAuthorized`)
 - `shared/lib/family-chart-transformer.ts` — transforms API member/connection data into family-chart format

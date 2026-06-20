@@ -42,7 +42,16 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
-## 4. Goal-Driven Execution
+## 4. Git — Never Commit Without Being Asked
+
+**Do not run `git add` or `git commit` unless the user explicitly requests it.**
+
+- Making code changes does NOT imply permission to commit them.
+- Running Biome, fixing lint errors, or finishing a task does NOT imply permission to commit.
+- The only triggers that authorize a commit are: the user running `/git-save`, or a direct instruction like "commit this" / "create a commit".
+- After completing code changes, stop. Report what you did. Wait for the user to decide if/when to commit.
+
+## 5. Goal-Driven Execution
 
 **Define success criteria. Loop until verified.**
 

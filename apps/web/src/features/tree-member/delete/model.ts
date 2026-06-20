@@ -1,30 +1,41 @@
-import type { FamilyTreeMemberGetResponseType } from '@family-tree/shared';
+import type {
+  FamilyTreeMemberDeletePreviewType,
+  FamilyTreeMemberGetResponseType,
+} from '@family-tree/shared';
 import { attach, createEvent, createStore, sample } from 'effector';
 import { api } from '~/shared/api';
 import { $treeScope } from '~/shared/config/tree-scope';
 import { createDisclosure } from '~/shared/lib/disclosure';
 
-// Initialization of Events
 export const deleteTrigger = createEvent<FamilyTreeMemberGetResponseType>();
 export const deleted = createEvent();
 
-// Stores created tree id
 export const $member = createStore<FamilyTreeMemberGetResponseType | null>(
   null,
 );
+export const $preview = createStore<FamilyTreeMemberDeletePreviewType | null>(
+  null,
+);
 
-// Initialization of Closures
-// Notifies about opening and closing of the form
 export const disclosure = createDisclosure();
 
-// Attaching
-// Deletes tree
+const fetchPreviewFx = attach({
+  source: { member: $member, scope: $treeScope },
+  effect: ({ member, scope }) => {
+    if (!member) throw new Error('Local: no member');
+
+    return api.treeMember.deletePreview({
+      familyTreeId: member.familyTreeId,
+      id: member.id,
+      scope,
+    });
+  },
+});
+
 const deleteTreeFx = attach({
   source: { member: $member, scope: $treeScope },
   effect: ({ member, scope }) => {
-    if (!member) {
-      throw new Error('Local: no member');
-    }
+    if (!member) throw new Error('Local: no member');
 
     return api.treeMember.delete({
       familyTreeId: member.familyTreeId,
@@ -34,42 +45,41 @@ const deleteTreeFx = attach({
   },
 });
 
-// Mutation
-// Pending effects holder
+export const $previewLoading = fetchPreviewFx.pending;
 export const $mutating = deleteTreeFx.pending;
-
-// Resolved effects holder
 export const mutated = deleteTreeFx.done;
 
-// Events of Samples
-// If user starts deleting, open the Dropdown
+// On trigger: set member, open modal, fetch preview
+sample({ clock: deleteTrigger, target: $member });
+sample({ clock: deleteTrigger, target: disclosure.opened });
+sample({ clock: deleteTrigger, target: fetchPreviewFx });
+
+// Store preview result
 sample({
-  clock: deleteTrigger,
-  target: disclosure.opened,
+  clock: fetchPreviewFx.doneData,
+  fn: (response) => response.data,
+  target: $preview,
 });
 
-// If user starts deleting, put id to $id
+// On preview error: show blocked state so the modal renders a message instead of spinning
 sample({
-  clock: deleteTrigger,
-  target: $member,
+  clock: fetchPreviewFx.fail,
+  fn: () => ({
+    canDelete: false as const,
+    blockReason: 'Failed to load delete preview. Please try again.',
+    spouseToDelete: null,
+  }),
+  target: $preview,
 });
 
-// If user starts deleting, send it to deleteTreeFx
-sample({
-  clock: deleted,
-  source: $member,
-  target: deleteTreeFx,
-});
+// On confirm: delete (attach reads $member and $treeScope from its own source)
+sample({ clock: deleted, target: deleteTreeFx });
 
-// Events of Closing and Cleaning of Form
-// If user deletes, close the form and reinit mode
-sample({
-  clock: [mutated],
-  target: [disclosure.closed],
-});
+// On done: close modal
+sample({ clock: mutated, target: disclosure.closed });
 
-// If user closes form, reset form
-sample({
-  clock: disclosure.closed,
-  target: [$member.reinit],
-});
+// On delete error: close modal (Axios interceptor already shows the error toast)
+sample({ clock: deleteTreeFx.fail, target: disclosure.closed });
+
+// On close: reset stores
+sample({ clock: disclosure.closed, target: [$member.reinit, $preview.reinit] });
