@@ -160,3 +160,44 @@ Branch `feature/isolation-routes` continued (all phases on same branch, no merge
 - Removed `InlineLoading` import from `user-dropdown.tsx` (was the only consumer).
 - **Key note (guest avatar stability):** The guest avatar must be generated inside `useMemo([])`, not inline — otherwise it regenerates a new random URL on every render, causing an image flicker loop as the `<Avatar>` repeatedly fetches a new URL.
 - **Key note (web random-avatar parity):** The web helper is intentionally kept in sync with the API helper — same style (`notionists`), same variant lists. If the API helper is updated (new variants added, style changed), update `apps/web/src/shared/lib/random-avatar.ts` in the same PR.
+
+---
+
+## 2026-06-20 — Delete member: two-phase flow + full rule matrix
+
+### What was built
+- Two-phase delete flow: `GET :id/delete-preview` (returns `{ canDelete, blockReason, spouseToDelete }`) → user sees modal → `DELETE :id` executes.
+- `computeDeletePreview` private method in `FamilyTreeMemberService` — all tree-safety logic lives here.
+- `FamilyTreeMemberDeletePreviewSchema` / `FamilyTreeMemberDeletePreviewType` added to `libs/shared/src/lib/family-tree-member/family-tree-member.response.ts`.
+- `GET :id/delete-preview` added to owner controller (guarded by `OwnerGuard` alone) and shared controller (`@RequirePermission('canDeleteMembers')`).
+- Frontend: `features/tree-member/delete/model.ts` (Effector `fetchPreviewFx` + `deleteTreeFx` via `attach`) and `ui.tsx` (three-state modal: spinner / blocked message / confirm + optional spouse warning).
+- `deletePreview` added to `src/shared/api/tree-member.ts`. Delete is hard (no soft-delete).
+
+### Delete rule matrix (all scenarios)
+
+| Target state | Outcome | Reason |
+|---|---|---|
+| 2+ children | **BLOCK** | Removing the parent would split the tree into disconnected subtrees |
+| has parents AND has children (middle member) | **BLOCK** | Middle members are the bridge between top and bottom of the tree |
+| sole member of the tree (no parents, no children, no spouse) | **BLOCK** | Tree cannot be empty |
+| has parents, no children, no spouse | **DELETE target** | Parents survive; no broken connections |
+| has parents, no children, has spouse (spouse also has parents) | **BLOCK** (case 5b) | Co-deleting the couple disconnects two parent families; deleting target alone leaves spouse without their link to target's parents |
+| has parents, no children, has spouse (spouse has no parents) | **DELETE target + spouse** | Parents survive; co-delete spouse to avoid isolation |
+| no parents, no children, has spouse (spouse has parents) | **DELETE target only** | Spouse stays connected via their own parents |
+| no parents, no children, has spouse (spouse has no parents) — leaf couple (only 2 members in tree) | **DELETE target only** | Co-deleting would empty the tree; spouse becomes the sole surviving member (1-member tree is valid) |
+| no parents, no children, has spouse (spouse has no parents) — 3+ members in tree | **DELETE target + spouse** | Co-delete spouse to avoid isolation; other members survive |
+| no parents, 1 child, has spouse (spouse has parents) | **BLOCK** (case 12) | Deleting the couple severs spouse's parents from the child |
+| no parents, 1 child, has spouse (spouse has no parents) | **DELETE target + spouse** | Child survives; always has PARENT edges to both parents so co-delete is required |
+
+### Architecture notes
+- All children always have **two** PARENT edges (one to each parent). This is why co-delete is mandatory when a couple has shared children — deleting one parent leaves dangling half-connections on the child.
+- Members can have at most one spouse and one set of parents (enforced at creation).
+- DB FK `onDelete: 'cascade'` on `familyTreeMemberConnectionsSchema` auto-deletes all connections when a member is deleted.
+
+### Bugs fixed this session
+- **Last-member guard was too aggressive:** `minRequired = spouseToDelete ? 3 : 2` correctly ensures ≥1 survivor, but for a leaf couple (only 2 members, both no parents/children) it blocked deletion entirely. Fix: when co-deleting a childless couple would fail the count check, fall back to deleting only the target (spouse becomes sole survivor). The `children.length === 0` guard prevents this fallback from firing for shared-child co-deletion (which would be a separate correctness bug).
+- **Redundant `source: $member` in Effector sample:** `sample({ clock: deleted, source: $member, target: deleteTreeFx })` — the `source` is ignored because `deleteTreeFx` is an `attach` that already reads `$member` from its own source. Removed.
+
+### Gotchas
+- `import z from 'zod'` not `import type z` when defining a Zod schema — `import type` makes `z` undefined at runtime and silently breaks `z.object(...)` with no TS error.
+- `fetchPreviewFx.doneData` from the Axios `base` interceptor is a full `AxiosResponse`. Must use `fn: (response) => response.data` in the sample to store only the data in `$preview`, not the entire response object.
