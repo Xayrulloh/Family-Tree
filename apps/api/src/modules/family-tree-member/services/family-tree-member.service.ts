@@ -1,5 +1,6 @@
 import {
   FamilyTreeMemberConnectionEnum,
+  type FamilyTreeMemberDeletePreviewType,
   UserGenderEnum,
   type UserSchemaType,
 } from '@family-tree/shared';
@@ -317,11 +318,18 @@ export class FamilyTreeMemberService {
       .where(and(eq(schema.familyTreeMembersSchema.id, param.id)));
   }
 
-  async deleteFamilyTreeMember(param: FamilyTreeMemberGetParamDto) {
-    const member = await this.getFamilyTreeMember(param);
+  private async computeDeletePreview(
+    member: FamilyTreeMemberGetResponseDto,
+    familyTreeId: string,
+  ): Promise<FamilyTreeMemberDeletePreviewType> {
+    const blocked = (reason: string): FamilyTreeMemberDeletePreviewType => ({
+      canDelete: false,
+      blockReason: reason,
+      spouseToDelete: null,
+    });
 
-    const descendants =
-      await this.db.query.familyTreeMemberConnectionsSchema.findMany({
+    const [children, hasParents, spouseConn] = await Promise.all([
+      this.db.query.familyTreeMemberConnectionsSchema.findMany({
         where: and(
           eq(schema.familyTreeMemberConnectionsSchema.fromMemberId, member.id),
           eq(
@@ -329,31 +337,9 @@ export class FamilyTreeMemberService {
             FamilyTreeMemberConnectionEnum.PARENT,
           ),
         ),
-        limit: 5,
-      });
-
-    if (descendants.length) {
-      throw new BadRequestException(
-        `Family tree member with id ${param.id} has descendants`,
-      );
-    }
-
-    const familyTreeMembers =
-      await this.db.query.familyTreeMembersSchema.findMany({
-        where: and(
-          eq(schema.familyTreeMembersSchema.familyTreeId, param.familyTreeId),
-        ),
-        limit: 5,
-      });
-
-    if (familyTreeMembers.length === 1) {
-      throw new BadRequestException(
-        `Member with id ${param.id} is the last member of the family tree`,
-      );
-    }
-
-    const parents =
-      await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+        limit: 2,
+      }),
+      this.db.query.familyTreeMemberConnectionsSchema.findFirst({
         where: and(
           eq(schema.familyTreeMemberConnectionsSchema.toMemberId, member.id),
           eq(
@@ -361,58 +347,134 @@ export class FamilyTreeMemberService {
             FamilyTreeMemberConnectionEnum.PARENT,
           ),
         ),
-      });
+      }),
+      this.db.query.familyTreeMemberConnectionsSchema.findFirst({
+        where: and(
+          or(
+            eq(
+              schema.familyTreeMemberConnectionsSchema.fromMemberId,
+              member.id,
+            ),
+            eq(schema.familyTreeMemberConnectionsSchema.toMemberId, member.id),
+          ),
+          eq(
+            schema.familyTreeMemberConnectionsSchema.type,
+            FamilyTreeMemberConnectionEnum.SPOUSE,
+          ),
+        ),
+        with: { fromMember: true, toMember: true },
+      }),
+    ]);
 
-    if (parents) {
-      const partners =
+    // 2+ children always splits the tree
+    if (children.length >= 2) {
+      return blocked(
+        `Cannot delete ${member.name}: they have multiple children — removing them would split the tree`,
+      );
+    }
+
+    // Middle member: has parents above AND a child below.
+    // Co-deleting the couple would disconnect the child-subtree from the grandparents.
+    if (hasParents && children.length >= 1) {
+      return blocked(
+        `Cannot delete ${member.name}: they have parents above and children below — only members at the top or bottom of the tree can be deleted`,
+      );
+    }
+
+    const potentialSpouse = spouseConn
+      ? spouseConn.fromMemberId === member.id
+        ? spouseConn.toMember
+        : spouseConn.fromMember
+      : null;
+
+    let spouseToDelete = null;
+
+    if (potentialSpouse) {
+      const spouseHasParents =
         await this.db.query.familyTreeMemberConnectionsSchema.findFirst({
           where: and(
-            or(
-              eq(
-                schema.familyTreeMemberConnectionsSchema.fromMemberId,
-                member.id,
-              ),
-              eq(
-                schema.familyTreeMemberConnectionsSchema.toMemberId,
-                member.id,
-              ),
+            eq(
+              schema.familyTreeMemberConnectionsSchema.toMemberId,
+              potentialSpouse.id,
             ),
             eq(
               schema.familyTreeMemberConnectionsSchema.type,
-              FamilyTreeMemberConnectionEnum.SPOUSE,
+              FamilyTreeMemberConnectionEnum.PARENT,
             ),
           ),
-          with: { fromMember: true, toMember: true },
         });
 
-      if (partners) {
-        if (partners?.fromMember.image) {
-          this.cloudflareConfig.deleteFile(partners?.fromMember?.image);
-        }
-        if (partners?.toMember.image) {
-          this.cloudflareConfig.deleteFile(partners?.toMember?.image);
-        }
+      // Block when spouse has parents and removing the couple would disconnect parts of the tree:
+      // - target also has parents: two separate parent groups joined only through this couple
+      // - couple has a shared child: spouse's parents would be cut off from the child
+      if (spouseHasParents && (hasParents || children.length >= 1)) {
+        return blocked(
+          `Cannot delete ${member.name}: their spouse has parents — removing this couple would disconnect parts of the family tree`,
+        );
+      }
 
-        await this.db
-          .delete(schema.familyTreeMembersSchema)
-          .where(
-            inArray(schema.familyTreeMembersSchema.id, [
-              partners?.toMemberId || member.id,
-              partners?.fromMemberId || member.id,
-            ]),
-          );
+      // Co-delete spouse when:
+      // - shared child (each child has PARENT connections to both parents)
+      // - no shared children but spouse has no parents (spouse would become isolated)
+      if (children.length >= 1 || !spouseHasParents) {
+        spouseToDelete = potentialSpouse;
+      }
+      // else: spouse has parents, no shared children → delete target only (spouse stays connected)
+    }
 
-        return;
+    // Ensure at least 1 member survives (need 2 if no spouse, 3 if deleting couple)
+    const minRequired = spouseToDelete ? 3 : 2;
+    const memberSample = await this.db.query.familyTreeMembersSchema.findMany({
+      where: eq(schema.familyTreeMembersSchema.familyTreeId, familyTreeId),
+      limit: minRequired,
+    });
+
+    if (memberSample.length < minRequired) {
+      if (spouseToDelete && children.length === 0) {
+        // Leaf couple with no other members: co-deletion would empty the tree.
+        // Fall back to deleting only the target; spouse becomes the sole survivor.
+        spouseToDelete = null;
+      } else {
+        return blocked('Cannot delete the last member of the family tree');
       }
     }
 
-    if (member?.image) {
+    return { canDelete: true, blockReason: null, spouseToDelete };
+  }
+
+  async getFamilyTreeMemberDeletePreview(
+    param: FamilyTreeMemberGetParamDto,
+  ): Promise<FamilyTreeMemberDeletePreviewType> {
+    const member = await this.getFamilyTreeMember(param);
+
+    return this.computeDeletePreview(member, param.familyTreeId);
+  }
+
+  async deleteFamilyTreeMember(param: FamilyTreeMemberGetParamDto) {
+    const member = await this.getFamilyTreeMember(param);
+    const preview = await this.computeDeletePreview(member, param.familyTreeId);
+
+    if (!preview.canDelete) {
+      throw new BadRequestException(preview.blockReason);
+    }
+
+    if (member.image) {
       this.cloudflareConfig.deleteFile(member.image);
+    }
+
+    const idsToDelete = [member.id];
+
+    if (preview.spouseToDelete) {
+      if (preview.spouseToDelete.image) {
+        this.cloudflareConfig.deleteFile(preview.spouseToDelete.image);
+      }
+
+      idsToDelete.push(preview.spouseToDelete.id);
     }
 
     await this.db
       .delete(schema.familyTreeMembersSchema)
-      .where(eq(schema.familyTreeMembersSchema.id, member.id));
+      .where(inArray(schema.familyTreeMembersSchema.id, idsToDelete));
   }
 
   async getAllFamilyTreeMembers(
