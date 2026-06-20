@@ -2,6 +2,7 @@ import type {
   FamilyTreeMemberCreateChildRequestType,
   FamilyTreeMemberCreateParentsRequestType,
   FamilyTreeMemberCreateSpouseRequestType,
+  FamilyTreeMemberDeletePreviewType,
   FamilyTreeMemberGetAllParamType,
   FamilyTreeMemberGetAllResponseType,
   FamilyTreeMemberGetParamType,
@@ -64,6 +65,12 @@ export const treeMember = {
     return base.put(
       `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/${param.id}`,
       body,
+      config,
+    );
+  },
+  deletePreview: (param: IdParam, config?: AxiosRequestConfig) => {
+    return base.get<FamilyTreeMemberDeletePreviewType>(
+      `/family-trees${scopeSegment(param.scope)}/${param.familyTreeId}/members/${param.id}/delete-preview`,
       config,
     );
   },

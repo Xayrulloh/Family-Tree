@@ -1,4 +1,5 @@
 import {
+  FamilyTreeMemberDeletePreviewSchema,
   FamilyTreeMemberGetAllResponseSchema,
   FamilyTreeMemberGetResponseSchema,
 } from '@family-tree/shared';
@@ -33,6 +34,7 @@ import {
   FamilyTreeMemberCreateChildRequestDto,
   FamilyTreeMemberCreateParentsRequestDto,
   FamilyTreeMemberCreateSpouseRequestDto,
+  FamilyTreeMemberDeletePreviewResponseDto,
   FamilyTreeMemberGetAllParamDto,
   FamilyTreeMemberGetAllResponseDto,
   FamilyTreeMemberGetParamDto,
@@ -70,6 +72,17 @@ export class FamilyTreeMemberSharedController {
     @Param() param: FamilyTreeMemberGetParamDto,
   ): Promise<FamilyTreeMemberGetResponseDto> {
     return this.familyTreeMemberService.getFamilyTreeMember(param);
+  }
+
+  @Get(':id/delete-preview')
+  @RequirePermission('canDeleteMembers')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: FamilyTreeMemberDeletePreviewResponseDto })
+  @ZodSerializerDto(FamilyTreeMemberDeletePreviewSchema)
+  async getFamilyTreeMemberDeletePreview(
+    @Param() param: FamilyTreeMemberGetParamDto,
+  ): Promise<FamilyTreeMemberDeletePreviewResponseDto> {
+    return this.familyTreeMemberService.getFamilyTreeMemberDeletePreview(param);
   }
 
   @Post('child')

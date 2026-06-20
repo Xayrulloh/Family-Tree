@@ -111,11 +111,16 @@ Controllers registered in order: Public → Shared → Owner (literals before pa
 |---|---|---|---|---|
 | GET | `/members` | ✓ | ✓ | ✓ |
 | GET | `/members/:id` | ✓ | ✓ | ✓ |
+| GET | `/members/:id/delete-preview` | ✓ | canDeleteMembers | ✗ |
 | POST | `/members/child` | ✓ | canAddMembers | ✗ |
 | POST | `/members/spouse` | ✓ | canAddMembers | ✗ |
 | POST | `/members/parents` | ✓ | canAddMembers | ✗ |
 | PUT | `/members/:id` | ✓ | canEditMembers | ✗ |
 | DELETE | `/members/:id` | ✓ | canDeleteMembers | ✗ |
+
+**Delete preview** (`GET :id/delete-preview`) returns `FamilyTreeMemberDeletePreviewType`:
+`{ canDelete: boolean; blockReason: string | null; spouseToDelete: FamilyTreeMemberGetResponseType | null }`
+Call before `DELETE :id` to show the user what will happen. `DELETE :id` re-runs the same tree-safety logic internally. Delete is **hard** (no soft-delete). Full delete rule matrix in `implementation-log.md` 2026-06-20 entry.
 
 Cache: `FamilyTreeCacheInterceptor`
 

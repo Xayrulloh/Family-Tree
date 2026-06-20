@@ -58,7 +58,12 @@ src/
 ├── features/      # User-triggered actions (each: model.ts + ui.tsx + index.ts)
 │   ├── auth/                     # Google sign-in button
 │   ├── tree/create-edit, delete, share   # share moved here from tree-detail/share
-│   ├── tree-member/add, edit, delete, preview
+│   ├── tree-member/add, edit, preview
+│   │   └── delete/               # Two-phase delete: fetchPreviewFx → modal → deleteTreeFx
+│   │       ├── model.ts          # deleteTrigger sets $member, opens disclosure, fires fetchPreviewFx
+│   │       │                     # fetchPreviewFx.doneData → $preview via fn: r => r.data
+│   │       │                     # deleted → deleteTreeFx (attach reads $member + $treeScope)
+│   │       └── ui.tsx            # Three-state modal: spinner / blocked+Close / confirm+Delete
 │   └── shared-tree-users/edit    # Edit RBAC for shared user
 ├── entities/
 │   └── user/                     # User entity store
