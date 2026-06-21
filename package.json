@@ -82,7 +82,7 @@
     "@sonar/scan": "4.3.5",
     "@swc-node/register": "~1.11.1",
     "@swc/core": "~1.15.24",
-    "@swc/helpers": "~0.5.11",
+    "@swc/helpers": "~0.5.21",
     "@tailwindcss/postcss": "^4.1.11",
     "@testing-library/react": "16.3.2",
     "@types/cookie-parser": "^1.4.9",
