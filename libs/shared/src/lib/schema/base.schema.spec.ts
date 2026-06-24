@@ -22,6 +22,7 @@ describe('BaseSchema', () => {
   it('accepts Date objects for timestamp fields and coerces them to ISO strings', () => {
     const date = new Date('2024-03-15T10:00:00.000Z');
     const result = BaseSchema.safeParse({ ...VALID, createdAt: date, updatedAt: date });
+
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.createdAt).toBe(date.toISOString());
@@ -39,6 +40,7 @@ describe('BaseSchema', () => {
 
     it('rejects a missing id', () => {
       const { id: _id, ...rest } = VALID;
+
       expect(BaseSchema.safeParse(rest).success).toBe(false);
     });
   });
@@ -50,6 +52,7 @@ describe('BaseSchema', () => {
 
     it('rejects a missing createdAt', () => {
       const { createdAt: _c, ...rest } = VALID;
+
       expect(BaseSchema.safeParse(rest).success).toBe(false);
     });
   });

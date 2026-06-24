@@ -29,21 +29,37 @@ describe('SearchSchema', () => {
   describe('isPublic coercion', () => {
     it('coerces string "true" to boolean true', () => {
       const result = SearchSchema.parse({ isPublic: 'true' });
+
       expect(result.isPublic).toBe(true);
     });
 
     it('coerces string "false" to boolean false', () => {
       const result = SearchSchema.parse({ isPublic: 'false' });
+
       expect(result.isPublic).toBe(false);
     });
 
     it('passes through boolean true unchanged', () => {
       const result = SearchSchema.parse({ isPublic: true });
+
       expect(result.isPublic).toBe(true);
     });
 
     it('passes through boolean false unchanged', () => {
       const result = SearchSchema.parse({ isPublic: false });
+
+      expect(result.isPublic).toBe(false);
+    });
+
+    it('treats uppercase "TRUE" as false — preprocess only matches the lowercase string "true"', () => {
+      const result = SearchSchema.parse({ isPublic: 'TRUE' });
+
+      expect(result.isPublic).toBe(false);
+    });
+
+    it('treats a non-string non-boolean value (e.g. 1) as false', () => {
+      const result = SearchSchema.parse({ isPublic: 1 });
+
       expect(result.isPublic).toBe(false);
     });
   });

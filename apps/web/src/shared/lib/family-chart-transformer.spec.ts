@@ -123,6 +123,7 @@ describe('toF3Data', () => {
       ];
 
       const parent = toF3Data(members, connections).find((d) => d.id === 'parent')!;
+
       expect(parent.rels.children).toContain('c1');
       expect(parent.rels.children).toContain('c2');
     });

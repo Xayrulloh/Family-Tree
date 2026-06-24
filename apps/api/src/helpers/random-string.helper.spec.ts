@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import generateRandomString from './random-string.helper';
 
 describe('generateRandomString', () => {
@@ -12,6 +13,7 @@ describe('generateRandomString', () => {
 
   it('returns a single character for length 1', () => {
     const result = generateRandomString(1);
+
     expect(result).toHaveLength(1);
     expect(result).toMatch(/^[A-Za-z0-9]$/);
   });
@@ -24,11 +26,13 @@ describe('generateRandomString', () => {
     const results = new Set(
       Array.from({ length: 10 }, () => generateRandomString(20)),
     );
+
     expect(results.size).toBeGreaterThan(1);
   });
 
   it('handles large lengths', () => {
     const result = generateRandomString(500);
+
     expect(result).toHaveLength(500);
     expect(result).toMatch(/^[A-Za-z0-9]+$/);
   });

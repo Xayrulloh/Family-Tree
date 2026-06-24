@@ -1,11 +1,9 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import type { ExecutionContext } from '@nestjs/common';
+/// <reference types="jest" />
+import { type ExecutionContext, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { OwnerGuard } from './owner.guard';
 
 jest.mock('drizzle-orm', () => ({ eq: jest.fn() }));
-jest.mock('~/database/schema', () => ({
-  familyTreesSchema: {},
-}));
+jest.mock('~/database/schema', () => ({ familyTreesSchema: {} }));
 jest.mock('~/database/drizzle.provider', () => ({
   DrizzleAsyncProvider: 'DrizzleAsyncProvider',
 }));
@@ -36,6 +34,7 @@ describe('OwnerGuard', () => {
 
   it('returns true when the requesting user is the tree owner', async () => {
     mockFindFirst.mockResolvedValue({ createdBy: 'user-1' });
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' }, 'user-1')),
     ).resolves.toBe(true);
@@ -43,6 +42,7 @@ describe('OwnerGuard', () => {
 
   it('throws NotFoundException when the tree does not exist', async () => {
     mockFindFirst.mockResolvedValue(undefined);
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' }, 'user-1')),
     ).rejects.toThrow(NotFoundException);
@@ -50,6 +50,7 @@ describe('OwnerGuard', () => {
 
   it('throws ForbiddenException when the user is not the owner', async () => {
     mockFindFirst.mockResolvedValue({ createdBy: 'other-user' });
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' }, 'user-1')),
     ).rejects.toThrow(ForbiddenException);
@@ -57,6 +58,7 @@ describe('OwnerGuard', () => {
 
   it('reads the tree id from params.familyTreeId when present', async () => {
     mockFindFirst.mockResolvedValue({ createdBy: 'user-1' });
+
     await expect(
       guard.canActivate(createContext({ familyTreeId: 'tree-1' }, 'user-1')),
     ).resolves.toBe(true);
@@ -64,6 +66,7 @@ describe('OwnerGuard', () => {
 
   it('falls back to params.id when familyTreeId is absent', async () => {
     mockFindFirst.mockResolvedValue({ createdBy: 'user-1' });
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' }, 'user-1')),
     ).resolves.toBe(true);
@@ -71,12 +74,11 @@ describe('OwnerGuard', () => {
 
   it('prioritises familyTreeId over id when both are present', async () => {
     mockFindFirst.mockResolvedValue({ createdBy: 'user-1' });
-    // only familyTreeId should be passed to the db; if id were used the tree
-    // wouldn't exist (db is mocked to succeed regardless of args here, so we
-    // verify by checking that findFirst is called exactly once)
+
     await guard.canActivate(
       createContext({ familyTreeId: 'tree-1', id: 'tree-2' }, 'user-1'),
     );
+
     expect(mockFindFirst).toHaveBeenCalledTimes(1);
   });
 });

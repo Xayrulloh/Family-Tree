@@ -6,7 +6,6 @@ import { createForm } from './create-form';
 type TestShape = { name: string; age: number };
 type MockFormInstance = UseFormReturn<TestShape, unknown, undefined>;
 
-// Minimal mock matching the UseFormReturn methods used by the effects
 function makeMockForm(watchReturn: Partial<TestShape> = {}) {
   return {
     clearErrors: vi.fn(),
@@ -21,11 +20,13 @@ describe('createForm', () => {
   describe('initial state', () => {
     it('$formInstance starts as null', () => {
       const { $formInstance } = createForm<TestShape>();
+
       expect($formInstance.getState()).toBeNull();
     });
 
     it('$formValues starts as an empty object', () => {
       const { $formValues } = createForm<TestShape>();
+
       expect($formValues.getState()).toEqual({});
     });
   });
@@ -33,11 +34,13 @@ describe('createForm', () => {
   describe('effects — throw when form is not bound', () => {
     it('clearErrorsFx throws when $formInstance is null', async () => {
       const { clearErrorsFx } = createForm<TestShape>();
+
       await expect(clearErrorsFx()).rejects.toThrow('Form instance is not initialized');
     });
 
     it('resetFx throws when $formInstance is null', async () => {
       const { resetFx } = createForm<TestShape>();
+
       await expect(resetFx({ name: '', age: 0 })).rejects.toThrow(
         'Form instance is not initialized',
       );
@@ -45,6 +48,7 @@ describe('createForm', () => {
 
     it('setErrorFx throws when $formInstance is null', async () => {
       const { setErrorFx } = createForm<TestShape>();
+
       await expect(setErrorFx({ name: 'name', message: 'err' })).rejects.toThrow(
         'Form instance is not initialized',
       );
@@ -52,6 +56,7 @@ describe('createForm', () => {
 
     it('setValueFx throws when $formInstance is null', async () => {
       const { setValueFx } = createForm<TestShape>();
+
       await expect(setValueFx({ name: 'name', value: 'x' })).rejects.toThrow(
         'Form instance is not initialized',
       );
@@ -63,6 +68,7 @@ describe('createForm', () => {
       const { $formInstance, useBindFormWithModel } = createForm<TestShape>();
       const mockForm = makeMockForm();
       renderHook(() => useBindFormWithModel({ form: mockForm as unknown as MockFormInstance }));
+
       expect($formInstance.getState()).toBe(mockForm);
     });
 
@@ -73,6 +79,7 @@ describe('createForm', () => {
         useBindFormWithModel({ form: mockForm as unknown as MockFormInstance }),
       );
       unmount();
+
       expect($formInstance.getState()).toBeNull();
     });
 
@@ -80,6 +87,7 @@ describe('createForm', () => {
       const { $formValues, useBindFormWithModel } = createForm<TestShape>();
       const mockForm = makeMockForm({ name: 'Alice', age: 30 });
       renderHook(() => useBindFormWithModel({ form: mockForm as unknown as MockFormInstance }));
+
       expect($formValues.getState()).toEqual({ name: 'Alice', age: 30 });
     });
 
@@ -87,7 +95,9 @@ describe('createForm', () => {
       const { clearErrorsFx, useBindFormWithModel } = createForm<TestShape>();
       const mockForm = makeMockForm();
       renderHook(() => useBindFormWithModel({ form: mockForm as unknown as MockFormInstance }));
+
       await clearErrorsFx();
+
       expect(mockForm.clearErrors).toHaveBeenCalledOnce();
     });
 
@@ -96,7 +106,9 @@ describe('createForm', () => {
       const mockForm = makeMockForm();
       const values = { name: 'Bob', age: 25 };
       renderHook(() => useBindFormWithModel({ form: mockForm as unknown as MockFormInstance }));
+
       await resetFx(values);
+
       expect(mockForm.reset).toHaveBeenCalledWith(values);
     });
 
@@ -104,7 +116,9 @@ describe('createForm', () => {
       const { setErrorFx, useBindFormWithModel } = createForm<TestShape>();
       const mockForm = makeMockForm();
       renderHook(() => useBindFormWithModel({ form: mockForm as unknown as MockFormInstance }));
+
       await setErrorFx({ name: 'name', message: 'Required' });
+
       expect(mockForm.setError).toHaveBeenCalledWith('name', { message: 'Required' });
     });
 
@@ -112,7 +126,9 @@ describe('createForm', () => {
       const { setValueFx, useBindFormWithModel } = createForm<TestShape>();
       const mockForm = makeMockForm();
       renderHook(() => useBindFormWithModel({ form: mockForm as unknown as MockFormInstance }));
+
       await setValueFx({ name: 'name', value: 'Charlie' });
+
       expect(mockForm.setValue).toHaveBeenCalledWith('name', 'Charlie');
     });
   });

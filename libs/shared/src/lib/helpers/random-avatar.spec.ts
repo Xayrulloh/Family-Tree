@@ -23,11 +23,13 @@ describe('generateRandomAvatar', () => {
 
   it('includes brows with all 12 variants', () => {
     const brows = getParams(generateRandomAvatar()).get('brows');
+
     expect(brows?.split(',')).toHaveLength(12);
   });
 
   it('includes glasses with 11 variants and probability 20', () => {
     const params = getParams(generateRandomAvatar());
+
     expect(params.get('glasses')?.split(',')).toHaveLength(11);
     expect(params.get('glassesProbability')).toBe('20');
   });
@@ -43,12 +45,14 @@ describe('generateRandomAvatar', () => {
   describe('MALE', () => {
     it('sets beardProbability to 100 and includes all 12 beard variants', () => {
       const params = getParams(generateRandomAvatar(UserGenderEnum.MALE));
+
       expect(params.get('beardProbability')).toBe('100');
       expect(params.get('beard')?.split(',')).toHaveLength(12);
     });
 
     it('uses male hair list — contains "hat", excludes female-only variants', () => {
       const hair = getParams(generateRandomAvatar(UserGenderEnum.MALE)).get('hair') ?? '';
+
       expect(hair.split(',')).toContain('hat');
       expect(hair.split(',')).not.toContain('variant62');
     });
@@ -57,12 +61,14 @@ describe('generateRandomAvatar', () => {
   describe('FEMALE', () => {
     it('sets beardProbability to 0 and omits the beard param', () => {
       const params = getParams(generateRandomAvatar(UserGenderEnum.FEMALE));
+
       expect(params.get('beardProbability')).toBe('0');
       expect(params.get('beard')).toBeNull();
     });
 
     it('uses female hair list — contains "variant62", excludes male-only variants', () => {
       const hair = getParams(generateRandomAvatar(UserGenderEnum.FEMALE)).get('hair') ?? '';
+
       expect(hair.split(',')).toContain('variant62');
       expect(hair.split(',')).not.toContain('hat');
     });
@@ -82,6 +88,7 @@ describe('generateRandomAvatar', () => {
     const seeds = Array.from({ length: 5 }, () =>
       getParams(generateRandomAvatar()).get('seed'),
     );
+
     expect(new Set(seeds).size).toBeGreaterThan(1);
   });
 });

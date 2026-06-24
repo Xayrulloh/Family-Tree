@@ -1,11 +1,9 @@
-import { NotFoundException } from '@nestjs/common';
-import type { ExecutionContext } from '@nestjs/common';
+/// <reference types="jest" />
+import { type ExecutionContext, NotFoundException } from '@nestjs/common';
 import { PublicGuard } from './public.guard';
 
 jest.mock('drizzle-orm', () => ({ eq: jest.fn() }));
-jest.mock('~/database/schema', () => ({
-  familyTreesSchema: {},
-}));
+jest.mock('~/database/schema', () => ({ familyTreesSchema: {} }));
 jest.mock('~/database/drizzle.provider', () => ({
   DrizzleAsyncProvider: 'DrizzleAsyncProvider',
 }));
@@ -33,6 +31,7 @@ describe('PublicGuard', () => {
 
   it('returns true for a public tree', async () => {
     mockFindFirst.mockResolvedValue({ isPublic: true });
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' })),
     ).resolves.toBe(true);
@@ -40,6 +39,7 @@ describe('PublicGuard', () => {
 
   it('throws NotFoundException when the tree does not exist', async () => {
     mockFindFirst.mockResolvedValue(undefined);
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' })),
     ).rejects.toThrow(NotFoundException);
@@ -47,6 +47,7 @@ describe('PublicGuard', () => {
 
   it('throws NotFoundException for a private tree — not ForbiddenException, to prevent id probing', async () => {
     mockFindFirst.mockResolvedValue({ isPublic: false });
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' })),
     ).rejects.toThrow(NotFoundException);
@@ -54,6 +55,7 @@ describe('PublicGuard', () => {
 
   it('reads the tree id from params.familyTreeId when present', async () => {
     mockFindFirst.mockResolvedValue({ isPublic: true });
+
     await expect(
       guard.canActivate(createContext({ familyTreeId: 'tree-1' })),
     ).resolves.toBe(true);
@@ -61,6 +63,7 @@ describe('PublicGuard', () => {
 
   it('falls back to params.id when familyTreeId is absent', async () => {
     mockFindFirst.mockResolvedValue({ isPublic: true });
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' })),
     ).resolves.toBe(true);

@@ -47,6 +47,7 @@ describe('FamilyTreeSchema', () => {
     it('defaults to false when omitted', () => {
       const { isPublic: _ip, ...rest } = VALID;
       const result = FamilyTreeSchema.safeParse(rest);
+
       expect(result.success).toBe(true);
       if (result.success) expect(result.data.isPublic).toBe(false);
     });

@@ -41,21 +41,25 @@ describe('FamilyTreeSharedSchema', () => {
   describe('required boolean fields', () => {
     it('rejects a missing isBlocked', () => {
       const { isBlocked: _b, ...rest } = VALID;
+
       expect(FamilyTreeSharedSchema.safeParse(rest).success).toBe(false);
     });
 
     it('rejects a missing canAddMembers', () => {
       const { canAddMembers: _c, ...rest } = VALID;
+
       expect(FamilyTreeSharedSchema.safeParse(rest).success).toBe(false);
     });
 
     it('rejects a missing canEditMembers', () => {
       const { canEditMembers: _c, ...rest } = VALID;
+
       expect(FamilyTreeSharedSchema.safeParse(rest).success).toBe(false);
     });
 
     it('rejects a missing canDeleteMembers', () => {
       const { canDeleteMembers: _c, ...rest } = VALID;
+
       expect(FamilyTreeSharedSchema.safeParse(rest).success).toBe(false);
     });
   });

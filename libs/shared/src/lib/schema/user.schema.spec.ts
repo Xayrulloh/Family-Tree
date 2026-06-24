@@ -32,6 +32,7 @@ describe('UserSchema', () => {
 
     it('rejects a missing email', () => {
       const { email: _e, ...rest } = VALID;
+
       expect(UserSchema.safeParse(rest).success).toBe(false);
     });
   });
@@ -91,6 +92,14 @@ describe('UserSchema', () => {
 
     it('rejects an invalid date string for dob', () => {
       expect(UserSchema.safeParse({ ...VALID, dob: 'not-a-date' }).success).toBe(false);
+    });
+  });
+
+  describe('username', () => {
+    it('rejects a missing username — required field with no default', () => {
+      const { username: _u, ...rest } = VALID;
+
+      expect(UserSchema.safeParse(rest).success).toBe(false);
     });
   });
 

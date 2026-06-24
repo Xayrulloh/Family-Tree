@@ -1,8 +1,8 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import type { ExecutionContext } from '@nestjs/common';
+/// <reference types="jest" />
+import { type ExecutionContext, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { SharedAccessGuard } from './shared-access.guard';
 
-jest.mock('drizzle-orm', () => ({ eq: jest.fn(), and: jest.fn() }));
+jest.mock('drizzle-orm', () => ({ and: jest.fn(), eq: jest.fn() }));
 jest.mock('~/database/schema', () => ({
   familyTreesSchema: {},
   sharedFamilyTreesSchema: {},
@@ -54,6 +54,7 @@ describe('SharedAccessGuard', () => {
   it('returns true for a valid shared user with no required permissions', async () => {
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner' });
     mockAccessFindFirst.mockResolvedValue(FULL_ACCESS);
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' }, 'shared-user')),
     ).resolves.toBe(true);
@@ -63,6 +64,7 @@ describe('SharedAccessGuard', () => {
     mockReflector.getAllAndOverride.mockReturnValue(['canAddMembers']);
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner' });
     mockAccessFindFirst.mockResolvedValue(FULL_ACCESS);
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' }, 'shared-user')),
     ).resolves.toBe(true);
@@ -70,6 +72,7 @@ describe('SharedAccessGuard', () => {
 
   it('throws NotFoundException when the tree does not exist', async () => {
     mockTreeFindFirst.mockResolvedValue(undefined);
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' }, 'shared-user')),
     ).rejects.toThrow(NotFoundException);
@@ -77,6 +80,7 @@ describe('SharedAccessGuard', () => {
 
   it('throws ForbiddenException when the caller is the tree owner — owners must use the owner path', async () => {
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'user-1' });
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' }, 'user-1')),
     ).rejects.toThrow(ForbiddenException);
@@ -85,6 +89,7 @@ describe('SharedAccessGuard', () => {
   it('throws ForbiddenException when the user has no shared access record', async () => {
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner' });
     mockAccessFindFirst.mockResolvedValue(undefined);
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' }, 'shared-user')),
     ).rejects.toThrow(ForbiddenException);
@@ -93,6 +98,7 @@ describe('SharedAccessGuard', () => {
   it('throws ForbiddenException when the user is blocked', async () => {
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner' });
     mockAccessFindFirst.mockResolvedValue({ ...FULL_ACCESS, isBlocked: true });
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' }, 'shared-user')),
     ).rejects.toThrow(ForbiddenException);
@@ -102,6 +108,7 @@ describe('SharedAccessGuard', () => {
     mockReflector.getAllAndOverride.mockReturnValue(['canDeleteMembers']);
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner' });
     mockAccessFindFirst.mockResolvedValue({ ...FULL_ACCESS, canDeleteMembers: false });
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' }, 'shared-user')),
     ).rejects.toThrow(ForbiddenException);
@@ -111,6 +118,7 @@ describe('SharedAccessGuard', () => {
     mockReflector.getAllAndOverride.mockReturnValue(['canAddMembers', 'canEditMembers']);
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner' });
     mockAccessFindFirst.mockResolvedValue({ ...FULL_ACCESS, canEditMembers: false });
+
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' }, 'shared-user')),
     ).rejects.toThrow(ForbiddenException);
