@@ -11,8 +11,8 @@ const VALID_BASE = {
 const VALID = {
   ...VALID_BASE,
   content: 'You have a new family member',
-  receiverUserId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  senderUserId: 'b5f0c987-1e2a-4b3c-8d4e-5f6a7b8c9d0e',
+  receiverUserId: '00000000-0000-4000-8000-000000000001',
+  senderUserId: '00000000-0000-4000-8000-000000000002',
 };
 
 describe('NotificationSchema', () => {
@@ -22,24 +22,30 @@ describe('NotificationSchema', () => {
 
   describe('content', () => {
     it('rejects content shorter than 5 characters', () => {
-      expect(NotificationSchema.safeParse({ ...VALID, content: 'Hi' }).success).toBe(false);
+      expect(
+        NotificationSchema.safeParse({ ...VALID, content: 'Hi' }).success,
+      ).toBe(false);
     });
 
     it('accepts content with exactly 5 characters', () => {
-      expect(NotificationSchema.safeParse({ ...VALID, content: 'Hello' }).success).toBe(true);
+      expect(
+        NotificationSchema.safeParse({ ...VALID, content: 'Hello' }).success,
+      ).toBe(true);
     });
   });
 
   describe('receiverUserId / senderUserId', () => {
     it('rejects a non-UUID receiverUserId', () => {
       expect(
-        NotificationSchema.safeParse({ ...VALID, receiverUserId: 'not-a-uuid' }).success,
+        NotificationSchema.safeParse({ ...VALID, receiverUserId: 'not-a-uuid' })
+          .success,
       ).toBe(false);
     });
 
     it('rejects a non-UUID senderUserId', () => {
       expect(
-        NotificationSchema.safeParse({ ...VALID, senderUserId: 'not-a-uuid' }).success,
+        NotificationSchema.safeParse({ ...VALID, senderUserId: 'not-a-uuid' })
+          .success,
       ).toBe(false);
     });
   });

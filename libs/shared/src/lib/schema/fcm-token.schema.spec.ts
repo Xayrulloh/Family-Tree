@@ -10,7 +10,7 @@ const VALID_BASE = {
 
 const VALID = {
   ...VALID_BASE,
-  userId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  userId: '00000000-0000-4000-8000-000000000001',
   token: 'fcm-token-abc123',
   deviceType: FCMTokenDeviceEnum.WEB,
 };
@@ -23,36 +23,51 @@ describe('FCMTokenSchema', () => {
   describe('deviceType', () => {
     it('accepts ANDROID', () => {
       expect(
-        FCMTokenSchema.safeParse({ ...VALID, deviceType: FCMTokenDeviceEnum.ANDROID }).success,
+        FCMTokenSchema.safeParse({
+          ...VALID,
+          deviceType: FCMTokenDeviceEnum.ANDROID,
+        }).success,
       ).toBe(true);
     });
 
     it('accepts IOS', () => {
       expect(
-        FCMTokenSchema.safeParse({ ...VALID, deviceType: FCMTokenDeviceEnum.IOS }).success,
+        FCMTokenSchema.safeParse({
+          ...VALID,
+          deviceType: FCMTokenDeviceEnum.IOS,
+        }).success,
       ).toBe(true);
     });
 
     it('accepts WEB', () => {
       expect(
-        FCMTokenSchema.safeParse({ ...VALID, deviceType: FCMTokenDeviceEnum.WEB }).success,
+        FCMTokenSchema.safeParse({
+          ...VALID,
+          deviceType: FCMTokenDeviceEnum.WEB,
+        }).success,
       ).toBe(true);
     });
 
     it('rejects an unrecognized device type', () => {
-      expect(FCMTokenSchema.safeParse({ ...VALID, deviceType: 'DESKTOP' }).success).toBe(false);
+      expect(
+        FCMTokenSchema.safeParse({ ...VALID, deviceType: 'DESKTOP' }).success,
+      ).toBe(false);
     });
   });
 
   describe('token', () => {
     it('rejects an empty token', () => {
-      expect(FCMTokenSchema.safeParse({ ...VALID, token: '' }).success).toBe(false);
+      expect(FCMTokenSchema.safeParse({ ...VALID, token: '' }).success).toBe(
+        false,
+      );
     });
   });
 
   describe('userId', () => {
     it('rejects a non-UUID userId', () => {
-      expect(FCMTokenSchema.safeParse({ ...VALID, userId: 'not-a-uuid' }).success).toBe(false);
+      expect(
+        FCMTokenSchema.safeParse({ ...VALID, userId: 'not-a-uuid' }).success,
+      ).toBe(false);
     });
   });
 });

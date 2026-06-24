@@ -35,11 +35,15 @@ describe('generateRandomAvatar', () => {
   });
 
   it('includes lips with all 30 variants', () => {
-    expect(getParams(generateRandomAvatar()).get('lips')?.split(',')).toHaveLength(30);
+    expect(
+      getParams(generateRandomAvatar()).get('lips')?.split(','),
+    ).toHaveLength(30);
   });
 
   it('includes nose with all 20 variants', () => {
-    expect(getParams(generateRandomAvatar()).get('nose')?.split(',')).toHaveLength(20);
+    expect(
+      getParams(generateRandomAvatar()).get('nose')?.split(','),
+    ).toHaveLength(20);
   });
 
   describe('MALE', () => {
@@ -51,7 +55,8 @@ describe('generateRandomAvatar', () => {
     });
 
     it('uses male hair list — contains "hat", excludes female-only variants', () => {
-      const hair = getParams(generateRandomAvatar(UserGenderEnum.MALE)).get('hair') ?? '';
+      const hair =
+        getParams(generateRandomAvatar(UserGenderEnum.MALE)).get('hair') ?? '';
 
       expect(hair.split(',')).toContain('hat');
       expect(hair.split(',')).not.toContain('variant62');
@@ -67,7 +72,9 @@ describe('generateRandomAvatar', () => {
     });
 
     it('uses female hair list — contains "variant62", excludes male-only variants', () => {
-      const hair = getParams(generateRandomAvatar(UserGenderEnum.FEMALE)).get('hair') ?? '';
+      const hair =
+        getParams(generateRandomAvatar(UserGenderEnum.FEMALE)).get('hair') ??
+        '';
 
       expect(hair.split(',')).toContain('variant62');
       expect(hair.split(',')).not.toContain('hat');
@@ -80,7 +87,9 @@ describe('generateRandomAvatar', () => {
     });
 
     it('returns a valid DiceBear URL for UNKNOWN gender', () => {
-      expect(generateRandomAvatar(UserGenderEnum.UNKNOWN)).toMatch(/^https:\/\/api\.dicebear\.com/);
+      expect(generateRandomAvatar(UserGenderEnum.UNKNOWN)).toMatch(
+        /^https:\/\/api\.dicebear\.com/,
+      );
     });
   });
 

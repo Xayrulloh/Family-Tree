@@ -1,5 +1,9 @@
 /// <reference types="jest" />
-import { type ExecutionContext, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  type ExecutionContext,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { SharedAccessGuard } from './shared-access.guard';
 
 jest.mock('drizzle-orm', () => ({ and: jest.fn(), eq: jest.fn() }));
@@ -107,7 +111,10 @@ describe('SharedAccessGuard', () => {
   it('throws ForbiddenException when the user lacks a required permission', async () => {
     mockReflector.getAllAndOverride.mockReturnValue(['canDeleteMembers']);
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner' });
-    mockAccessFindFirst.mockResolvedValue({ ...FULL_ACCESS, canDeleteMembers: false });
+    mockAccessFindFirst.mockResolvedValue({
+      ...FULL_ACCESS,
+      canDeleteMembers: false,
+    });
 
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' }, 'shared-user')),
@@ -115,9 +122,15 @@ describe('SharedAccessGuard', () => {
   });
 
   it('throws ForbiddenException when any one of multiple required permissions is missing', async () => {
-    mockReflector.getAllAndOverride.mockReturnValue(['canAddMembers', 'canEditMembers']);
+    mockReflector.getAllAndOverride.mockReturnValue([
+      'canAddMembers',
+      'canEditMembers',
+    ]);
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner' });
-    mockAccessFindFirst.mockResolvedValue({ ...FULL_ACCESS, canEditMembers: false });
+    mockAccessFindFirst.mockResolvedValue({
+      ...FULL_ACCESS,
+      canEditMembers: false,
+    });
 
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' }, 'shared-user')),

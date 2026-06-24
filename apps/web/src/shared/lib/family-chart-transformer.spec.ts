@@ -89,7 +89,9 @@ describe('toF3Data', () => {
   describe('SPOUSE connections', () => {
     it('creates bidirectional spouse links', () => {
       const members = [makeMember('a'), makeMember('b', 'FEMALE')];
-      const connections = [makeConnection('a', 'b', FamilyTreeMemberConnectionEnum.SPOUSE)];
+      const connections = [
+        makeConnection('a', 'b', FamilyTreeMemberConnectionEnum.SPOUSE),
+      ];
 
       const result = toF3Data(members, connections);
       const a = result.find((d) => d.id === 'a')!;
@@ -103,7 +105,13 @@ describe('toF3Data', () => {
   describe('PARENT connections', () => {
     it('sets children on the parent and parents on the child', () => {
       const members = [makeMember('parent'), makeMember('child', 'FEMALE')];
-      const connections = [makeConnection('parent', 'child', FamilyTreeMemberConnectionEnum.PARENT)];
+      const connections = [
+        makeConnection(
+          'parent',
+          'child',
+          FamilyTreeMemberConnectionEnum.PARENT,
+        ),
+      ];
 
       const result = toF3Data(members, connections);
       const parent = result.find((d) => d.id === 'parent')!;
@@ -116,13 +124,19 @@ describe('toF3Data', () => {
     });
 
     it('accumulates multiple children on a parent', () => {
-      const members = [makeMember('parent'), makeMember('c1', 'FEMALE'), makeMember('c2')];
+      const members = [
+        makeMember('parent'),
+        makeMember('c1', 'FEMALE'),
+        makeMember('c2'),
+      ];
       const connections = [
         makeConnection('parent', 'c1', FamilyTreeMemberConnectionEnum.PARENT),
         makeConnection('parent', 'c2', FamilyTreeMemberConnectionEnum.PARENT),
       ];
 
-      const parent = toF3Data(members, connections).find((d) => d.id === 'parent')!;
+      const parent = toF3Data(members, connections).find(
+        (d) => d.id === 'parent',
+      )!;
 
       expect(parent.rels.children).toContain('c1');
       expect(parent.rels.children).toContain('c2');

@@ -12,7 +12,12 @@ describe('PaginationSchema', () => {
   });
 
   it('accepts explicit numeric values', () => {
-    const result = PaginationSchema.parse({ page: 3, perPage: 25, totalCount: 100, totalPages: 4 });
+    const result = PaginationSchema.parse({
+      page: 3,
+      perPage: 25,
+      totalCount: 100,
+      totalPages: 4,
+    });
 
     expect(result.page).toBe(3);
     expect(result.perPage).toBe(25);
@@ -41,11 +46,15 @@ describe('PaginationSchema', () => {
 
   describe('totalCount / totalPages', () => {
     it('rejects non-numeric values for totalCount', () => {
-      expect(PaginationSchema.safeParse({ totalCount: 'lots' }).success).toBe(false);
+      expect(PaginationSchema.safeParse({ totalCount: 'lots' }).success).toBe(
+        false,
+      );
     });
 
     it('rejects non-numeric values for totalPages', () => {
-      expect(PaginationSchema.safeParse({ totalPages: 'many' }).success).toBe(false);
+      expect(PaginationSchema.safeParse({ totalPages: 'many' }).success).toBe(
+        false,
+      );
     });
   });
 });

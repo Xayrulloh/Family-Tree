@@ -10,7 +10,7 @@ const VALID_BASE = {
 
 const VALID = {
   ...VALID_BASE,
-  createdBy: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  createdBy: '00000000-0000-4000-8000-000000000001',
   name: 'Smith Family',
   image: null,
   isPublic: false,
@@ -23,11 +23,15 @@ describe('FamilyTreeSchema', () => {
 
   describe('name', () => {
     it('rejects a name shorter than 3 characters', () => {
-      expect(FamilyTreeSchema.safeParse({ ...VALID, name: 'Ab' }).success).toBe(false);
+      expect(FamilyTreeSchema.safeParse({ ...VALID, name: 'Ab' }).success).toBe(
+        false,
+      );
     });
 
     it('accepts a name with exactly 3 characters', () => {
-      expect(FamilyTreeSchema.safeParse({ ...VALID, name: 'Abc' }).success).toBe(true);
+      expect(
+        FamilyTreeSchema.safeParse({ ...VALID, name: 'Abc' }).success,
+      ).toBe(true);
     });
 
     it('rejects a name longer than 20 characters', () => {
@@ -53,25 +57,34 @@ describe('FamilyTreeSchema', () => {
     });
 
     it('accepts true', () => {
-      expect(FamilyTreeSchema.safeParse({ ...VALID, isPublic: true }).success).toBe(true);
+      expect(
+        FamilyTreeSchema.safeParse({ ...VALID, isPublic: true }).success,
+      ).toBe(true);
     });
   });
 
   describe('image', () => {
     it('accepts null', () => {
-      expect(FamilyTreeSchema.safeParse({ ...VALID, image: null }).success).toBe(true);
+      expect(
+        FamilyTreeSchema.safeParse({ ...VALID, image: null }).success,
+      ).toBe(true);
     });
 
     it('accepts a URL string', () => {
       expect(
-        FamilyTreeSchema.safeParse({ ...VALID, image: 'https://example.com/tree.png' }).success,
+        FamilyTreeSchema.safeParse({
+          ...VALID,
+          image: 'https://example.com/tree.png',
+        }).success,
       ).toBe(true);
     });
   });
 
   describe('createdBy', () => {
     it('rejects an empty string', () => {
-      expect(FamilyTreeSchema.safeParse({ ...VALID, createdBy: '' }).success).toBe(false);
+      expect(
+        FamilyTreeSchema.safeParse({ ...VALID, createdBy: '' }).success,
+      ).toBe(false);
     });
   });
 });

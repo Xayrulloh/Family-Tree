@@ -23,7 +23,9 @@ describe('createDisclosure', () => {
   });
 
   it('closed() sets $isOpen to false', () => {
-    const { $isOpen, opened, closed } = createDisclosure({ defaultIsOpen: true });
+    const { $isOpen, opened, closed } = createDisclosure({
+      defaultIsOpen: true,
+    });
     opened();
 
     closed();

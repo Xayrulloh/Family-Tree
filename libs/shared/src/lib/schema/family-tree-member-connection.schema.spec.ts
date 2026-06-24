@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { FamilyTreeMemberConnectionEnum, FamilyTreeMemberConnectionSchema } from './family-tree-member-connection.schema';
+import {
+  FamilyTreeMemberConnectionEnum,
+  FamilyTreeMemberConnectionSchema,
+} from './family-tree-member-connection.schema';
 
 const VALID_BASE = {
   id: '550e8400-e29b-41d4-a716-446655440000',
@@ -10,14 +13,16 @@ const VALID_BASE = {
 
 const VALID = {
   ...VALID_BASE,
-  fromMemberId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  toMemberId: 'b5f0c987-1e2a-4b3c-8d4e-5f6a7b8c9d0e',
+  fromMemberId: '00000000-0000-4000-8000-000000000001',
+  toMemberId: '00000000-0000-4000-8000-000000000002',
   type: FamilyTreeMemberConnectionEnum.SPOUSE,
 };
 
 describe('FamilyTreeMemberConnectionSchema', () => {
   it('accepts a valid SPOUSE connection', () => {
-    expect(FamilyTreeMemberConnectionSchema.safeParse(VALID).success).toBe(true);
+    expect(FamilyTreeMemberConnectionSchema.safeParse(VALID).success).toBe(
+      true,
+    );
   });
 
   it('accepts a valid PARENT connection', () => {
@@ -32,7 +37,10 @@ describe('FamilyTreeMemberConnectionSchema', () => {
   describe('type', () => {
     it('rejects an unrecognized connection type', () => {
       expect(
-        FamilyTreeMemberConnectionSchema.safeParse({ ...VALID, type: 'SIBLING' }).success,
+        FamilyTreeMemberConnectionSchema.safeParse({
+          ...VALID,
+          type: 'SIBLING',
+        }).success,
       ).toBe(false);
     });
   });
@@ -40,13 +48,19 @@ describe('FamilyTreeMemberConnectionSchema', () => {
   describe('fromMemberId / toMemberId', () => {
     it('rejects a non-UUID fromMemberId', () => {
       expect(
-        FamilyTreeMemberConnectionSchema.safeParse({ ...VALID, fromMemberId: 'not-a-uuid' }).success,
+        FamilyTreeMemberConnectionSchema.safeParse({
+          ...VALID,
+          fromMemberId: 'not-a-uuid',
+        }).success,
       ).toBe(false);
     });
 
     it('rejects a non-UUID toMemberId', () => {
       expect(
-        FamilyTreeMemberConnectionSchema.safeParse({ ...VALID, toMemberId: 'not-a-uuid' }).success,
+        FamilyTreeMemberConnectionSchema.safeParse({
+          ...VALID,
+          toMemberId: 'not-a-uuid',
+        }).success,
       ).toBe(false);
     });
   });

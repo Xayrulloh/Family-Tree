@@ -27,7 +27,9 @@ describe('UserSchema', () => {
 
   describe('email', () => {
     it('rejects an invalid email format', () => {
-      expect(UserSchema.safeParse({ ...VALID, email: 'not-an-email' }).success).toBe(false);
+      expect(
+        UserSchema.safeParse({ ...VALID, email: 'not-an-email' }).success,
+      ).toBe(false);
     });
 
     it('rejects a missing email', () => {
@@ -39,59 +41,86 @@ describe('UserSchema', () => {
 
   describe('name', () => {
     it('rejects a name shorter than 3 characters', () => {
-      expect(UserSchema.safeParse({ ...VALID, name: 'Ab' }).success).toBe(false);
+      expect(UserSchema.safeParse({ ...VALID, name: 'Ab' }).success).toBe(
+        false,
+      );
     });
 
     it('accepts a name with exactly 3 characters', () => {
-      expect(UserSchema.safeParse({ ...VALID, name: 'Abc' }).success).toBe(true);
+      expect(UserSchema.safeParse({ ...VALID, name: 'Abc' }).success).toBe(
+        true,
+      );
     });
   });
 
   describe('image', () => {
     it('accepts null', () => {
-      expect(UserSchema.safeParse({ ...VALID, image: null }).success).toBe(true);
+      expect(UserSchema.safeParse({ ...VALID, image: null }).success).toBe(
+        true,
+      );
     });
 
     it('rejects an image URL shorter than 10 characters', () => {
-      expect(UserSchema.safeParse({ ...VALID, image: 'short' }).success).toBe(false);
+      expect(UserSchema.safeParse({ ...VALID, image: 'short' }).success).toBe(
+        false,
+      );
     });
 
     it('accepts a valid image URL', () => {
       expect(
-        UserSchema.safeParse({ ...VALID, image: 'https://example.com/avatar.png' }).success,
+        UserSchema.safeParse({
+          ...VALID,
+          image: 'https://example.com/avatar.png',
+        }).success,
       ).toBe(true);
     });
   });
 
   describe('gender', () => {
     it('accepts MALE', () => {
-      expect(UserSchema.safeParse({ ...VALID, gender: UserGenderEnum.MALE }).success).toBe(true);
+      expect(
+        UserSchema.safeParse({ ...VALID, gender: UserGenderEnum.MALE }).success,
+      ).toBe(true);
     });
 
     it('accepts FEMALE', () => {
-      expect(UserSchema.safeParse({ ...VALID, gender: UserGenderEnum.FEMALE }).success).toBe(true);
+      expect(
+        UserSchema.safeParse({ ...VALID, gender: UserGenderEnum.FEMALE })
+          .success,
+      ).toBe(true);
     });
 
     it('accepts UNKNOWN', () => {
-      expect(UserSchema.safeParse({ ...VALID, gender: UserGenderEnum.UNKNOWN }).success).toBe(true);
+      expect(
+        UserSchema.safeParse({ ...VALID, gender: UserGenderEnum.UNKNOWN })
+          .success,
+      ).toBe(true);
     });
 
     it('rejects an unrecognized gender value', () => {
-      expect(UserSchema.safeParse({ ...VALID, gender: 'OTHER' }).success).toBe(false);
+      expect(UserSchema.safeParse({ ...VALID, gender: 'OTHER' }).success).toBe(
+        false,
+      );
     });
   });
 
   describe('optional date fields', () => {
     it('accepts null for dob and dod', () => {
-      expect(UserSchema.safeParse({ ...VALID, dob: null, dod: null }).success).toBe(true);
+      expect(
+        UserSchema.safeParse({ ...VALID, dob: null, dod: null }).success,
+      ).toBe(true);
     });
 
     it('accepts a valid date string for dob', () => {
-      expect(UserSchema.safeParse({ ...VALID, dob: '1990-05-20' }).success).toBe(true);
+      expect(
+        UserSchema.safeParse({ ...VALID, dob: '1990-05-20' }).success,
+      ).toBe(true);
     });
 
     it('rejects an invalid date string for dob', () => {
-      expect(UserSchema.safeParse({ ...VALID, dob: 'not-a-date' }).success).toBe(false);
+      expect(
+        UserSchema.safeParse({ ...VALID, dob: 'not-a-date' }).success,
+      ).toBe(false);
     });
   });
 
@@ -105,7 +134,9 @@ describe('UserSchema', () => {
 
   describe('nullable fields', () => {
     it('accepts null for description', () => {
-      expect(UserSchema.safeParse({ ...VALID, description: null }).success).toBe(true);
+      expect(
+        UserSchema.safeParse({ ...VALID, description: null }).success,
+      ).toBe(true);
     });
   });
 });

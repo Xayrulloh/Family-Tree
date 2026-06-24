@@ -15,13 +15,18 @@ describe('BaseSchema', () => {
 
   it('accepts deletedAt as an ISO string', () => {
     expect(
-      BaseSchema.safeParse({ ...VALID, deletedAt: '2024-06-01T00:00:00.000Z' }).success,
+      BaseSchema.safeParse({ ...VALID, deletedAt: '2024-06-01T00:00:00.000Z' })
+        .success,
     ).toBe(true);
   });
 
   it('accepts Date objects for timestamp fields and coerces them to ISO strings', () => {
     const date = new Date('2024-03-15T10:00:00.000Z');
-    const result = BaseSchema.safeParse({ ...VALID, createdAt: date, updatedAt: date });
+    const result = BaseSchema.safeParse({
+      ...VALID,
+      createdAt: date,
+      updatedAt: date,
+    });
 
     expect(result.success).toBe(true);
     if (result.success) {
@@ -31,7 +36,9 @@ describe('BaseSchema', () => {
 
   describe('id', () => {
     it('rejects a non-UUID string', () => {
-      expect(BaseSchema.safeParse({ ...VALID, id: 'not-a-uuid' }).success).toBe(false);
+      expect(BaseSchema.safeParse({ ...VALID, id: 'not-a-uuid' }).success).toBe(
+        false,
+      );
     });
 
     it('rejects an empty id', () => {
@@ -47,7 +54,9 @@ describe('BaseSchema', () => {
 
   describe('timestamp fields', () => {
     it('throws RangeError for an invalid date string for createdAt (preprocess calls new Date().toISOString() which throws)', () => {
-      expect(() => BaseSchema.safeParse({ ...VALID, createdAt: 'not-a-date' })).toThrow(RangeError);
+      expect(() =>
+        BaseSchema.safeParse({ ...VALID, createdAt: 'not-a-date' }),
+      ).toThrow(RangeError);
     });
 
     it('rejects a missing createdAt', () => {

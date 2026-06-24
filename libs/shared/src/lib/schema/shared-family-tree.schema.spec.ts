@@ -10,8 +10,8 @@ const VALID_BASE = {
 
 const VALID = {
   ...VALID_BASE,
-  familyTreeId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  userId: 'b1ffcd00-0d1c-4998-cc7e-7cc0ce491b22',
+  familyTreeId: '00000000-0000-4000-8000-000000000001',
+  userId: '00000000-0000-4000-8000-000000000003',
   isBlocked: false,
   canEditMembers: false,
   canDeleteMembers: false,
@@ -35,7 +35,9 @@ describe('FamilyTreeSharedSchema', () => {
   });
 
   it('accepts isBlocked: true', () => {
-    expect(FamilyTreeSharedSchema.safeParse({ ...VALID, isBlocked: true }).success).toBe(true);
+    expect(
+      FamilyTreeSharedSchema.safeParse({ ...VALID, isBlocked: true }).success,
+    ).toBe(true);
   });
 
   describe('required boolean fields', () => {
