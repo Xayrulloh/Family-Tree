@@ -44,6 +44,7 @@ export default defineConfig({
     coverage: {
       reportsDirectory: '../../coverage/apps/web',
       provider: 'v8',
+      reporter: ['lcov', 'text-summary'],
     },
   },
 });
