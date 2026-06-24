@@ -68,3 +68,5 @@ Run commands:
 
 ## Build gotchas
 - API build uses `@nx/rspack:rspack`; the `production` config keeps `optimization: false` **on purpose**. Enabling minification mangles DTO class names, which `nestjs-zod` + `@nestjs/swagger` use as OpenAPI schema names → breaks Swagger (one shared schema for all endpoints, missing params). Configure build optimization in `apps/api/project.json`, NOT `rspack.config.js` (the executor's `optimization` flag overrides the rspack config).
+- CI uses `pnpm exec nx` (not `npx nx`) for test and scan steps — matches pnpm-first tooling convention.
+- `apps/web/tsconfig.spec.json` includes `src/**/*.ts` + `src/**/*.tsx` (not just spec globs) so VS Code resolves source files imported by spec files without "not listed in project" errors.
