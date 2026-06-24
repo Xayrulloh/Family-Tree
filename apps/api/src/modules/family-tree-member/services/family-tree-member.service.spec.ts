@@ -90,7 +90,7 @@ describe('FamilyTreeMemberService.computeDeletePreview', () => {
   let service: FamilyTreeMemberService;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     service = new FamilyTreeMemberService(
       mockDb as any,
       {} as any,

@@ -29,6 +29,7 @@ describe('BaseSchema', () => {
     });
 
     expect(result.success).toBe(true);
+
     if (result.success) {
       expect(result.data.createdAt).toBe(date.toISOString());
     }

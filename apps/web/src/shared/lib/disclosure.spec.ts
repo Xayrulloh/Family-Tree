@@ -26,6 +26,7 @@ describe('createDisclosure', () => {
     const { $isOpen, opened, closed } = createDisclosure({
       defaultIsOpen: true,
     });
+
     opened();
 
     closed();

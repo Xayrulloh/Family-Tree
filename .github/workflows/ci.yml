@@ -35,9 +35,9 @@ jobs:
         run: npx nx affected -t lint build
 
       - name: Run unit tests with coverage
-        run: npx nx run-many -t test --all --coverage --passWithNoTests
+        run: pnpm exec nx run-many -t test --all --coverage --passWithNoTests
 
       - name: Code Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: npx nx affected -t scan --parallel 1
+        run: pnpm exec nx affected -t scan --parallel 1

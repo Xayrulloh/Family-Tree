@@ -7,10 +7,12 @@ import {
 import { FamilyTreeAccessGuard } from './family-tree-access.guard';
 
 jest.mock('drizzle-orm', () => ({ and: jest.fn(), eq: jest.fn() }));
+
 jest.mock('~/database/schema', () => ({
   familyTreesSchema: {},
   sharedFamilyTreesSchema: {},
 }));
+
 jest.mock('~/database/drizzle.provider', () => ({
   DrizzleAsyncProvider: 'DrizzleAsyncProvider',
 }));
@@ -51,7 +53,9 @@ describe('FamilyTreeAccessGuard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
     mockReflector.getAllAndOverride.mockReturnValue([]);
+
     guard = new FamilyTreeAccessGuard(mockDb as any, mockReflector as any);
   });
 
@@ -80,6 +84,7 @@ describe('FamilyTreeAccessGuard', () => {
 
   it('throws ForbiddenException for a public tree when required permissions are present', async () => {
     mockReflector.getAllAndOverride.mockReturnValue(['canAddMembers']);
+
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner', isPublic: true });
 
     await expect(
@@ -100,6 +105,7 @@ describe('FamilyTreeAccessGuard', () => {
       createdBy: 'owner',
       isPublic: false,
     });
+
     mockAccessFindFirst.mockResolvedValue(FULL_ACCESS);
 
     await expect(
@@ -109,10 +115,12 @@ describe('FamilyTreeAccessGuard', () => {
 
   it('returns true for a shared user who holds the required permission', async () => {
     mockReflector.getAllAndOverride.mockReturnValue(['canEditMembers']);
+
     mockTreeFindFirst.mockResolvedValue({
       createdBy: 'owner',
       isPublic: false,
     });
+
     mockAccessFindFirst.mockResolvedValue(FULL_ACCESS);
 
     await expect(
@@ -125,6 +133,7 @@ describe('FamilyTreeAccessGuard', () => {
       createdBy: 'owner',
       isPublic: false,
     });
+
     mockAccessFindFirst.mockResolvedValue(undefined);
 
     await expect(
@@ -137,6 +146,7 @@ describe('FamilyTreeAccessGuard', () => {
       createdBy: 'owner',
       isPublic: false,
     });
+
     mockAccessFindFirst.mockResolvedValue({ ...FULL_ACCESS, isBlocked: true });
 
     await expect(
@@ -146,10 +156,12 @@ describe('FamilyTreeAccessGuard', () => {
 
   it('throws ForbiddenException when the shared user lacks a required permission', async () => {
     mockReflector.getAllAndOverride.mockReturnValue(['canDeleteMembers']);
+
     mockTreeFindFirst.mockResolvedValue({
       createdBy: 'owner',
       isPublic: false,
     });
+
     mockAccessFindFirst.mockResolvedValue({
       ...FULL_ACCESS,
       canDeleteMembers: false,

@@ -7,10 +7,12 @@ import {
 import { SharedAccessGuard } from './shared-access.guard';
 
 jest.mock('drizzle-orm', () => ({ and: jest.fn(), eq: jest.fn() }));
+
 jest.mock('~/database/schema', () => ({
   familyTreesSchema: {},
   sharedFamilyTreesSchema: {},
 }));
+
 jest.mock('~/database/drizzle.provider', () => ({
   DrizzleAsyncProvider: 'DrizzleAsyncProvider',
 }));
@@ -51,12 +53,15 @@ describe('SharedAccessGuard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
     mockReflector.getAllAndOverride.mockReturnValue([]);
+
     guard = new SharedAccessGuard(mockDb as any, mockReflector as any);
   });
 
   it('returns true for a valid shared user with no required permissions', async () => {
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner' });
+
     mockAccessFindFirst.mockResolvedValue(FULL_ACCESS);
 
     await expect(
@@ -66,7 +71,9 @@ describe('SharedAccessGuard', () => {
 
   it('returns true when the user holds the required permission', async () => {
     mockReflector.getAllAndOverride.mockReturnValue(['canAddMembers']);
+
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner' });
+
     mockAccessFindFirst.mockResolvedValue(FULL_ACCESS);
 
     await expect(
@@ -92,6 +99,7 @@ describe('SharedAccessGuard', () => {
 
   it('throws ForbiddenException when the user has no shared access record', async () => {
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner' });
+
     mockAccessFindFirst.mockResolvedValue(undefined);
 
     await expect(
@@ -101,6 +109,7 @@ describe('SharedAccessGuard', () => {
 
   it('throws ForbiddenException when the user is blocked', async () => {
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner' });
+
     mockAccessFindFirst.mockResolvedValue({ ...FULL_ACCESS, isBlocked: true });
 
     await expect(
@@ -110,7 +119,9 @@ describe('SharedAccessGuard', () => {
 
   it('throws ForbiddenException when the user lacks a required permission', async () => {
     mockReflector.getAllAndOverride.mockReturnValue(['canDeleteMembers']);
+
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner' });
+
     mockAccessFindFirst.mockResolvedValue({
       ...FULL_ACCESS,
       canDeleteMembers: false,
@@ -126,7 +137,9 @@ describe('SharedAccessGuard', () => {
       'canAddMembers',
       'canEditMembers',
     ]);
+
     mockTreeFindFirst.mockResolvedValue({ createdBy: 'owner' });
+
     mockAccessFindFirst.mockResolvedValue({
       ...FULL_ACCESS,
       canEditMembers: false,

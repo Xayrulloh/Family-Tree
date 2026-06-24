@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { formatTimeAgo } from './time-ago';
 
 const FIXED_NOW = new Date('2024-06-01T12:00:00.000Z');

@@ -8,7 +8,9 @@ import { eq } from 'drizzle-orm';
 import { OwnerGuard } from './owner.guard';
 
 jest.mock('drizzle-orm', () => ({ eq: jest.fn() }));
+
 jest.mock('~/database/schema', () => ({ familyTreesSchema: {} }));
+
 jest.mock('~/database/drizzle.provider', () => ({
   DrizzleAsyncProvider: 'DrizzleAsyncProvider',
 }));
@@ -34,6 +36,7 @@ describe('OwnerGuard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
     guard = new OwnerGuard(mockDb as any);
   });
 

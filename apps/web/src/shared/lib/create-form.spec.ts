@@ -69,6 +69,7 @@ describe('createForm', () => {
     it('populates $formInstance when the hook mounts', () => {
       const { $formInstance, useBindFormWithModel } = createForm<TestShape>();
       const mockForm = makeMockForm();
+
       renderHook(() =>
         useBindFormWithModel({ form: mockForm as unknown as MockFormInstance }),
       );
@@ -79,9 +80,11 @@ describe('createForm', () => {
     it('resets $formInstance to null when the hook unmounts', () => {
       const { $formInstance, useBindFormWithModel } = createForm<TestShape>();
       const mockForm = makeMockForm();
+
       const { unmount } = renderHook(() =>
         useBindFormWithModel({ form: mockForm as unknown as MockFormInstance }),
       );
+
       unmount();
 
       expect($formInstance.getState()).toBeNull();
@@ -90,6 +93,7 @@ describe('createForm', () => {
     it('syncs form.watch() values to $formValues on mount', () => {
       const { $formValues, useBindFormWithModel } = createForm<TestShape>();
       const mockForm = makeMockForm({ name: 'Alice', age: 30 });
+
       renderHook(() =>
         useBindFormWithModel({ form: mockForm as unknown as MockFormInstance }),
       );
@@ -100,6 +104,7 @@ describe('createForm', () => {
     it('clearErrorsFx calls form.clearErrors() after the form is bound', async () => {
       const { clearErrorsFx, useBindFormWithModel } = createForm<TestShape>();
       const mockForm = makeMockForm();
+
       renderHook(() =>
         useBindFormWithModel({ form: mockForm as unknown as MockFormInstance }),
       );
@@ -113,6 +118,7 @@ describe('createForm', () => {
       const { resetFx, useBindFormWithModel } = createForm<TestShape>();
       const mockForm = makeMockForm();
       const values = { name: 'Bob', age: 25 };
+
       renderHook(() =>
         useBindFormWithModel({ form: mockForm as unknown as MockFormInstance }),
       );
@@ -125,6 +131,7 @@ describe('createForm', () => {
     it('setErrorFx calls form.setError() with name and message', async () => {
       const { setErrorFx, useBindFormWithModel } = createForm<TestShape>();
       const mockForm = makeMockForm();
+
       renderHook(() =>
         useBindFormWithModel({ form: mockForm as unknown as MockFormInstance }),
       );
@@ -139,6 +146,7 @@ describe('createForm', () => {
     it('setValueFx calls form.setValue() with name and value', async () => {
       const { setValueFx, useBindFormWithModel } = createForm<TestShape>();
       const mockForm = makeMockForm();
+
       renderHook(() =>
         useBindFormWithModel({ form: mockForm as unknown as MockFormInstance }),
       );

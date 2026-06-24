@@ -2,6 +2,7 @@ import {
   FamilyTreeMemberConnectionEnum,
   type FamilyTreeMemberConnectionGetAllResponseType,
   type FamilyTreeMemberGetAllResponseType,
+  UserGenderEnum,
 } from '@family-tree/shared';
 import { describe, expect, it } from 'vitest';
 import { toF3Data } from './family-chart-transformer';
@@ -14,7 +15,7 @@ const BASE = {
 
 function makeMember(
   id: string,
-  gender: 'MALE' | 'FEMALE' = 'MALE',
+  gender: UserGenderEnum.MALE | UserGenderEnum.FEMALE = UserGenderEnum.MALE,
   overrides: Partial<FamilyTreeMemberGetAllResponseType[number]> = {},
 ): FamilyTreeMemberGetAllResponseType[number] {
   return {
@@ -61,17 +62,19 @@ describe('toF3Data', () => {
   });
 
   it('maps MALE gender to "M"', () => {
-    const [result] = toF3Data([makeMember('a', 'MALE')], []);
+    const [result] = toF3Data([makeMember('a', UserGenderEnum.MALE)], []);
+
     expect(result.data.gender).toBe('M');
   });
 
   it('maps FEMALE gender to "F"', () => {
-    const [result] = toF3Data([makeMember('a', 'FEMALE')], []);
+    const [result] = toF3Data([makeMember('a', UserGenderEnum.FEMALE)], []);
+
     expect(result.data.gender).toBe('F');
   });
 
   it('passes through optional member data fields', () => {
-    const member = makeMember('a', 'MALE', {
+    const member = makeMember('a', UserGenderEnum.MALE, {
       dob: '2000-01-01',
       dod: '2024-01-01',
       image: 'https://example.com/img.png',
@@ -88,7 +91,7 @@ describe('toF3Data', () => {
 
   describe('SPOUSE connections', () => {
     it('creates bidirectional spouse links', () => {
-      const members = [makeMember('a'), makeMember('b', 'FEMALE')];
+      const members = [makeMember('a'), makeMember('b', UserGenderEnum.FEMALE)];
       const connections = [
         makeConnection('a', 'b', FamilyTreeMemberConnectionEnum.SPOUSE),
       ];
@@ -104,7 +107,10 @@ describe('toF3Data', () => {
 
   describe('PARENT connections', () => {
     it('sets children on the parent and parents on the child', () => {
-      const members = [makeMember('parent'), makeMember('child', 'FEMALE')];
+      const members = [
+        makeMember('parent'),
+        makeMember('child', UserGenderEnum.FEMALE),
+      ];
       const connections = [
         makeConnection(
           'parent',
@@ -126,7 +132,7 @@ describe('toF3Data', () => {
     it('accumulates multiple children on a parent', () => {
       const members = [
         makeMember('parent'),
-        makeMember('c1', 'FEMALE'),
+        makeMember('c1', UserGenderEnum.FEMALE),
         makeMember('c2'),
       ];
       const connections = [
@@ -147,8 +153,8 @@ describe('toF3Data', () => {
     it('combines spouse and parent links correctly', () => {
       const members = [
         makeMember('dad'),
-        makeMember('mom', 'FEMALE'),
-        makeMember('kid', 'FEMALE'),
+        makeMember('mom', UserGenderEnum.FEMALE),
+        makeMember('kid', UserGenderEnum.FEMALE),
       ];
       const connections = [
         makeConnection('dad', 'mom', FamilyTreeMemberConnectionEnum.SPOUSE),

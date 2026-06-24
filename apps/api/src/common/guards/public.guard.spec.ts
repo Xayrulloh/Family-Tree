@@ -4,7 +4,9 @@ import { eq } from 'drizzle-orm';
 import { PublicGuard } from './public.guard';
 
 jest.mock('drizzle-orm', () => ({ eq: jest.fn() }));
+
 jest.mock('~/database/schema', () => ({ familyTreesSchema: {} }));
+
 jest.mock('~/database/drizzle.provider', () => ({
   DrizzleAsyncProvider: 'DrizzleAsyncProvider',
 }));
@@ -70,7 +72,7 @@ describe('PublicGuard', () => {
     ).resolves.toBe(true);
   });
 
-  it('prioritises familyTreeId over id when both are present', async () => {
+  it('prioritizes familyTreeId over id when both are present', async () => {
     mockFindFirst.mockResolvedValue({ isPublic: true });
 
     await guard.canActivate(
