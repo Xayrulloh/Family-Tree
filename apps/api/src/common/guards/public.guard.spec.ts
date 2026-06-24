@@ -1,5 +1,6 @@
 /// <reference types="jest" />
 import { type ExecutionContext, NotFoundException } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
 import { PublicGuard } from './public.guard';
 
 jest.mock('drizzle-orm', () => ({ eq: jest.fn() }));
@@ -67,5 +68,15 @@ describe('PublicGuard', () => {
     await expect(
       guard.canActivate(createContext({ id: 'tree-1' })),
     ).resolves.toBe(true);
+  });
+
+  it('prioritises familyTreeId over id when both are present', async () => {
+    mockFindFirst.mockResolvedValue({ isPublic: true });
+
+    await guard.canActivate(
+      createContext({ familyTreeId: 'tree-1', id: 'tree-2' }),
+    );
+
+    expect(eq).toHaveBeenCalledWith(undefined, 'tree-1');
   });
 });

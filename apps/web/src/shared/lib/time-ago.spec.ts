@@ -22,6 +22,10 @@ describe('formatTimeAgo', () => {
       expect(formatTimeAgo(secondsAgo(0))).toBe('0 seconds ago');
     });
 
+    it('returns "1 second ago" for 1 second', () => {
+      expect(formatTimeAgo(secondsAgo(1))).toBe('1 second ago');
+    });
+
     it('returns "30 seconds ago" for 30 seconds', () => {
       expect(formatTimeAgo(secondsAgo(30))).toBe('30 seconds ago');
     });
@@ -32,12 +36,12 @@ describe('formatTimeAgo', () => {
   });
 
   describe('minutes (60s – 3599s)', () => {
-    it('returns "1 minutes ago" at exactly 60 seconds', () => {
-      expect(formatTimeAgo(secondsAgo(60))).toBe('1 minutes ago');
+    it('returns "1 minute ago" at exactly 60 seconds', () => {
+      expect(formatTimeAgo(secondsAgo(60))).toBe('1 minute ago');
     });
 
-    it('returns "1 minutes ago" for 90 seconds', () => {
-      expect(formatTimeAgo(secondsAgo(90))).toBe('1 minutes ago');
+    it('returns "1 minute ago" for 90 seconds', () => {
+      expect(formatTimeAgo(secondsAgo(90))).toBe('1 minute ago');
     });
 
     it('returns "2 minutes ago" for 120 seconds', () => {
@@ -50,8 +54,8 @@ describe('formatTimeAgo', () => {
   });
 
   describe('hours (3600s – 86399s)', () => {
-    it('returns "1 hours ago" at exactly 3600 seconds', () => {
-      expect(formatTimeAgo(secondsAgo(3600))).toBe('1 hours ago');
+    it('returns "1 hour ago" at exactly 3600 seconds', () => {
+      expect(formatTimeAgo(secondsAgo(3600))).toBe('1 hour ago');
     });
 
     it('returns "2 hours ago" for 7200 seconds', () => {
@@ -64,8 +68,8 @@ describe('formatTimeAgo', () => {
   });
 
   describe('days (86400s – 2591999s)', () => {
-    it('returns "1 days ago" at exactly 86400 seconds', () => {
-      expect(formatTimeAgo(secondsAgo(86400))).toBe('1 days ago');
+    it('returns "1 day ago" at exactly 86400 seconds', () => {
+      expect(formatTimeAgo(secondsAgo(86400))).toBe('1 day ago');
     });
 
     it('returns "15 days ago" for 15 days', () => {
@@ -78,8 +82,8 @@ describe('formatTimeAgo', () => {
   });
 
   describe('months (2592000s – 31535999s)', () => {
-    it('returns "1 months ago" at exactly 2592000 seconds', () => {
-      expect(formatTimeAgo(secondsAgo(2592000))).toBe('1 months ago');
+    it('returns "1 month ago" at exactly 2592000 seconds', () => {
+      expect(formatTimeAgo(secondsAgo(2592000))).toBe('1 month ago');
     });
 
     it('returns "6 months ago" for 6 months', () => {
@@ -92,8 +96,8 @@ describe('formatTimeAgo', () => {
   });
 
   describe('years (≥ 31536000s)', () => {
-    it('returns "1 years ago" at exactly 31536000 seconds', () => {
-      expect(formatTimeAgo(secondsAgo(31536000))).toBe('1 years ago');
+    it('returns "1 year ago" at exactly 31536000 seconds', () => {
+      expect(formatTimeAgo(secondsAgo(31536000))).toBe('1 year ago');
     });
 
     it('returns "3 years ago" for 3 years', () => {

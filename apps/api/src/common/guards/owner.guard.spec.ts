@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
 import { OwnerGuard } from './owner.guard';
 
 jest.mock('drizzle-orm', () => ({ eq: jest.fn() }));
@@ -83,6 +84,6 @@ describe('OwnerGuard', () => {
       createContext({ familyTreeId: 'tree-1', id: 'tree-2' }, 'user-1'),
     );
 
-    expect(mockFindFirst).toHaveBeenCalledTimes(1);
+    expect(eq).toHaveBeenCalledWith(undefined, 'tree-1');
   });
 });
