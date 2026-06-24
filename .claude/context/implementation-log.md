@@ -201,3 +201,31 @@ Branch `feature/isolation-routes` continued (all phases on same branch, no merge
 ### Gotchas
 - `import z from 'zod'` not `import type z` when defining a Zod schema — `import type` makes `z` undefined at runtime and silently breaks `z.object(...)` with no TS error.
 - `fetchPreviewFx.doneData` from the Axios `base` interceptor is a full `AxiosResponse`. Must use `fn: (response) => response.data` in the sample to store only the data in `$preview`, not the entire response object.
+
+---
+
+## 2026-06-24 — Unit test phase (Tiers 1–5, 210 tests total)
+
+- **Tier 1 (51 tests):** Pure helpers — `random-avatar` (libs/shared), `random-string` (api), `time-ago` (web), `family-chart-transformer` (web).
+- **Tier 2 (98 tests):** All 9 base Zod schemas in `libs/shared/src/lib/schema/` — base, user, family-tree, family-tree-member, family-tree-member-connection, pagination, search, fcm-token, notification, shared-family-tree.
+- **Tier 3 (28 tests):** All 4 NestJS guards — `OwnerGuard`, `PublicGuard`, `SharedAccessGuard`, `FamilyTreeAccessGuard`.
+- **Tier 4 (12 tests):** `FamilyTreeMemberService.computeDeletePreview` — all 12 rule-matrix branches via `(service as any).computeDeletePreview(...)` cast.
+- **Tier 5 (21 tests):** Web utility factories — `createDisclosure` (8 tests) and `createForm` (13 tests, with `renderHook` for effect tests since internal events aren't exported).
+- Test infrastructure created: `apps/api/jest.config.ts`, `apps/api/tsconfig.spec.json`, `libs/shared/vitest.config.ts`, `libs/shared/tsconfig.spec.json`.
+- **Key note (Zod v4 UUID validation):** Zod v4.3.6 enforces RFC 4122 variant bits — the 4th UUID segment must start with `8`, `9`, `a`, or `b`. Microsoft GUIDs (4th segment starting with `c`) are rejected. Valid test UUID pattern: `550e8400-e29b-41d4-a716-446655440000` (3rd segment starts with `4` = version 4, 4th starts with `a` = RFC variant).
+- **Key note (Zod v4 safeParse + RangeError):** `safeParse` does NOT catch native JS errors thrown inside `z.preprocess`. An invalid date string in `BaseSchema` causes `new Date(str)` → `dateToString` → `RangeError` which bubbles through `safeParse`. Test with `expect(() => schema.safeParse({...})).toThrow(RangeError)` not `expect(result.success).toBe(false)`.
+- **Key note (guard test mocking strategy):** Mock `drizzle-orm` (`eq`, `and`, `or`), `~/database/schema`, and `~/database/drizzle.provider` at the top of each guard spec. This avoids ESM/CJS resolution issues with drizzle-orm in Jest and lets guards be instantiated directly with a plain mock db object — no NestJS testing module needed.
+- **Key note (service private method testing):** `computeDeletePreview` is `private`. Cast the service instance: `(service as any).computeDeletePreview(member, treeId)`. Mock `@family-tree/shared`, `~/config/cloudflare/cloudflare.config`, `~/database/schema`, `drizzle-orm`, and `~/database/drizzle.provider` to avoid heavy deps (AWS SDK, pg, etc.) loading in Jest.
+- **Key note (createForm internal events):** `formInstanceChanged`, `resetFormInstance`, and `formValuesChanged` are NOT exported from `createForm`. The only way to populate `$formInstance` from a test is via `renderHook(() => useBindFormWithModel({ form: mockForm }))` from `@testing-library/react`. The `jsdom` environment (already configured in `vite.config.ts`) makes this work without extra setup.
+- **Key note (Vitest CLI vs Jest CLI):** Vitest does not support `--testPathPatterns` (Jest flag). Run Vitest directly: `npx vitest run path/to/spec.ts`. Nx passes the flag through to the underlying runner; use Jest's `--testPathPatterns` for API tests but run web tests with `npx vitest run` directly from the `apps/web` directory.
+
+---
+
+## 2026-06-24 — Unit test polish: AAA formatting + IDE type fixes
+
+- Added `/// <reference types="jest" />` to all 6 API spec files (4 guards + service + helper). VS Code's TS language server uses the nearest `tsconfig.json`, not `tsconfig.spec.json`, so Jest globals (`jest`, `describe`, `it`, `expect`, `beforeEach`) show `Cannot find name` errors in the IDE despite tests running fine. The triple-slash directive fixes this without touching the tsconfig references.
+- Applied Arrange-Act-Assert (AAA) blank-line grouping to all 21 spec files written in the previous session. Rule: one blank line before the act call, one blank line before the first `expect()` call. Single-line tests (one `expect`, no setup) need no blank lines.
+- Added `biome.json` overrides block for `**/*.spec.ts` / `**/*.test.ts`: disables `noExplicitAny` (needed for `mockDb as any` and similar test casts) and `noNonNullAssertion` (needed for `.find(...)!` in transformer tests). This is cleaner than per-line `biome-ignore` comments across 21 files.
+- Saved AAA blank-line rule to persistent memory (`memory/feedback_test_formatting.md`) so it applies automatically in future sessions without being re-stated.
+- **Key note (Biome test overrides pattern):** Use `biome.json` `overrides` with `"includes": ["**/*.spec.ts", "**/*.test.ts"]` to relax lint rules for test files only. Preferred over `// biome-ignore` comments when the same rule fires across many test files. Rules relaxed: `suspicious.noExplicitAny`, `style.noNonNullAssertion`.
+- **Key note (`/// <reference types="jest" />` vs tsconfig):** Adding the spec tsconfig to `tsconfig.json`'s `references` array (composite project references) is the "correct" approach but VS Code doesn't always pick it up immediately. The `/// <reference types="jest" />` directive at the top of the spec file is immediate and file-local — use it as the reliable fallback when IDE errors appear despite correct tsconfig setup.
