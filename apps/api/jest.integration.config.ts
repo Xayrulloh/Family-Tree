@@ -1,5 +1,7 @@
-export default {
-  displayName: 'api',
+import type { Config } from 'jest';
+
+const config: Config = {
+  displayName: 'api-integration',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
   transform: {
@@ -10,7 +12,11 @@ export default {
     '^~/(.*)$': '<rootDir>/src/$1',
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../coverage/apps/api',
-  coverageReporters: ['lcov', 'text-summary'],
-  testPathIgnorePatterns: ['/node_modules/', '\\.integration\\.spec\\.ts$'],
+  testMatch: ['**/*.integration.spec.ts'],
+  testTimeout: 60000,
+  globalSetup: '<rootDir>/src/test/global-setup.ts',
+  globalTeardown: '<rootDir>/src/test/global-teardown.ts',
+  maxWorkers: 1,
 };
+
+export default config;
