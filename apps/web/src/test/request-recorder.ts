@@ -6,6 +6,7 @@ import { server } from './msw-server';
 export const API_BASE = 'http://api.test';
 
 export type RecordedRequest = {
+  callCount: number;
   method: string;
   pathname: string;
   search: string;
@@ -29,17 +30,23 @@ function safeParse(text: string): unknown {
 export function recordRequest(
   response: unknown = { ok: true },
 ): RecordedRequest {
-  const record = {} as RecordedRequest;
+  const record = { callCount: 0 } as RecordedRequest;
 
   const handler = async ({ request }: { request: Request }) => {
-    const url = new URL(request.url);
-    const text = await request.clone().text();
+    record.callCount += 1;
 
-    record.method = request.method;
-    record.pathname = url.pathname;
-    record.search = url.search;
-    record.contentType = request.headers.get('content-type');
-    record.body = text ? safeParse(text) : undefined;
+    // Capture the first request only; a later request can't silently overwrite
+    // the one under assertion. Check `callCount` to assert an exact-one call.
+    if (record.callCount === 1) {
+      const url = new URL(request.url);
+      const text = await request.clone().text();
+
+      record.method = request.method;
+      record.pathname = url.pathname;
+      record.search = url.search;
+      record.contentType = request.headers.get('content-type');
+      record.body = text ? safeParse(text) : undefined;
+    }
 
     return HttpResponse.json(response);
   };

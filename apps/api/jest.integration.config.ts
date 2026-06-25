@@ -16,6 +16,7 @@ const config: Config = {
   testTimeout: 60000,
   globalSetup: '<rootDir>/src/test/global-setup.ts',
   globalTeardown: '<rootDir>/src/test/global-teardown.ts',
+  setupFilesAfterEnv: ['<rootDir>/src/test/setup-after-env.ts'],
   maxWorkers: 1,
 };
 

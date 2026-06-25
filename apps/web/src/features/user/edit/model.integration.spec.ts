@@ -69,6 +69,11 @@ describe('user/edit model (integration)', () => {
         [userModel.$user, currentUser],
         [model.form.$formValues, unchangedValues],
       ],
+      // Defensive: if the no-change filter ever regresses and editProfileFx
+      // fires, this keeps sessionFx from hitting the real /users/me endpoint.
+      handlers: [
+        [userModel.sessionFx, vi.fn().mockResolvedValue({ data: {} })],
+      ],
     });
 
     await allSettled(model.formValidated, { scope });

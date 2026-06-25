@@ -15,6 +15,14 @@ export function getTestDb(): NodePgDatabase<typeof schema> {
   return _db;
 }
 
+export async function closeTestDb(): Promise<void> {
+  if (_pool) {
+    await _pool.end();
+    _pool = undefined;
+    _db = undefined;
+  }
+}
+
 export async function truncateTables(): Promise<void> {
   if (!_pool) getTestDb();
   const pool = _pool as Pool;
