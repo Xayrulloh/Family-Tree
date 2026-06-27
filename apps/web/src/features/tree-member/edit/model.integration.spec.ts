@@ -2,9 +2,10 @@ import { FileUploadFolderEnum, UserGenderEnum } from '@family-tree/shared';
 import { allSettled, fork } from 'effector';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from '~/shared/api';
+import type { FormValues } from './model';
 import * as model from './model';
 
-const memberValues = {
+const memberValues: FormValues = {
   id: 'm-1',
   familyTreeId: 'tree-1',
   name: 'Dad',
@@ -16,7 +17,7 @@ const memberValues = {
   createdAt: '2020-01-01',
   updatedAt: '2020-01-01',
   deletedAt: null,
-} as never;
+};
 
 describe('tree-member/edit model (integration)', () => {
   afterEach(() => vi.restoreAllMocks());

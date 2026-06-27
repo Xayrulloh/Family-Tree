@@ -27,6 +27,7 @@ describe('FamilyTreeService (integration)', () => {
 
       const result = await service.createFamilyTree(user.id, {
         name: 'Smith Family',
+        image: null,
         isPublic: false,
       });
 
@@ -39,7 +40,11 @@ describe('FamilyTreeService (integration)', () => {
       await seedFamilyTree(getTestDb(), user.id, { name: 'Smith Family' });
 
       await expect(
-        service.createFamilyTree(user.id, { name: 'Smith Family', isPublic: false }),
+        service.createFamilyTree(user.id, {
+          name: 'Smith Family',
+          image: null,
+          isPublic: false,
+        }),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -51,7 +56,11 @@ describe('FamilyTreeService (integration)', () => {
       await seedFamilyTree(getTestDb(), user1.id, { name: 'Smith Family' });
 
       await expect(
-        service.createFamilyTree(user2.id, { name: 'Smith Family', isPublic: false }),
+        service.createFamilyTree(user2.id, {
+          name: 'Smith Family',
+          image: null,
+          isPublic: false,
+        }),
       ).resolves.toBeDefined();
     });
   });
@@ -76,9 +85,14 @@ describe('FamilyTreeService (integration)', () => {
   describe('updateFamilyTree', () => {
     it('persists the updated fields', async () => {
       const user = await seedUser(getTestDb());
-      const tree = await seedFamilyTree(getTestDb(), user.id, { name: 'Before' });
+      const tree = await seedFamilyTree(getTestDb(), user.id, {
+        name: 'Before',
+      });
 
-      await service.updateFamilyTree(tree.id, { name: 'After', isPublic: true });
+      await service.updateFamilyTree(tree.id, {
+        name: 'After',
+        isPublic: true,
+      });
 
       const updated = await service.getFamilyTreeById(tree.id);
       expect(updated.name).toBe('After');
@@ -134,7 +148,9 @@ describe('FamilyTreeService (integration)', () => {
 
       await service.deleteFamilyTree(tree.id);
 
-      await expect(service.getFamilyTreeById(tree.id)).rejects.toThrow(NotFoundException);
+      await expect(service.getFamilyTreeById(tree.id)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws NotFoundException for an unknown id', async () => {
@@ -224,8 +240,14 @@ describe('FamilyTreeService (integration)', () => {
         seedFamilyTree(getTestDb(), user.id),
       ]);
 
-      const page1 = await service.getFamilyTreesOfUser(user.id, { page: 1, perPage: 2 });
-      const page2 = await service.getFamilyTreesOfUser(user.id, { page: 2, perPage: 2 });
+      const page1 = await service.getFamilyTreesOfUser(user.id, {
+        page: 1,
+        perPage: 2,
+      });
+      const page2 = await service.getFamilyTreesOfUser(user.id, {
+        page: 2,
+        perPage: 2,
+      });
 
       expect(page1.familyTrees).toHaveLength(2);
       expect(page1.totalCount).toBe(3);
@@ -239,7 +261,10 @@ describe('FamilyTreeService (integration)', () => {
       await seedFamilyTree(getTestDb(), user.id, { isPublic: true });
       await seedFamilyTree(getTestDb(), user.id, { isPublic: false });
 
-      const result = await service.getPublicFamilyTrees({ page: 1, perPage: 10 });
+      const result = await service.getPublicFamilyTrees({
+        page: 1,
+        perPage: 10,
+      });
 
       expect(result.totalCount).toBe(1);
       expect(result.familyTrees[0].isPublic).toBe(true);

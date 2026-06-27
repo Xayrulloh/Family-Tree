@@ -38,11 +38,15 @@ describe('tree api client (integration)', () => {
   it('create → POST /family-trees with body', async () => {
     const rec = recordRequest();
 
-    await tree.create({ name: 'Smith Family', isPublic: false });
+    await tree.create({ name: 'Smith Family', image: null, isPublic: false });
 
     expect(rec.method).toBe('POST');
     expect(rec.pathname).toBe('/family-trees');
-    expect(rec.body).toEqual({ name: 'Smith Family', isPublic: false });
+    expect(rec.body).toEqual({
+      name: 'Smith Family',
+      image: null,
+      isPublic: false,
+    });
   });
 
   it('update → PUT /family-trees/:id with body', async () => {
