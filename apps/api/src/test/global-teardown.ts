@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, unlinkSync } from 'node:fs';
 import { CONTAINER_INFO_PATH } from './global-setup';
 
@@ -10,8 +10,8 @@ export default async function globalTeardown() {
   };
 
   try {
-    execSync(`docker stop ${id}`, { stdio: 'ignore' });
-    execSync(`docker rm ${id}`, { stdio: 'ignore' });
+    execFileSync('docker', ['stop', id], { stdio: 'ignore' });
+    execFileSync('docker', ['rm', id], { stdio: 'ignore' });
   } catch {
     // Ryuk will clean up if docker commands fail
   }

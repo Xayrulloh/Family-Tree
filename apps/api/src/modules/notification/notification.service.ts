@@ -55,11 +55,14 @@ export class NotificationService {
   }
 
   async markAllAsRead(userId: string): Promise<void> {
+    const now = new Date().toISOString();
+
     await this.db
-      .update(schema.notificationReadsSchema)
-      .set({
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(schema.notificationReadsSchema.userId, userId));
+      .insert(schema.notificationReadsSchema)
+      .values({ userId, updatedAt: now })
+      .onConflictDoUpdate({
+        target: schema.notificationReadsSchema.userId,
+        set: { updatedAt: now },
+      });
   }
 }

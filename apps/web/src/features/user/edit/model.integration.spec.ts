@@ -1,3 +1,4 @@
+import type { UserResponseType } from '@family-tree/shared';
 import { UserGenderEnum } from '@family-tree/shared';
 import { allSettled, fork } from 'effector';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -5,13 +6,20 @@ import { userModel } from '~/entities/user';
 import { api } from '~/shared/api';
 import * as model from './model';
 
-const currentUser = {
+const currentUser: UserResponseType = {
   id: 'u-1',
+  email: 'alice@test.com',
   name: 'Alice',
+  username: 'alice',
   image: 'https://r2.example.com/alice.png',
   gender: UserGenderEnum.FEMALE,
   dob: '1990-01-01',
-} as never;
+  dod: null,
+  description: null,
+  deletedAt: null,
+  createdAt: '2020-01-01',
+  updatedAt: '2020-01-01',
+};
 
 const unchangedValues = {
   name: 'Alice',

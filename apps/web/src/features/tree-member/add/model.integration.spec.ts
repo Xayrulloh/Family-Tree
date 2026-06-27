@@ -136,4 +136,17 @@ describe('tree-member/add model (integration)', () => {
 
     expect(scope.getState(model.$lastAddedMemberId)).toBeNull();
   });
+
+  it('preserves $member and leaves $lastAddedMemberId null when createChild fails', async () => {
+    vi.spyOn(api.treeMember, 'createChild').mockRejectedValue(
+      new Error('network error'),
+    );
+
+    const scope = fork();
+
+    await allSettled(model.addBoyTrigger, { scope, params: member });
+
+    expect(scope.getState(model.$member)).toEqual(member);
+    expect(scope.getState(model.$lastAddedMemberId)).toBeNull();
+  });
 });

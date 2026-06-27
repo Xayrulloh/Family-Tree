@@ -96,8 +96,7 @@
     "test-integration": {
       "executor": "@nx/jest:jest",
       "options": {
-        "jestConfig": "apps/api/jest.integration.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "apps/api/jest.integration.config.ts"
       }
     }
   }

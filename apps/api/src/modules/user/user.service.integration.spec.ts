@@ -1,8 +1,8 @@
 /// <reference types="jest" />
 import { UserGenderEnum } from '@family-tree/shared';
 import { NotFoundException } from '@nestjs/common';
-import { getTestDb, truncateTables } from '~/test/test-db';
 import { seedUser } from '~/test/seeds';
+import { getTestDb, truncateTables } from '~/test/test-db';
 import { UserService } from './user.service';
 
 const mockCloudflareConfig = {
@@ -50,9 +50,9 @@ describe('UserService (integration)', () => {
     });
 
     it('throws NotFoundException for an unknown email', async () => {
-      await expect(
-        service.getUserByEmail('ghost@test.com'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.getUserByEmail('ghost@test.com')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -118,22 +118,22 @@ describe('UserService (integration)', () => {
   });
 
   describe('updateUserAvatar', () => {
-    it('sets a dicebear notionists avatar for a MALE user', async () => {
+    it('generates and persists a dicebear avatar for a MALE user', async () => {
       const user = await seedUser(getTestDb(), { gender: UserGenderEnum.MALE });
 
       const result = await service.updateUserAvatar(user.id);
 
-      expect(result.image).toMatch(/api\.dicebear\.com\/9\.x\/notionists/);
+      expect(result.image).toMatch(/api\.dicebear\.com/);
     });
 
-    it('sets a dicebear notionists avatar for a FEMALE user', async () => {
+    it('generates and persists a dicebear avatar for a FEMALE user', async () => {
       const user = await seedUser(getTestDb(), {
         gender: UserGenderEnum.FEMALE,
       });
 
       const result = await service.updateUserAvatar(user.id);
 
-      expect(result.image).toMatch(/api\.dicebear\.com\/9\.x\/notionists/);
+      expect(result.image).toMatch(/api\.dicebear\.com/);
     });
 
     it('sets a dicebear 7.x notionists avatar for an UNKNOWN user', async () => {

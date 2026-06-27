@@ -67,6 +67,7 @@ describe('treeMember api client (integration)', () => {
 
     expect(rec.method).toBe('POST');
     expect(rec.pathname).toBe('/family-trees/tree-1/members/parents');
+    expect(rec.body).toEqual({ fromMemberId: 'm-1' });
   });
 
   it('update → PUT .../members/:id with body', async () => {

@@ -108,17 +108,40 @@ describe('NotificationService (integration)', () => {
   });
 
   describe('markAllAsRead', () => {
+    it('creates a read record for a first-time reader, making all notifications read', async () => {
+      const [receiver, sender] = await Promise.all([
+        seedUser(getTestDb()),
+        seedUser(getTestDb()),
+      ]);
+
+      await seedNotification(
+        receiver.id,
+        sender.id,
+        'A',
+        '2026-01-01T00:00:00.000Z',
+      );
+
+      await service.markAllAsRead(receiver.id);
+
+      const result = await service.getUserNotifications(receiver.id);
+
+      expect(result.unReadNotifications).toHaveLength(0);
+      expect(result.last5Notifications).toHaveLength(1);
+    });
+
     it('advances the read timestamp so prior notifications become read', async () => {
       const [receiver, sender] = await Promise.all([
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       await seedNotification(
         receiver.id,
         sender.id,
         'A',
         '2026-01-03T00:00:00.000Z',
       );
+
       await getTestDb()
         .insert(schema.notificationReadsSchema)
         .values({ userId: receiver.id, updatedAt: '2026-01-02T00:00:00.000Z' });
@@ -126,6 +149,7 @@ describe('NotificationService (integration)', () => {
       await service.markAllAsRead(receiver.id);
 
       const result = await service.getUserNotifications(receiver.id);
+
       expect(result.unReadNotifications).toHaveLength(0);
       expect(result.last5Notifications).toHaveLength(1);
 
@@ -134,6 +158,7 @@ describe('NotificationService (integration)', () => {
           where: and(eq(schema.notificationReadsSchema.userId, receiver.id)),
         },
       );
+
       expect(new Date(readRow!.updatedAt).getTime()).toBeGreaterThan(
         new Date('2026-01-02T00:00:00.000Z').getTime(),
       );

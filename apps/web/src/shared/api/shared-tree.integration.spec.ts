@@ -10,7 +10,9 @@ describe('sharedTree api client (integration)', () => {
 
     expect(rec.method).toBe('GET');
     expect(rec.pathname).toBe('/family-trees/shared');
+
     const params = new URLSearchParams(rec.search);
+
     expect(params.get('page')).toBe('1');
     expect(params.get('perPage')).toBe('10');
     expect(params.get('name')).toBeNull();
@@ -19,10 +21,11 @@ describe('sharedTree api client (integration)', () => {
   it('findAll → encodes the name filter when provided', async () => {
     const rec = recordRequest();
 
-    await sharedTree.findAll({ page: 1, perPage: 10, name: 'John Doe' });
+    await sharedTree.findAll({ page: 1, perPage: 10, name: 'John & Doe' });
 
     const params = new URLSearchParams(rec.search);
-    expect(params.get('name')).toBe('John Doe');
+
+    expect(params.get('name')).toBe('John & Doe');
   });
 
   it('findById → GET /family-trees/shared/:familyTreeId', async () => {
@@ -39,15 +42,17 @@ describe('sharedTree api client (integration)', () => {
 
     await sharedTree.findUsers(
       { familyTreeId: 'tree-1' },
-      { page: 2, perPage: 20, name: 'Jane' },
+      { page: 2, perPage: 20, name: 'Jane=Smith' },
     );
 
     expect(rec.method).toBe('GET');
     expect(rec.pathname).toBe('/family-trees/shared/tree-1/users');
+
     const params = new URLSearchParams(rec.search);
+
     expect(params.get('page')).toBe('2');
     expect(params.get('perPage')).toBe('20');
-    expect(params.get('name')).toBe('Jane');
+    expect(params.get('name')).toBe('Jane=Smith');
   });
 
   it('update → PUT /family-trees/shared/:id/users/:userId with body', async () => {

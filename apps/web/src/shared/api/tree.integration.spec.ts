@@ -10,7 +10,9 @@ describe('tree api client (integration)', () => {
 
     expect(rec.method).toBe('GET');
     expect(rec.pathname).toBe('/family-trees');
+
     const params = new URLSearchParams(rec.search);
+
     expect(params.get('page')).toBe('1');
     expect(params.get('perPage')).toBe('10');
     expect(params.get('name')).toBeNull();
@@ -19,20 +21,26 @@ describe('tree api client (integration)', () => {
   it('findAll → includes the name filter when provided', async () => {
     const rec = recordRequest();
 
-    await tree.findAll({ page: 2, perPage: 5, name: 'Smith' });
+    await tree.findAll({ page: 2, perPage: 5, name: 'Smith & Jones' });
 
     const params = new URLSearchParams(rec.search);
+
     expect(params.get('page')).toBe('2');
-    expect(params.get('name')).toBe('Smith');
+    expect(params.get('name')).toBe('Smith & Jones');
   });
 
-  it('findAllPublic → GET /family-trees/public', async () => {
+  it('findAllPublic → GET /family-trees/public with pagination params', async () => {
     const rec = recordRequest();
 
     await tree.findAllPublic({ page: 1, perPage: 10 });
 
     expect(rec.method).toBe('GET');
     expect(rec.pathname).toBe('/family-trees/public');
+
+    const params = new URLSearchParams(rec.search);
+
+    expect(params.get('page')).toBe('1');
+    expect(params.get('perPage')).toBe('10');
   });
 
   it('create → POST /family-trees with body', async () => {
