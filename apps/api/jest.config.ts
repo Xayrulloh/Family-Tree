@@ -12,4 +12,5 @@ export default {
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/api',
   coverageReporters: ['lcov', 'text-summary'],
+  testPathIgnorePatterns: ['/node_modules/', '\\.integration\\.spec\\.ts$'],
 };

@@ -50,16 +50,19 @@ family-tree/
 ## Testing setup
 | Package | Runner | Config |
 |---|---|---|
-| `apps/api` | Jest (`@nx/jest`) | `apps/api/jest.config.ts` + `apps/api/tsconfig.spec.json` |
-| `apps/web` | Vitest (`@nx/vitest`) | `apps/web/vite.config.ts` (`test:` block, `environment: 'jsdom'`) |
+| `apps/api` | Jest (`@nx/jest`) | unit: `apps/api/jest.config.ts`; integration: `apps/api/jest.integration.config.ts` (+ `apps/api/tsconfig.spec.json`) |
+| `apps/web` | Vitest (`@nx/vitest`) | unit: `apps/web/vite.config.ts` (`test:` block, `environment: 'jsdom'`); integration: `apps/web/vitest.integration.config.ts` |
 | `libs/shared` | Vitest | `libs/shared/vitest.config.ts` + `libs/shared/tsconfig.spec.json` |
 
 Run commands:
-- API: `npx nx test api --testPathPatterns="<pattern>"` 
-- Web: `npx vitest run <file>` (from `apps/web/`) — Vitest doesn't support `--testPathPatterns`
+- API unit: `npx nx test api --testPathPatterns="<pattern>"`
+- API integration: `npx nx run api:test-integration` (or `cd apps/api && npx jest --config jest.integration.config.ts`)
+- Web unit: `npx nx test @family-tree/web` (or `npx vitest run <file>` from `apps/web/` — Vitest doesn't support `--testPathPatterns`)
+- Web integration: `npx nx run @family-tree/web:test-integration` (or `cd apps/web && npx vitest run --config vitest.integration.config.ts`)
 - Shared: `npx nx test shared`
 
-210 unit tests shipped as of 2026-06-24 across 5 tiers (helpers, schemas, guards, delete-preview, web factories).
+- Unit: 210 tests (2026-06-24, 5 tiers: helpers, schemas, guards, delete-preview, web factories).
+- Integration: 153 tests (2026-06-25/26) — 79 API (testcontainers + real Postgres) + 74 web (MSW + Effector `fork`). Integration specs are `*.integration.spec.ts`, run via dedicated `test-integration` targets, and are **excluded** from the unit `test` target (so `nx run-many -t test` stays unit-only — `test-integration` is not yet wired into CI).
 
 ## Test conventions
 - All spec files use AAA (Arrange-Act-Assert) blank-line grouping inside `it()` blocks: one blank line before the act, one before the first `expect()`. Single-line tests need no gaps.
@@ -68,3 +71,5 @@ Run commands:
 
 ## Build gotchas
 - API build uses `@nx/rspack:rspack`; the `production` config keeps `optimization: false` **on purpose**. Enabling minification mangles DTO class names, which `nestjs-zod` + `@nestjs/swagger` use as OpenAPI schema names → breaks Swagger (one shared schema for all endpoints, missing params). Configure build optimization in `apps/api/project.json`, NOT `rspack.config.js` (the executor's `optimization` flag overrides the rspack config).
+- CI uses `pnpm exec nx` (not `npx nx`) for test and scan steps — matches pnpm-first tooling convention.
+- `apps/web/tsconfig.spec.json` includes `src/**/*.ts` + `src/**/*.tsx` (not just spec globs) so VS Code resolves source files imported by spec files without "not listed in project" errors.
