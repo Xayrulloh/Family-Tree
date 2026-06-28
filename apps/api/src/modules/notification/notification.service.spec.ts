@@ -34,7 +34,10 @@ describe('NotificationService', () => {
 
       expect(mockInsert).toHaveBeenCalledWith({ userId: 'userId' });
       expect(mockValues).toHaveBeenCalledWith(
-        expect.objectContaining({ userId: 'user-1', updatedAt: expect.anything() }),
+        expect.objectContaining({
+          userId: 'user-1',
+          updatedAt: expect.anything(),
+        }),
       );
       expect(mockOnConflictDoUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
