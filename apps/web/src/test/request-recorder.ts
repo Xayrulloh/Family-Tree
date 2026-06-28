@@ -1,4 +1,4 @@
-import { HttpResponse, http } from 'msw';
+import { HttpResponse, type JsonBodyType, http } from 'msw';
 import { server } from './msw-server';
 
 // Must match `test.env.VITE_API_URL` in vitest.integration.config.ts so the
@@ -28,9 +28,16 @@ function safeParse(text: string): unknown {
  * awaited client call is in flight, so assert on it after the call resolves.
  */
 export function recordRequest(
-  response: unknown = { ok: true },
+  response: JsonBodyType = { ok: true },
 ): RecordedRequest {
-  const record = { callCount: 0 } as RecordedRequest;
+  const record: RecordedRequest = {
+    callCount: 0,
+    method: '',
+    pathname: '',
+    search: '',
+    contentType: null,
+    body: undefined,
+  };
 
   const handler = async ({ request }: { request: Request }) => {
     record.callCount += 1;

@@ -1,6 +1,6 @@
 import type { NotificationResponseType } from '@family-tree/shared';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, gt, notInArray } from 'drizzle-orm';
+import { and, desc, eq, gt, notInArray, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleAsyncProvider } from '~/database/drizzle.provider';
 import * as schema from '~/database/schema';
@@ -55,14 +55,14 @@ export class NotificationService {
   }
 
   async markAllAsRead(userId: string): Promise<void> {
-    const now = new Date().toISOString();
-
     await this.db
       .insert(schema.notificationReadsSchema)
-      .values({ userId, updatedAt: now })
+      .values({ userId, updatedAt: sql`now()` })
       .onConflictDoUpdate({
         target: schema.notificationReadsSchema.userId,
-        set: { updatedAt: now },
+        set: {
+          updatedAt: sql`GREATEST(excluded.updated_at, ${schema.notificationReadsSchema.updatedAt})`,
+        },
       });
   }
 }
