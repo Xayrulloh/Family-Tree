@@ -1,4 +1,4 @@
-import { HttpResponse, type JsonBodyType, http } from 'msw';
+import { HttpResponse, http, type JsonBodyType } from 'msw';
 import { server } from './msw-server';
 
 // Must match `test.env.VITE_API_URL` in vitest.integration.config.ts so the
