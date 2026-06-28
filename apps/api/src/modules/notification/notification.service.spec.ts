@@ -32,11 +32,16 @@ describe('NotificationService', () => {
 
       await service.markAllAsRead('user-1');
 
-      expect(mockInsert).toHaveBeenCalled();
+      expect(mockInsert).toHaveBeenCalledWith({ userId: 'userId' });
       expect(mockValues).toHaveBeenCalledWith(
-        expect.objectContaining({ userId: 'user-1' }),
+        expect.objectContaining({ userId: 'user-1', updatedAt: expect.anything() }),
       );
-      expect(mockOnConflictDoUpdate).toHaveBeenCalled();
+      expect(mockOnConflictDoUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          target: 'userId',
+          set: expect.objectContaining({ updatedAt: expect.anything() }),
+        }),
+      );
     });
   });
 });
