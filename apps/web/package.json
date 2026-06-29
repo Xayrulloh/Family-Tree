@@ -4,6 +4,7 @@
   "private": true,
   "devDependencies": {
     "@family-tree/shared": "workspace:*",
+    "@playwright/test": "^1.61.1",
     "msw": "^2.14.6"
   },
   "nx": {
@@ -33,6 +34,13 @@
         "executor": "nx:run-commands",
         "options": {
           "command": "vitest run --config vitest.integration.config.ts",
+          "cwd": "apps/web"
+        }
+      },
+      "test-e2e": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "playwright test",
           "cwd": "apps/web"
         }
       }
