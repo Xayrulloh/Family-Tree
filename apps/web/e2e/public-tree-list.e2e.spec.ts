@@ -35,6 +35,8 @@ test.describe('Public tree list page (/family-trees/public)', () => {
     await page.goto('/family-trees/public');
 
     await expect(page).toHaveURL('/family-trees/public');
-    await expect(page.getByRole('tab', { name: /public family trees/i })).toBeVisible();
+    await expect(
+      page.getByRole('tab', { name: /public family trees/i }),
+    ).toBeVisible();
   });
 });
