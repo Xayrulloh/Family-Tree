@@ -104,3 +104,4 @@ All scoped endpoints use `prefix-before-id`:
 - Lazy loading via `shared/lib/lazy-page.ts` + `with-suspense` HOC
 - `appStarted` event fires on app boot to initialize router history and trigger `sessionFx` (so session is resolved on all pages, including public ones that don't use `chainAuthorized`)
 - `shared/lib/family-chart-transformer.ts` — transforms API member/connection data into family-chart format
+- **`chainAuthorized` always redirects anonymous users** — even when a page model sets `triggerRoute = route` (not `authorizedRoute`) to allow public data fetching, `chainAuthorized` fires `routes.registration.open` when session becomes `UnAuthorized`. There is no "allow anonymous but skip auth features" mode. All E2E/integration tests for pages that call `chainAuthorized` must mock an authenticated user to prevent the redirect.

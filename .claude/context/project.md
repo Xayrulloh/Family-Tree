@@ -54,7 +54,12 @@ family-tree/
 | `apps/web` | Vitest / Playwright | unit: `apps/web/vite.config.ts`; integration: `apps/web/vitest.integration.config.ts`; E2E: `apps/web/playwright.config.ts` |
 | `libs/shared` | Vitest | `libs/shared/vitest.config.ts` + `libs/shared/tsconfig.spec.json` |
 
-Run commands:
+Run commands (root shortcuts):
+- `pnpm test:unit` — unit tests for all packages
+- `pnpm test:integration` — integration tests for all packages
+- `pnpm test:e2e` — E2E tests for all packages
+
+Per-project (when you only want one):
 - API unit: `pnpm exec nx test api --testPathPatterns="<pattern>"`
 - API integration: `pnpm exec nx run api:test-integration`
 - API E2E: `pnpm exec nx run api:test-e2e`
