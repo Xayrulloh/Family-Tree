@@ -69,7 +69,8 @@ describe('pages/tree-list factory (integration)', () => {
 
     it('fetches public trees for unauthenticated users (uses route.opened, not authorizedRoute.opened)', async () => {
       mockApis();
-      const scope = fork();
+      // UnAuthorized (not Initial) so chainAuthorized skips sessionFx.
+      const scope = fork({ values: [[$session, SessionStatus.UnAuthorized]] });
 
       await allSettled(testRoute.opened, {
         scope,
