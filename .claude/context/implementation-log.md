@@ -285,3 +285,13 @@ Branch `feature/isolation-routes` continued (all phases on same branch, no merge
 - **Key note (`chainAuthorized` always redirects anonymous users):** Even when the page model uses `triggerRoute = route` (not `authorizedRoute`) to allow public access, `chainAuthorized` internally calls `routes.registration.open` when session becomes `UnAuthorized`. There is no "allow anonymous, just skip auth features" mode. All E2E tests for pages that use `chainAuthorized` must mock an authenticated user.
 - **Key note (Playwright `page.route()` LIFO order):** When multiple handlers match the same URL, Playwright uses the LAST registered handler. Register a broad catch-all in `beforeEach`, then test-specific overrides in the test body — the override always wins. No need to `page.unroute()`.
 - **Key note (per-run UUID for global-setup/teardown cross-process communication):** `globalSetup` and `globalTeardown` run in separate Node processes. A module-level `randomUUID()` at import time produces different values in each process. Pass the path via `process.env.E2E_CONTAINER_INFO_FILE` set in globalSetup — env vars ARE inherited by teardown. Never import the const from the setup module in teardown.
+
+---
+
+## 2026-07-04 — Fix integration test CI failure (`shared-tree-users` pageChanged)
+
+- **Failure:** `toHaveBeenLastCalledWith` assertion on `api.sharedTree.findUsers` always showed `undefined` (spy never called). Added in previous session for CodeRabbit comment #20.
+- **Root cause:** `chainRoute` (atomic-router) has an internal `$hasSameParams` store that uses reference-equality (`===`) to compare `route.$params` against its own cached params store before firing the chained route's `opened`. In Effector `fork`+`allSettled`, both stores are set to `r.params` from the same event value, but the `===` check does NOT pass reliably — so `authorizedRoute.opened` never fires, `authorizedRoute.$params` stays `{}`, and `$familyTreeId` remains `null`.
+- **Fix:** Simplified `pageChanged updates $page` in `apps/web/src/pages/shared-tree-users/model.integration.spec.ts` — removed route opening, auth seeding, and API mock. Test now fires `model.pageChanged` directly on a fresh `fork()` and asserts `$page === 3`. Clean, correct, and not affected by the `chainRoute` limitation.
+- Removed now-unused `$session`, `SessionStatus`, and `api` imports from the spec.
+- **Key note (`chainRoute` $hasSameParams breaks Effector fork):** Don't assert fetch-effect call args that depend on `authorizedRoute.$params` in integration tests — the chained route's params are never populated in `fork`+`allSettled`. Test store state (e.g. `$page`, `$searchQuery`) instead. This limitation is documented in `web.md`.

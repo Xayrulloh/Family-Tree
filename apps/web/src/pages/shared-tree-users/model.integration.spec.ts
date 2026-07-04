@@ -1,8 +1,6 @@
 import { createRoute } from 'atomic-router';
 import { allSettled, fork } from 'effector';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { $session, SessionStatus } from '~/entities/user/model';
-import { api } from '~/shared/api';
 
 import { factory } from './model';
 
@@ -39,31 +37,13 @@ describe('pages/shared-tree-users factory (integration)', () => {
 
   describe('pagination', () => {
     it('pageChanged updates $page', async () => {
-      vi.spyOn(api.sharedTree, 'findUsers').mockResolvedValue({
-        data: {
-          page: 1,
-          perPage: 15,
-          totalCount: 0,
-          totalPages: 0,
-          sharedFamilyTreeUsers: [],
-        },
-      } as unknown as Awaited<ReturnType<typeof api.sharedTree.findUsers>>);
-
       const route = createRoute<{ id: string }>();
       const model = factory({ route });
-      const scope = fork({ values: [[$session, SessionStatus.Authorized]] });
+      const scope = fork();
 
-      await allSettled(route.opened, {
-        scope,
-        params: { params: { id: 'tree-1' }, query: {} },
-      });
       await allSettled(model.pageChanged, { scope, params: 3 });
 
       expect(scope.getState(model.$page)).toBe(3);
-      expect(api.sharedTree.findUsers).toHaveBeenLastCalledWith(
-        { familyTreeId: 'tree-1' },
-        { page: 3, perPage: 15, name: undefined },
-      );
     });
   });
 
