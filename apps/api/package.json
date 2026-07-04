@@ -5,6 +5,8 @@
   "devDependencies": {
     "@family-tree/shared": "workspace:*",
     "@testcontainers/postgresql": "^12.0.3",
+    "@types/supertest": "^7.2.0",
+    "supertest": "^7.2.2",
     "testcontainers": "^12.0.3"
   }
 }

@@ -50,19 +50,29 @@ family-tree/
 ## Testing setup
 | Package | Runner | Config |
 |---|---|---|
-| `apps/api` | Jest (`@nx/jest`) | unit: `apps/api/jest.config.ts`; integration: `apps/api/jest.integration.config.ts` (+ `apps/api/tsconfig.spec.json`) |
-| `apps/web` | Vitest (`@nx/vitest`) | unit: `apps/web/vite.config.ts` (`test:` block, `environment: 'jsdom'`); integration: `apps/web/vitest.integration.config.ts` |
+| `apps/api` | Jest (`@nx/jest`) | unit: `apps/api/jest.config.ts`; integration: `apps/api/jest.integration.config.ts`; E2E: `apps/api/jest.e2e.config.ts` |
+| `apps/web` | Vitest / Playwright | unit: `apps/web/vite.config.ts`; integration: `apps/web/vitest.integration.config.ts`; E2E: `apps/web/playwright.config.ts` |
 | `libs/shared` | Vitest | `libs/shared/vitest.config.ts` + `libs/shared/tsconfig.spec.json` |
 
-Run commands:
-- API unit: `npx nx test api --testPathPatterns="<pattern>"`
-- API integration: `npx nx run api:test-integration` (or `cd apps/api && npx jest --config jest.integration.config.ts`)
-- Web unit: `npx nx test @family-tree/web` (or `npx vitest run <file>` from `apps/web/` — Vitest doesn't support `--testPathPatterns`)
-- Web integration: `npx nx run @family-tree/web:test-integration` (or `cd apps/web && npx vitest run --config vitest.integration.config.ts`)
-- Shared: `npx nx test shared`
+Run commands (root shortcuts):
+- `pnpm test:unit` — unit tests for all packages
+- `pnpm test:integration` — integration tests for all packages
+- `pnpm test:e2e` — E2E tests for all packages
 
-- Unit: 210 tests (2026-06-24, 5 tiers: helpers, schemas, guards, delete-preview, web factories).
-- Integration: 153 tests (2026-06-25/26) — 79 API (testcontainers + real Postgres) + 74 web (MSW + Effector `fork`). Integration specs are `*.integration.spec.ts`, run via dedicated `test-integration` targets, and are **excluded** from the unit `test` target (so `nx run-many -t test` stays unit-only — `test-integration` is not yet wired into CI).
+Per-project (when you only want one):
+- API unit: `pnpm exec nx test api --testPathPatterns="<pattern>"`
+- API integration: `pnpm exec nx run api:test-integration`
+- API E2E: `pnpm exec nx run api:test-e2e`
+- Web unit: `pnpm exec nx test @family-tree/web` (or `npx vitest run <file>` from `apps/web/`)
+- Web integration: `pnpm exec nx run @family-tree/web:test-integration`
+- Web E2E: `pnpm exec nx run @family-tree/web:test-e2e`
+- Shared: `pnpm exec nx test shared`
+
+- Unit: 210 tests (2026-06-24, 5 tiers).
+- Integration: 153 tests — 79 API (Testcontainers + real Postgres) + 74 web (MSW + Effector `fork`).
+- API E2E: 36 tests — supertest against full NestJS app, real Postgres via Testcontainers, `CacheService` overridden with no-op to avoid Redis.
+- Web E2E: 8 tests — Playwright Chromium, all API calls intercepted via `page.route()`, dev server started by Playwright with `VITE_API_URL=http://localhost:9999/api`.
+- All four tiers now run in CI before SonarQube scan (`.github/workflows/ci.yml`).
 
 ## Test conventions
 - All spec files use AAA (Arrange-Act-Assert) blank-line grouping inside `it()` blocks: one blank line before the act, one before the first `expect()`. Single-line tests need no gaps.
