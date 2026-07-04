@@ -1,13 +1,13 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, unlinkSync } from 'node:fs';
-import { E2E_CONTAINER_INFO_PATH } from './global-setup.e2e';
 
 export default async function globalTeardownE2E() {
-  if (!existsSync(E2E_CONTAINER_INFO_PATH)) return;
+  const containerInfoPath = process.env.E2E_CONTAINER_INFO_FILE;
+  if (!containerInfoPath || !existsSync(containerInfoPath)) return;
 
-  const { pgId } = JSON.parse(
-    readFileSync(E2E_CONTAINER_INFO_PATH, 'utf-8'),
-  ) as { pgId: string };
+  const { pgId } = JSON.parse(readFileSync(containerInfoPath, 'utf-8')) as {
+    pgId: string;
+  };
 
   try {
     execFileSync('docker', ['stop', pgId], { stdio: 'ignore' });
@@ -16,5 +16,5 @@ export default async function globalTeardownE2E() {
     // Ryuk will clean up if docker commands fail
   }
 
-  unlinkSync(E2E_CONTAINER_INFO_PATH);
+  unlinkSync(containerInfoPath);
 }

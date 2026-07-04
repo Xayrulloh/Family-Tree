@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -6,7 +7,7 @@ import { PostgreSqlContainer } from '@testcontainers/postgresql';
 
 export const E2E_CONTAINER_INFO_PATH = join(
   tmpdir(),
-  'family-tree-e2e-containers.json',
+  `family-tree-e2e-containers-${randomUUID().slice(0, 8)}.json`,
 );
 
 const API_ROOT = join(__dirname, '../..');
@@ -47,12 +48,20 @@ export default async function globalSetupE2E() {
     JSON.stringify({ pgId: pgContainer.getId() }),
   );
 
-  execSync(
-    'pnpm exec drizzle-kit push --force --config drizzle.test.config.ts',
-    {
-      cwd: API_ROOT,
-      env: { ...process.env, TEST_DATABASE_URL: dbUrl },
-      stdio: 'pipe',
-    },
-  );
+  // Pass the run-unique path to globalTeardown (different Node process).
+  process.env.E2E_CONTAINER_INFO_FILE = E2E_CONTAINER_INFO_PATH;
+
+  try {
+    execSync(
+      'pnpm exec drizzle-kit push --force --config drizzle.test.config.ts',
+      {
+        cwd: API_ROOT,
+        env: { ...process.env, TEST_DATABASE_URL: dbUrl },
+        stdio: 'pipe',
+      },
+    );
+  } catch (err) {
+    await pgContainer.stop();
+    throw err;
+  }
 }

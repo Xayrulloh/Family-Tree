@@ -66,6 +66,19 @@ describe('pages/tree-list factory (integration)', () => {
 
       expect(api.tree.findAllPublic).toHaveBeenCalled();
     });
+
+    it('fetches public trees for unauthenticated users (uses route.opened, not authorizedRoute.opened)', async () => {
+      mockApis();
+      const scope = fork();
+
+      await allSettled(testRoute.opened, {
+        scope,
+        params: { params: {}, query: {} },
+      });
+
+      expect(api.tree.findAllPublic).toHaveBeenCalled();
+      expect(api.tree.findAll).not.toHaveBeenCalled();
+    });
   });
 
   describe('mode switching', () => {

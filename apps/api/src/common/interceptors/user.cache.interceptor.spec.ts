@@ -6,23 +6,27 @@ import { UserCacheInterceptor } from './user.cache.interceptor';
 
 function makeContext({
   method = 'GET',
-  path = '/api/users/me',
+  routePath = '/api/users/me',
   user = { id: 'u-1' },
   params = {} as Record<string, string>,
 }: {
   method?: string;
-  path?: string;
+  routePath?: string;
   user?: { id: string } | null;
   params?: Record<string, string>;
 } = {}): ExecutionContext {
+  const resolvedPath = routePath.replace(
+    /:(\w+)/g,
+    (_, key) => params[key] ?? `:${key}`,
+  );
   return {
     switchToHttp: () => ({
       getRequest: () => ({
         method,
         user,
         params,
-        route: { path },
-        path,
+        route: { path: routePath },
+        path: resolvedPath,
       }),
     }),
   } as unknown as ExecutionContext;
@@ -70,7 +74,7 @@ describe('UserCacheInterceptor', () => {
     const interceptor = new UserCacheInterceptor(cache);
 
     const result$ = await interceptor.intercept(
-      makeContext({ method: 'GET', path: '/api/users/me' }),
+      makeContext({ method: 'GET', routePath: '/api/users/me' }),
       makeNext({ id: 'fresh' }),
     );
 
@@ -83,7 +87,7 @@ describe('UserCacheInterceptor', () => {
     const interceptor = new UserCacheInterceptor(cache);
 
     const result$ = await interceptor.intercept(
-      makeContext({ method: 'GET', path: '/api/users/me' }),
+      makeContext({ method: 'GET', routePath: '/api/users/me' }),
       makeNext(fresh),
     );
 
@@ -101,7 +105,7 @@ describe('UserCacheInterceptor', () => {
     const result$ = await interceptor.intercept(
       makeContext({
         method: 'GET',
-        path: '/api/users/:id',
+        routePath: '/api/users/:id',
         params: { id: 'u-2' },
       }),
       makeNext({}),
@@ -115,7 +119,7 @@ describe('UserCacheInterceptor', () => {
     const interceptor = new UserCacheInterceptor(cache);
 
     const result$ = await interceptor.intercept(
-      makeContext({ method: 'PUT', path: '/api/users' }),
+      makeContext({ method: 'PUT', routePath: '/api/users' }),
       makeNext({}),
     );
 
@@ -129,7 +133,7 @@ describe('UserCacheInterceptor', () => {
     const interceptor = new UserCacheInterceptor(cache);
 
     const result$ = await interceptor.intercept(
-      makeContext({ method: 'PATCH', path: '/api/users/avatar' }),
+      makeContext({ method: 'PATCH', routePath: '/api/users/avatar' }),
       makeNext({}),
     );
 
@@ -143,7 +147,7 @@ describe('UserCacheInterceptor', () => {
     const interceptor = new UserCacheInterceptor(cache);
 
     const result$ = await interceptor.intercept(
-      makeContext({ method: 'PUT', path: '/api/family-trees' }),
+      makeContext({ method: 'PUT', routePath: '/api/family-trees' }),
       makeNext({}),
     );
 

@@ -33,7 +33,9 @@ describe('entities/user model (integration)', () => {
     });
 
     it('transitions to Authorized after a successful sessionFx', async () => {
-      vi.spyOn(api.user, 'me').mockResolvedValue({ data: mockUser } as never);
+      vi.spyOn(api.user, 'me').mockResolvedValue({
+        data: mockUser,
+      } as unknown as Awaited<ReturnType<typeof api.user.me>>);
       const scope = fork();
 
       await allSettled(sessionFx, { scope });
@@ -51,7 +53,9 @@ describe('entities/user model (integration)', () => {
     });
 
     it('resets to UnAuthorized on loggedOut', async () => {
-      vi.spyOn(api.auth, 'logout').mockResolvedValue(undefined as never);
+      vi.spyOn(api.auth, 'logout').mockResolvedValue(
+        undefined as unknown as Awaited<ReturnType<typeof api.auth.logout>>,
+      );
       const scope = fork({
         values: [[$session, SessionStatus.Authorized]],
       });
@@ -70,7 +74,9 @@ describe('entities/user model (integration)', () => {
     });
 
     it('is populated after a successful sessionFx', async () => {
-      vi.spyOn(api.user, 'me').mockResolvedValue({ data: mockUser } as never);
+      vi.spyOn(api.user, 'me').mockResolvedValue({
+        data: mockUser,
+      } as unknown as Awaited<ReturnType<typeof api.user.me>>);
       const scope = fork();
 
       await allSettled(sessionFx, { scope });
@@ -97,7 +103,9 @@ describe('entities/user model (integration)', () => {
     });
 
     it('loggedOut clears $user', async () => {
-      vi.spyOn(api.auth, 'logout').mockResolvedValue(undefined as never);
+      vi.spyOn(api.auth, 'logout').mockResolvedValue(
+        undefined as unknown as Awaited<ReturnType<typeof api.auth.logout>>,
+      );
       const scope = fork({
         values: [
           [$session, SessionStatus.Authorized],

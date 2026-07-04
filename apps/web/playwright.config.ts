@@ -26,7 +26,7 @@ export default defineConfig({
     // a fixed URL so Playwright's route matchers can intercept it reliably.
     command: 'VITE_API_URL=http://localhost:9999/api pnpm vite --port 4300',
     url: 'http://localhost:4300',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });

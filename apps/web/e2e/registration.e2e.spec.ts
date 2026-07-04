@@ -26,13 +26,21 @@ test.describe('Registration page', () => {
     await mockAuthenticated(page);
 
     // Suppress fetch errors that fire after the redirect to /family-trees.
-    await page.route(`${API_URL}/family-trees**`, (route) =>
-      route.fulfill({
+    await page.route(`${API_URL}/family-trees**`, (route) => {
+      if (route.request().url().includes('/shared')) {
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(makePaginated('sharedFamilyTrees', [])),
+        });
+      }
+
+      return route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify(makePaginated('familyTrees', [makeTree()])),
-      }),
-    );
+      });
+    });
 
     await page.goto('/register');
 

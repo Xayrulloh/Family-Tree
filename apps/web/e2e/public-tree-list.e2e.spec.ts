@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test';
-import { makePaginated, makeTree, mockUnauthenticated } from './fixtures';
+import {
+  API_URL,
+  makePaginated,
+  makeTree,
+  mockUnauthenticated,
+} from './fixtures';
 
 test.describe('Public tree list page (/family-trees/public)', () => {
   test.beforeEach(async ({ page }) => {
@@ -7,7 +12,7 @@ test.describe('Public tree list page (/family-trees/public)', () => {
   });
 
   test('renders tree cards from API data', async ({ page }) => {
-    await page.route(/family-trees\/public/, (route) =>
+    await page.route(`${API_URL}/family-trees/public**`, (route) =>
       route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -23,7 +28,7 @@ test.describe('Public tree list page (/family-trees/public)', () => {
   });
 
   test('renders without crashing when the list is empty', async ({ page }) => {
-    await page.route(/family-trees\/public/, (route) =>
+    await page.route(`${API_URL}/family-trees/public**`, (route) =>
       route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -34,5 +39,8 @@ test.describe('Public tree list page (/family-trees/public)', () => {
     await page.goto('/family-trees/public');
 
     await expect(page).toHaveURL('/family-trees/public');
+    await expect(
+      page.getByRole('tab', { name: /public family trees/i }),
+    ).toBeVisible();
   });
 });

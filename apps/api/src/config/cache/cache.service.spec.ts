@@ -158,11 +158,13 @@ describe('CacheService', () => {
       const query = { page: 1, perPage: 10 };
 
       await service.getUserFamilyTrees('u-1', query);
-      expect(mockGet).toHaveBeenCalledWith(expect.stringContaining('u-1'));
+      expect(mockGet).toHaveBeenCalledWith(
+        'users:u-1:family-trees:{"page":1,"perPage":10}',
+      );
 
       await service.setUserFamilyTrees('u-1', query, {} as any);
       expect(mockSet).toHaveBeenCalledWith(
-        expect.stringContaining('u-1'),
+        'users:u-1:family-trees:{"page":1,"perPage":10}',
         {},
         undefined,
       );
@@ -176,11 +178,11 @@ describe('CacheService', () => {
       );
 
       await service.getFamilyTreeMembers('tree-1');
-      expect(mockGet).toHaveBeenCalledWith(expect.stringContaining('tree-1'));
+      expect(mockGet).toHaveBeenCalledWith('family-trees:tree-1:members');
 
       await service.setFamilyTreeMembers('tree-1', [] as any);
       expect(mockSet).toHaveBeenCalledWith(
-        expect.stringContaining('tree-1'),
+        'family-trees:tree-1:members',
         [],
         undefined,
       );
@@ -194,11 +196,13 @@ describe('CacheService', () => {
       );
 
       await service.getFamilyTreeMemberConnections('tree-1');
-      expect(mockGet).toHaveBeenCalledWith(expect.stringContaining('tree-1'));
+      expect(mockGet).toHaveBeenCalledWith(
+        'family-trees:tree-1:members:connections',
+      );
 
       await service.setFamilyTreeMemberConnections('tree-1', [] as any);
       expect(mockSet).toHaveBeenCalledWith(
-        expect.stringContaining('tree-1'),
+        'family-trees:tree-1:members:connections',
         [],
         undefined,
       );
@@ -212,14 +216,10 @@ describe('CacheService', () => {
       );
 
       await service.getUser('u-1');
-      expect(mockGet).toHaveBeenCalledWith(expect.stringContaining('u-1'));
+      expect(mockGet).toHaveBeenCalledWith('users:u-1');
 
       await service.setUser('u-1', {} as any);
-      expect(mockSet).toHaveBeenCalledWith(
-        expect.stringContaining('u-1'),
-        {},
-        undefined,
-      );
+      expect(mockSet).toHaveBeenCalledWith('users:u-1', {}, undefined);
     });
   });
 });

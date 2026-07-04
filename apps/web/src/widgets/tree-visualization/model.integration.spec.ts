@@ -68,10 +68,12 @@ describe('createTreeDetailModel (integration)', () => {
     const fetchTree = vi.fn().mockResolvedValue({ data: treeData });
     vi.spyOn(api.treeMember, 'findAll').mockResolvedValue({
       data: mockMembers,
-    } as never);
+    } as unknown as Awaited<ReturnType<typeof api.treeMember.findAll>>);
     vi.spyOn(api.treeMemberConnection, 'findAll').mockResolvedValue({
       data: mockConnections,
-    } as never);
+    } as unknown as Awaited<
+      ReturnType<typeof api.treeMemberConnection.findAll>
+    >);
 
     const { localRoute, localModel } = makeLocalModel({ fetchTree });
 
@@ -89,10 +91,12 @@ describe('createTreeDetailModel (integration)', () => {
   it('$id reflects the route param', async () => {
     vi.spyOn(api.treeMember, 'findAll').mockResolvedValue({
       data: [],
-    } as never);
+    } as unknown as Awaited<ReturnType<typeof api.treeMember.findAll>>);
     vi.spyOn(api.treeMemberConnection, 'findAll').mockResolvedValue({
       data: [],
-    } as never);
+    } as unknown as Awaited<
+      ReturnType<typeof api.treeMemberConnection.findAll>
+    >);
 
     const { localRoute, localModel } = makeLocalModel();
 
@@ -108,10 +112,12 @@ describe('createTreeDetailModel (integration)', () => {
   it('$treeName is derived from the tree payload', async () => {
     vi.spyOn(api.treeMember, 'findAll').mockResolvedValue({
       data: [],
-    } as never);
+    } as unknown as Awaited<ReturnType<typeof api.treeMember.findAll>>);
     vi.spyOn(api.treeMemberConnection, 'findAll').mockResolvedValue({
       data: [],
-    } as never);
+    } as unknown as Awaited<
+      ReturnType<typeof api.treeMemberConnection.findAll>
+    >);
 
     const { localRoute, localModel } = makeLocalModel();
 
@@ -127,10 +133,12 @@ describe('createTreeDetailModel (integration)', () => {
   it('$permissions are resolved from the tree and current user', async () => {
     vi.spyOn(api.treeMember, 'findAll').mockResolvedValue({
       data: [],
-    } as never);
+    } as unknown as Awaited<ReturnType<typeof api.treeMember.findAll>>);
     vi.spyOn(api.treeMemberConnection, 'findAll').mockResolvedValue({
       data: [],
-    } as never);
+    } as unknown as Awaited<
+      ReturnType<typeof api.treeMemberConnection.findAll>
+    >);
 
     const { $user } = await import('~/entities/user/model');
     const { localRoute, localModel } = makeLocalModel({
@@ -159,10 +167,12 @@ describe('createTreeDetailModel (integration)', () => {
   it('reinits stores when the route closes', async () => {
     vi.spyOn(api.treeMember, 'findAll').mockResolvedValue({
       data: mockMembers,
-    } as never);
+    } as unknown as Awaited<ReturnType<typeof api.treeMember.findAll>>);
     vi.spyOn(api.treeMemberConnection, 'findAll').mockResolvedValue({
       data: mockConnections,
-    } as never);
+    } as unknown as Awaited<
+      ReturnType<typeof api.treeMemberConnection.findAll>
+    >);
 
     const { localRoute, localModel } = makeLocalModel();
 

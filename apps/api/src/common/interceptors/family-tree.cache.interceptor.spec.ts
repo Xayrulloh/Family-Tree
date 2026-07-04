@@ -6,15 +6,18 @@ import { FamilyTreeCacheInterceptor } from './family-tree.cache.interceptor';
 
 function makeContext({
   method = 'GET',
-  path = '/api/family-trees',
+  routePath = '/api/family-trees',
   treeId = 'tree-1',
   user = { id: 'u-1' },
 }: {
   method?: string;
-  path?: string;
+  routePath?: string;
   treeId?: string;
   user?: { id: string } | null;
 } = {}): ExecutionContext {
+  const resolvedPath = routePath
+    .replace(':familyTreeId', treeId)
+    .replace(':id', treeId);
   return {
     switchToHttp: () => ({
       getRequest: () => ({
@@ -22,8 +25,8 @@ function makeContext({
         user,
         query: { page: 1, perPage: 10 },
         params: { familyTreeId: treeId, id: treeId },
-        route: { path },
-        path,
+        route: { path: routePath },
+        path: resolvedPath,
       }),
     }),
   } as unknown as ExecutionContext;
@@ -56,7 +59,7 @@ describe('FamilyTreeCacheInterceptor', () => {
       const interceptor = new FamilyTreeCacheInterceptor(cache);
 
       const result$ = await interceptor.intercept(
-        makeContext({ path: '/api/family-trees' }),
+        makeContext({ routePath: '/api/family-trees' }),
         makeNext([]),
       );
 
@@ -69,7 +72,7 @@ describe('FamilyTreeCacheInterceptor', () => {
       const interceptor = new FamilyTreeCacheInterceptor(cache);
 
       const result$ = await interceptor.intercept(
-        makeContext({ path: '/api/family-trees' }),
+        makeContext({ routePath: '/api/family-trees' }),
         makeNext(fresh),
       );
 
@@ -91,7 +94,7 @@ describe('FamilyTreeCacheInterceptor', () => {
       const interceptor = new FamilyTreeCacheInterceptor(cache);
 
       const result$ = await interceptor.intercept(
-        makeContext({ path: '/api/family-trees/:familyTreeId/members' }),
+        makeContext({ routePath: '/api/family-trees/:familyTreeId/members' }),
         makeNext([]),
       );
 
@@ -104,7 +107,7 @@ describe('FamilyTreeCacheInterceptor', () => {
       const interceptor = new FamilyTreeCacheInterceptor(cache);
 
       const result$ = await interceptor.intercept(
-        makeContext({ path: '/api/family-trees/:familyTreeId/members' }),
+        makeContext({ routePath: '/api/family-trees/:familyTreeId/members' }),
         makeNext(fresh),
       );
 
@@ -123,7 +126,7 @@ describe('FamilyTreeCacheInterceptor', () => {
 
       const result$ = await interceptor.intercept(
         makeContext({
-          path: '/api/family-trees/:familyTreeId/members/connections',
+          routePath: '/api/family-trees/:familyTreeId/members/connections',
         }),
         makeNext([]),
       );
@@ -138,7 +141,11 @@ describe('FamilyTreeCacheInterceptor', () => {
       const interceptor = new FamilyTreeCacheInterceptor(cache);
 
       const result$ = await interceptor.intercept(
-        makeContext({ method: 'POST', path: '/api/family-trees', user: null }),
+        makeContext({
+          method: 'POST',
+          routePath: '/api/family-trees',
+          user: null,
+        }),
         makeNext({}),
       );
 
@@ -155,7 +162,7 @@ describe('FamilyTreeCacheInterceptor', () => {
       const interceptor = new FamilyTreeCacheInterceptor(cache);
 
       const result$ = await interceptor.intercept(
-        makeContext({ method: 'POST', path: '/api/family-trees' }),
+        makeContext({ method: 'POST', routePath: '/api/family-trees' }),
         makeNext({}),
       );
 
@@ -170,7 +177,7 @@ describe('FamilyTreeCacheInterceptor', () => {
       const interceptor = new FamilyTreeCacheInterceptor(cache);
 
       const result$ = await interceptor.intercept(
-        makeContext({ method: 'DELETE', path: '/api/family-trees/:id' }),
+        makeContext({ method: 'DELETE', routePath: '/api/family-trees/:id' }),
         makeNext({}),
       );
 
@@ -192,7 +199,7 @@ describe('FamilyTreeCacheInterceptor', () => {
       const result$ = await interceptor.intercept(
         makeContext({
           method: 'PUT',
-          path: '/api/family-trees/:familyTreeId/members/:id',
+          routePath: '/api/family-trees/:familyTreeId/members/:id',
         }),
         makeNext({}),
       );
@@ -210,7 +217,7 @@ describe('FamilyTreeCacheInterceptor', () => {
       const result$ = await interceptor.intercept(
         makeContext({
           method: 'POST',
-          path: '/api/family-trees/:familyTreeId/members/child',
+          routePath: '/api/family-trees/:familyTreeId/members/child',
         }),
         makeNext({}),
       );
@@ -230,7 +237,7 @@ describe('FamilyTreeCacheInterceptor', () => {
       const result$ = await interceptor.intercept(
         makeContext({
           method: 'DELETE',
-          path: '/api/family-trees/:familyTreeId/members/:id',
+          routePath: '/api/family-trees/:familyTreeId/members/:id',
         }),
         makeNext({}),
       );

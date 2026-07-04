@@ -26,7 +26,7 @@ const noOpCacheService = {
   getFamilyTreeMemberConnections: jest.fn().mockResolvedValue(null),
   setFamilyTreeMemberConnections: jest.fn().mockResolvedValue(undefined),
   cleanFamilyTreeMemberConnections: jest.fn().mockResolvedValue(undefined),
-} as unknown as CacheService;
+} satisfies Record<keyof CacheService, unknown>;
 
 export async function createE2EApp(): Promise<{
   app: INestApplication;
