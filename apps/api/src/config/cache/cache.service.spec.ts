@@ -124,8 +124,15 @@ describe('CacheService', () => {
 
     it('warns when no Redis client is available', async () => {
       const service = new CacheService(makeCache({ stores: [{}] }) as any);
+      const warnSpy = jest
+        .spyOn((service as any).logger, 'warn')
+        .mockImplementation(() => {});
 
       await expect(service.delByPattern('a:*')).resolves.toBeUndefined();
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        'Redis client not found or does not support pattern matching',
+      );
     });
 
     it('does not throw when the Redis client throws', async () => {

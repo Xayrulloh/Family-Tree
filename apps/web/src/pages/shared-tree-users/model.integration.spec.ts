@@ -60,6 +60,10 @@ describe('pages/shared-tree-users factory (integration)', () => {
       await allSettled(model.pageChanged, { scope, params: 3 });
 
       expect(scope.getState(model.$page)).toBe(3);
+      expect(api.sharedTree.findUsers).toHaveBeenLastCalledWith(
+        { familyTreeId: 'tree-1' },
+        { page: 3, perPage: 15, name: undefined },
+      );
     });
   });
 
