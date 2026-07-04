@@ -1,4 +1,5 @@
 /// <reference types="jest" />
+import { FamilyTreeMemberConnectionEnum } from '@family-tree/shared';
 import * as schema from '~/database/schema';
 import { seedFamilyTree, seedMember, seedUser } from '~/test/seeds';
 import { getTestDb, truncateTables } from '~/test/test-db';
@@ -15,7 +16,7 @@ async function seedConnection(
       familyTreeId,
       fromMemberId,
       toMemberId,
-      type: 'PARENT',
+      type: FamilyTreeMemberConnectionEnum.PARENT,
     })
     .returning();
   return row;

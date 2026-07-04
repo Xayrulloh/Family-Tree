@@ -106,6 +106,19 @@ describe('Family Trees (E2E)', () => {
         .expect(401);
     });
 
+    it('returns 403 when a non-owner attempts the update', async () => {
+      const owner = await seedUser(getTestDb());
+      const tree = await seedFamilyTree(getTestDb(), owner.id);
+      const other = await seedUser(getTestDb());
+      const token = await signToken(jwtService, other);
+
+      await req
+        .put(`/api/family-trees/${tree.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'Hijacked' })
+        .expect(403);
+    });
+
     it('returns 204 on a successful update', async () => {
       const user = await seedUser(getTestDb());
       const tree = await seedFamilyTree(getTestDb(), user.id);
@@ -124,6 +137,18 @@ describe('Family Trees (E2E)', () => {
       await req
         .delete('/api/family-trees/00000000-0000-0000-0000-000000000000')
         .expect(401);
+    });
+
+    it('returns 403 when a non-owner attempts the delete', async () => {
+      const owner = await seedUser(getTestDb());
+      const tree = await seedFamilyTree(getTestDb(), owner.id);
+      const other = await seedUser(getTestDb());
+      const token = await signToken(jwtService, other);
+
+      await req
+        .delete(`/api/family-trees/${tree.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(403);
     });
 
     it('returns 204 on a successful delete', async () => {

@@ -32,6 +32,18 @@ describe('Family Tree Members (E2E)', () => {
         .expect(401);
     });
 
+    it('returns 403 for a tree belonging to another user', async () => {
+      const owner = await seedUser(getTestDb());
+      const tree = await seedFamilyTree(getTestDb(), owner.id);
+      const other = await seedUser(getTestDb());
+      const token = await signToken(jwtService, other);
+
+      await req
+        .get(`/api/family-trees/${tree.id}/members`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(403);
+    });
+
     it('returns an empty list for a tree with no members', async () => {
       const user = await seedUser(getTestDb());
       const tree = await seedFamilyTree(getTestDb(), user.id);

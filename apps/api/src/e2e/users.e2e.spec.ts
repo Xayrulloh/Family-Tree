@@ -75,7 +75,7 @@ describe('Users (E2E)', () => {
       await req.put('/api/users').send({ name: 'New Name' }).expect(401);
     });
 
-    it('returns 204 on a valid update', async () => {
+    it('returns 204 and persists the change', async () => {
       const user = await seedUser(getTestDb());
       const token = await signToken(jwtService, user);
 
@@ -84,6 +84,13 @@ describe('Users (E2E)', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({ name: 'Updated Name' })
         .expect(204);
+
+      const res = await req
+        .get('/api/users/me')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(res.body.name).toBe('Updated Name');
     });
   });
 });

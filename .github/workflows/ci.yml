@@ -38,18 +38,13 @@ jobs:
         run: pnpm exec nx run-many -t test --all --coverage --passWithNoTests
 
       - name: Run integration tests
-        run: |
-          pnpm exec nx run api:test-integration
-          pnpm exec nx run @family-tree/web:test-integration
-
-      - name: Run API E2E tests
-        run: pnpm exec nx run api:test-e2e
+        run: pnpm exec nx affected -t test-integration
 
       - name: Install Playwright browsers
         run: pnpm --filter @family-tree/web exec playwright install --with-deps chromium
 
-      - name: Run web E2E tests
-        run: pnpm exec nx run @family-tree/web:test-e2e
+      - name: Run E2E tests
+        run: pnpm exec nx affected -t test-e2e
 
       - name: Code Analysis
         env:

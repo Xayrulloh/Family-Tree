@@ -57,7 +57,8 @@ describe('ZodSerializerInterceptorCustom', () => {
 
     interceptor
       .intercept(makeContext(), makeNext({ id: '1' }))
-      .subscribe(() => {
+      .subscribe((result) => {
+        expect(result).toEqual({ validated: true });
         expect(validate).toHaveBeenCalledWith(
           { id: '1' },
           mockSchema,

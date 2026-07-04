@@ -13,16 +13,16 @@ const mockConfigService = {
 function makeProfile(
   overrides: Partial<{
     id: string;
-    emails: { value: string }[];
+    emails: { value: string; type: string }[];
     name: { givenName: string; familyName: string };
-    photos: { value: string }[];
+    photos: { value: string; type: string }[];
   }> = {},
 ) {
   return {
     id: 'google-123',
-    emails: [{ value: 'user@test.com' }],
+    emails: [{ value: 'user@test.com', type: '' }],
     name: { givenName: 'Test', familyName: 'User' },
-    photos: [{ value: 'https://example.com/photo.jpg' }],
+    photos: [{ value: 'https://example.com/photo.jpg', type: '' }],
     ...overrides,
   };
 }
@@ -106,7 +106,7 @@ describe('GoogleStrategy (integration)', () => {
       await strategy.validate(
         'token',
         'refresh',
-        makeProfile({ photos: [{ value: '' }] }),
+        makeProfile({ photos: [{ value: '', type: '' }] }),
         done,
       );
 

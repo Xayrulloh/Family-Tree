@@ -22,7 +22,13 @@ describe('Auth (E2E)', () => {
 
   describe('GET /api/auth/logout', () => {
     it('returns 200 and clears the access_token cookie', async () => {
-      await req.get('/api/auth/logout').expect(200);
+      const res = await req.get('/api/auth/logout').expect(200);
+
+      const setCookie: string[] = ([] as string[]).concat(
+        res.headers['set-cookie'] ?? [],
+      );
+      const tokenCookie = setCookie.find((c) => c.startsWith('access_token='));
+      expect(tokenCookie).toMatch(/access_token=;|access_token=\s*;/);
     });
   });
 });
