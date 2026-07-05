@@ -30,6 +30,7 @@ describe('Auth (E2E)', () => {
 
       const tokenCookie = setCookie.find((c) => c.startsWith('access_token='));
 
+      expect(tokenCookie).toBeDefined();
       expect(tokenCookie).toMatch(/access_token=;|access_token=\s*;/);
     });
   });

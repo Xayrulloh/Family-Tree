@@ -32,7 +32,7 @@ import { DeleteTreeModal, deleteTreeModel } from '~/features/tree/delete';
 import { routes } from '~/shared/config/routing';
 import type { LazyPageProps } from '~/shared/lib/lazy-page';
 import { PageLoading } from '~/shared/ui/loading';
-import { factory } from '../model';
+import type { factory } from '../model';
 
 // Types
 type Model = ReturnType<typeof factory>;
@@ -274,12 +274,12 @@ const TreesGrid: React.FC<Props> = ({ model }) => {
 
   const { token } = theme.useToken();
 
-  const currentSearchQuery =
-    mode === 'my-trees'
-      ? myTreesSearchQuery
-      : mode === 'shared-trees'
-        ? sharedTreesSearchQuery
-        : publicTreesSearchQuery;
+  const searchQueryByMode = {
+    'my-trees': myTreesSearchQuery,
+    'shared-trees': sharedTreesSearchQuery,
+    'public-trees': publicTreesSearchQuery,
+  };
+  const currentSearchQuery = searchQueryByMode[mode];
 
   const tabItems = [
     {
@@ -537,4 +537,4 @@ const TreesPage: React.FC<Props> = ({ model }) => {
 };
 
 export const component = TreesPage;
-export const createModel = factory;
+export { factory as createModel } from '../model';

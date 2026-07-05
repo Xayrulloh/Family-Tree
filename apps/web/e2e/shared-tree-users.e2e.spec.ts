@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test';
-import { makePaginated, makeSharedUser, mockAuthenticated } from './fixtures';
+import {
+  API_URL,
+  makePaginated,
+  makeSharedUser,
+  mockAuthenticated,
+} from './fixtures';
 
 const TREE_ID = '00000000-0000-0000-0000-000000000002';
 
@@ -12,7 +17,7 @@ test.describe('Shared tree users page (/family-trees/shared/:id/users)', () => {
     page,
   }) => {
     await page.route(
-      new RegExp(`:9999/api/family-trees/shared/${TREE_ID}/users`),
+      `${API_URL}/family-trees/shared/${TREE_ID}/users**`,
       (route) =>
         route.fulfill({
           status: 200,
@@ -41,7 +46,7 @@ test.describe('Shared tree users page (/family-trees/shared/:id/users)', () => {
 
   test('shows a blocked user with the Unblock action', async ({ page }) => {
     await page.route(
-      new RegExp(`:9999/api/family-trees/shared/${TREE_ID}/users`),
+      `${API_URL}/family-trees/shared/${TREE_ID}/users**`,
       (route) =>
         route.fulfill({
           status: 200,
@@ -64,7 +69,7 @@ test.describe('Shared tree users page (/family-trees/shared/:id/users)', () => {
 
   test('renders the empty state when nobody has access', async ({ page }) => {
     await page.route(
-      new RegExp(`:9999/api/family-trees/shared/${TREE_ID}/users`),
+      `${API_URL}/family-trees/shared/${TREE_ID}/users**`,
       (route) =>
         route.fulfill({
           status: 200,

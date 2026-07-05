@@ -25,7 +25,9 @@ describe('Shared Family Trees (E2E)', () => {
     await app.close();
   });
 
-  async function seedShare() {
+  async function seedShare(
+    overrides: Partial<typeof schema.sharedFamilyTreesSchema.$inferInsert> = {},
+  ) {
     const db = getTestDb();
     const owner = await seedUser(db);
     const sharedUser = await seedUser(db);
@@ -35,6 +37,7 @@ describe('Shared Family Trees (E2E)', () => {
       familyTreeId: tree.id,
       userId: sharedUser.id,
       canAddMembers: true,
+      ...overrides,
     });
 
     return { owner, sharedUser, tree };
@@ -101,14 +104,7 @@ describe('Shared Family Trees (E2E)', () => {
     });
 
     it('returns 403 for a blocked shared user', async () => {
-      const db = getTestDb();
-      const owner = await seedUser(db);
-      const blockedUser = await seedUser(db);
-      const tree = await seedFamilyTree(db, owner.id);
-
-      await db.insert(schema.sharedFamilyTreesSchema).values({
-        familyTreeId: tree.id,
-        userId: blockedUser.id,
+      const { sharedUser: blockedUser, tree } = await seedShare({
         isBlocked: true,
       });
 

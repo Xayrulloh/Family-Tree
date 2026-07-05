@@ -15,10 +15,10 @@ const dateToString = z.preprocess((val) => {
     return Number.isNaN(date.getTime()) ? val : date.toISOString();
   }
   return val;
-}, z.string().datetime());
+}, z.iso.datetime());
 
 const BaseSchema = z.object({
-  id: z.string().uuid().describe('Primary key'),
+  id: z.uuid().describe('Primary key'),
   createdAt: dateToString.describe('When it was created'),
   updatedAt: dateToString.describe('When it was last updated'),
   deletedAt: dateToString

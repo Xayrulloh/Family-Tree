@@ -321,3 +321,15 @@ Branch `feature/isolation-routes` continued (all phases on same branch, no merge
 - `apps/web/src/shared/api/base.ts` now exports `onResponseSuccess`/`onResponseError` so base.spec.ts tests them directly instead of reading axios' internal `handlers` array.
 - **Key note (Jest ESM config loader needs explicit `.ts` extension):** `import { baseConfig } from './jest.base'` fails with `ERR_MODULE_NOT_FOUND` when Jest parses a TS config — must write `from './jest.base.ts'`.
 - **Key note (CodeRabbit reviews can be stale):** review ran against an older file state; 4 of 18 comments cited line numbers that were already fixed. Always verify the cited lines at HEAD before "fixing".
+
+---
+
+## 2026-07-06 — SonarQube quality gate fixes + CodeRabbit round 3
+
+- Both failed PR #516 checks were SonarQube **quality gates** (maintainability rating C on new code, required ≥ A) — the tests themselves were green. 7 Sonar issues + 3 trivial CodeRabbit comments fixed.
+- **Shared gate (2 issues):** Zod 4 deprecates the string-method forms — `z.string().datetime()` → `z.iso.datetime()`, `z.string().uuid()` → `z.uuid()` in `base.schema.ts`. `z.uuid()` is slightly stricter (validates version/variant bits) but all fixtures are valid v4 UUIDs; 225 shared tests pass.
+- **Web gate (5 issues):** extracted the nested ternary in `tree-list/ui.tsx` into a `searchQueryByMode` lookup object (the one MAJOR issue); antd `Tag bordered={false}` → `variant="filled"` in `shared-tree-users/ui.tsx`; converted `export const component/createModel = imported` to `export { imported as name } from '...'` (S7763) in all 3 detail pages + shared-tree-users + tree-list. When the re-exported symbol is still needed for `ReturnType<typeof factory>`, keep an `import type { factory }` alongside the `export ... from`.
+- **CodeRabbit round 3:** `expect(tokenCookie).toBeDefined()` guard in auth E2E; `seedShare(overrides)` parameterized to kill blocked-user seeding duplication; `new RegExp(...)` route matchers → `${API_URL}/...users**` globs (also silences ast-grep's ReDoS false positive).
+- **Key note (SonarQube "new code" scope on PRs):** for a develop→main PR, ALL lines changed since main count as new code — issues can appear in files the current session never touched (the flagged ui.tsx files came from earlier feature commits). A single MAJOR issue in a small new-code window is enough to drop the maintainability rating below A.
+- **Key note (querying SonarCloud from CLI):** `curl "https://sonarcloud.io/api/issues/search?componentKeys=<project_key>&pullRequest=<n>&resolved=false"` works unauthenticated for public projects — faster than clicking through the dashboard. Project keys: `family_tree_api_key`, `family_tree_web_key`, `family_tree_shared_key`.
+- Verified: all four tiers + lint green locally after the changes.

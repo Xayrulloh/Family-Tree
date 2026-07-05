@@ -97,7 +97,7 @@ All scoped endpoints use `prefix-before-id`:
 `tree-list` page: `api.tree.findAll` for own trees, `api.tree.findAllPublic` for public list (separate endpoints), `api.sharedTree.findAll` for shared list. `PublicTreeList` uses `triggerRoute = route` (not `authorizedRoute`) so anonymous users can browse without being redirected to login.
 
 ## Key patterns
-- Tree detail pages: no separate `model.ts`; `createModel` inline in `ui/ui.tsx`, `component = TreeDetailView`
+- Tree detail pages: no separate `model.ts`; `createModel` inline in `ui/ui.tsx`; `component` is re-exported via `export { TreeDetailView as component } from '~/widgets/tree-visualization'` (SonarQube S7763 wants `export…from` over `export const x = imported`; same for `export { factory as createModel } from '../model'` on list pages)
 - Write features (`add/edit/delete`) are singletons; they read `$treeScope` via `attach({ source: { ..., scope: $treeScope } })` so scope propagates without prop-drilling
 - `shared/lib/create-form.ts` — generic form factory
 - `shared/lib/disclosure.ts` — open/close state for modals/drawers
