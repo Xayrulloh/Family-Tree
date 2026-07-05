@@ -15,6 +15,7 @@ describe('routesMap', () => {
     );
 
     expect(new Set(mapped).size).toBe(routesMap.length);
+
     for (const route of named) {
       expect(mapped).toContain(route);
     }

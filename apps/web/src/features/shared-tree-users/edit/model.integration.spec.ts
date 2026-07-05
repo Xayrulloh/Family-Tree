@@ -31,6 +31,7 @@ describe('shared-tree-users/edit model (integration)', () => {
     const updateSpy = vi
       .spyOn(api.sharedTree, 'update')
       .mockResolvedValue({ data: undefined } as any);
+
     const scope = fork();
 
     await allSettled(model.editTrigger, { scope, params: sharedUser });
@@ -50,6 +51,7 @@ describe('shared-tree-users/edit model (integration)', () => {
     vi.spyOn(api.sharedTree, 'update').mockResolvedValue({
       data: undefined,
     } as any);
+
     const scope = fork();
 
     await allSettled(model.editTrigger, { scope, params: sharedUser });

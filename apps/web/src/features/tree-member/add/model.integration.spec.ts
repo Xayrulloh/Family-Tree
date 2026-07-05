@@ -26,6 +26,7 @@ describe('tree-member/add model (integration)', () => {
     const spy = vi
       .spyOn(api.treeMember, 'createChild')
       .mockResolvedValue({ data: { id: 'new-1' } } as never);
+
     const scope = fork();
 
     await allSettled(model.addBoyTrigger, { scope, params: member });
@@ -40,6 +41,7 @@ describe('tree-member/add model (integration)', () => {
     const spy = vi
       .spyOn(api.treeMember, 'createChild')
       .mockResolvedValue({ data: { id: 'new-1' } } as never);
+
     const scope = fork();
 
     await allSettled(model.addGirlTrigger, { scope, params: member });
@@ -54,6 +56,7 @@ describe('tree-member/add model (integration)', () => {
     const spy = vi
       .spyOn(api.treeMember, 'createSpouse')
       .mockResolvedValue({ data: { id: 'new-1' } } as never);
+
     const scope = fork();
 
     await allSettled(model.addSpouseTrigger, { scope, params: member });
@@ -68,6 +71,7 @@ describe('tree-member/add model (integration)', () => {
     const spy = vi
       .spyOn(api.treeMember, 'createParents')
       .mockResolvedValue({ data: { id: 'new-1' } } as never);
+
     const scope = fork();
 
     await allSettled(model.addParentsTrigger, { scope, params: member });
@@ -82,6 +86,7 @@ describe('tree-member/add model (integration)', () => {
     const spy = vi
       .spyOn(api.treeMember, 'createChild')
       .mockResolvedValue({ data: { id: 'new-1' } } as never);
+
     const scope = fork({ values: [[$treeScope, 'shared']] });
 
     await allSettled(model.addBoyTrigger, { scope, params: member });
@@ -96,6 +101,7 @@ describe('tree-member/add model (integration)', () => {
     vi.spyOn(api.treeMember, 'createChild').mockResolvedValue({
       data: { id: 'new-1' },
     } as never);
+
     const scope = fork();
 
     await allSettled(model.addBoyTrigger, { scope, params: member });
@@ -107,6 +113,7 @@ describe('tree-member/add model (integration)', () => {
     vi.spyOn(api.treeMember, 'createParents').mockResolvedValue({
       data: { id: 'p-1' },
     } as never);
+
     const scope = fork();
 
     await allSettled(model.addParentsTrigger, { scope, params: member });
@@ -118,6 +125,7 @@ describe('tree-member/add model (integration)', () => {
     vi.spyOn(api.treeMember, 'createChild').mockResolvedValue({
       data: { id: 'new-1' },
     } as never);
+
     const scope = fork();
 
     await allSettled(model.addBoyTrigger, { scope, params: member });
@@ -129,6 +137,7 @@ describe('tree-member/add model (integration)', () => {
     vi.spyOn(api.treeMember, 'createChild').mockResolvedValue({
       data: { id: 'new-1' },
     } as never);
+
     const scope = fork();
 
     await allSettled(model.addBoyTrigger, { scope, params: member });

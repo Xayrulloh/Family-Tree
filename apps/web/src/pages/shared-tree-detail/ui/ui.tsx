@@ -1,4 +1,4 @@
-import type { SharedFamilyTreeResponseType } from '@family-tree/shared';
+import type { FamilyTreeSharedResponseType } from '@family-tree/shared';
 import { api } from '~/shared/api';
 import type { LazyPageFactoryParams } from '~/shared/lib/lazy-page';
 import {
@@ -8,7 +8,7 @@ import {
 
 // SHARED view — /shared path, permissions from the RBAC flags on the record.
 export const createModel = ({ route }: LazyPageFactoryParams<{ id: string }>) =>
-  createTreeDetailModel<SharedFamilyTreeResponseType>({
+  createTreeDetailModel<FamilyTreeSharedResponseType>({
     route,
     scope: 'shared',
     requireAuth: true,

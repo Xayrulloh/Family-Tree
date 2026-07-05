@@ -36,6 +36,7 @@ describe('entities/user model (integration)', () => {
       vi.spyOn(api.user, 'me').mockResolvedValue({
         data: mockUser,
       } as unknown as Awaited<ReturnType<typeof api.user.me>>);
+
       const scope = fork();
 
       await allSettled(sessionFx, { scope });
@@ -56,6 +57,7 @@ describe('entities/user model (integration)', () => {
       vi.spyOn(api.auth, 'logout').mockResolvedValue(
         undefined as unknown as Awaited<ReturnType<typeof api.auth.logout>>,
       );
+
       const scope = fork({
         values: [[$session, SessionStatus.Authorized]],
       });
@@ -77,6 +79,7 @@ describe('entities/user model (integration)', () => {
       vi.spyOn(api.user, 'me').mockResolvedValue({
         data: mockUser,
       } as unknown as Awaited<ReturnType<typeof api.user.me>>);
+
       const scope = fork();
 
       await allSettled(sessionFx, { scope });
@@ -86,6 +89,7 @@ describe('entities/user model (integration)', () => {
 
     it('remains null after a failed sessionFx', async () => {
       vi.spyOn(api.user, 'me').mockRejectedValue(new Error('401'));
+
       const scope = fork();
 
       await allSettled(sessionFx, { scope });
@@ -106,6 +110,7 @@ describe('entities/user model (integration)', () => {
       vi.spyOn(api.auth, 'logout').mockResolvedValue(
         undefined as unknown as Awaited<ReturnType<typeof api.auth.logout>>,
       );
+
       const scope = fork({
         values: [
           [$session, SessionStatus.Authorized],

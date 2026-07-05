@@ -14,6 +14,7 @@ describe('tree/share model (integration)', () => {
     expect(scope.getState(model.$shareUrl)).toMatch(
       /\/family-trees\/shared\/tree-1$/,
     );
+
     expect(scope.getState(model.disclosure.$isOpen)).toBe(true);
   });
 
@@ -45,6 +46,7 @@ describe('tree/share model (integration)', () => {
 
   it('copyTrigger copies the url and closes the disclosure', async () => {
     const copyHandler = vi.fn().mockResolvedValue(undefined);
+
     const scope = fork({
       handlers: [[model.copyToClipboardFx, copyHandler]],
     });
@@ -53,11 +55,13 @@ describe('tree/share model (integration)', () => {
       scope,
       params: { id: 'tree-1', scope: 'shared' },
     });
+
     await allSettled(model.copyTrigger, { scope });
 
     expect(copyHandler).toHaveBeenCalledWith(
       expect.stringContaining('/family-trees/shared/tree-1'),
     );
+
     expect(scope.getState(model.disclosure.$isOpen)).toBe(false);
   });
 });

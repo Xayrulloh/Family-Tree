@@ -38,9 +38,9 @@ describe('tree-member/preview model (integration)', () => {
   });
 
   it('reset closes the disclosure', async () => {
-    const scope = fork({
-      values: [[model.disclosure.$isOpen, true]],
-    });
+    const scope = fork();
+
+    await allSettled(model.previewMemberTrigger, { scope, params: member });
 
     await allSettled(model.reset, { scope });
 

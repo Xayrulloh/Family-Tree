@@ -19,6 +19,7 @@ describe('tree/delete model (integration)', () => {
     const deleteSpy = vi
       .spyOn(api.tree, 'delete')
       .mockResolvedValue({ data: {} } as never);
+
     const scope = fork();
 
     await allSettled(model.deleteTrigger, { scope, params: { id: 'tree-1' } });
@@ -29,6 +30,7 @@ describe('tree/delete model (integration)', () => {
 
   it('closes the disclosure and resets the id after a successful delete', async () => {
     vi.spyOn(api.tree, 'delete').mockResolvedValue({ data: {} } as never);
+
     const scope = fork();
 
     await allSettled(model.deleteTrigger, { scope, params: { id: 'tree-1' } });

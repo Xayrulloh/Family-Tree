@@ -6,7 +6,7 @@ import {
 } from '@ant-design/icons';
 import type {
   FamilyTreeResponseType,
-  SharedFamilyTreeResponseType,
+  FamilyTreeSharedResponseType,
 } from '@family-tree/shared';
 import {
   Button,
@@ -41,7 +41,7 @@ type TreeCardProps = {
   tree: FamilyTreeResponseType;
 };
 type SharedTreeCardProps = {
-  tree: SharedFamilyTreeResponseType;
+  tree: FamilyTreeSharedResponseType;
 };
 
 type BaseTreeCardProps = {

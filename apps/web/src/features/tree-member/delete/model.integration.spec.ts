@@ -31,6 +31,7 @@ describe('tree-member/delete model (integration)', () => {
     const spy = vi
       .spyOn(api.treeMember, 'deletePreview')
       .mockResolvedValue({ data: previewOk } as never);
+
     const scope = fork();
 
     await allSettled(model.deleteTrigger, { scope, params: member });
@@ -40,6 +41,7 @@ describe('tree-member/delete model (integration)', () => {
       id: 'm-1',
       scope: 'owner',
     });
+
     expect(scope.getState(model.disclosure.$isOpen)).toBe(true);
     expect(scope.getState(model.$preview)).toEqual(previewOk);
   });
@@ -48,6 +50,7 @@ describe('tree-member/delete model (integration)', () => {
     vi.spyOn(api.treeMember, 'deletePreview').mockRejectedValue(
       new Error('boom'),
     );
+
     const scope = fork();
 
     await allSettled(model.deleteTrigger, { scope, params: member });
@@ -63,9 +66,11 @@ describe('tree-member/delete model (integration)', () => {
     vi.spyOn(api.treeMember, 'deletePreview').mockResolvedValue({
       data: previewOk,
     } as never);
+
     const deleteSpy = vi
       .spyOn(api.treeMember, 'delete')
       .mockResolvedValue({ data: {} } as never);
+
     const scope = fork();
 
     await allSettled(model.deleteTrigger, { scope, params: member });
@@ -82,7 +87,9 @@ describe('tree-member/delete model (integration)', () => {
     vi.spyOn(api.treeMember, 'deletePreview').mockResolvedValue({
       data: previewOk,
     } as never);
+
     vi.spyOn(api.treeMember, 'delete').mockResolvedValue({ data: {} } as never);
+
     const scope = fork();
 
     await allSettled(model.deleteTrigger, { scope, params: member });
@@ -97,7 +104,9 @@ describe('tree-member/delete model (integration)', () => {
     vi.spyOn(api.treeMember, 'deletePreview').mockResolvedValue({
       data: previewOk,
     } as never);
+
     vi.spyOn(api.treeMember, 'delete').mockRejectedValue(new Error('boom'));
+
     const scope = fork();
 
     await allSettled(model.deleteTrigger, { scope, params: member });

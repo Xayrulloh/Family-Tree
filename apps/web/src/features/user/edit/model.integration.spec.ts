@@ -53,7 +53,9 @@ describe('user/edit model (integration)', () => {
     const updateSpy = vi
       .spyOn(api.user, 'update')
       .mockResolvedValue({ data: {} } as never);
+
     const sessionHandler = vi.fn().mockResolvedValue({ data: {} });
+
     const scope = fork({
       values: [
         [userModel.$user, currentUser],
@@ -72,6 +74,7 @@ describe('user/edit model (integration)', () => {
     const updateSpy = vi
       .spyOn(api.user, 'update')
       .mockResolvedValue({ data: {} } as never);
+
     const scope = fork({
       values: [
         [userModel.$user, currentUser],
@@ -93,7 +96,9 @@ describe('user/edit model (integration)', () => {
     const avatarSpy = vi
       .spyOn(api.user, 'randomAvatar')
       .mockResolvedValue({ data: {} } as never);
+
     const sessionHandler = vi.fn().mockResolvedValue({ data: {} });
+
     const scope = fork({
       handlers: [[userModel.sessionFx, sessionHandler]],
     });

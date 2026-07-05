@@ -35,6 +35,7 @@ describe('tree/create-edit model (integration)', () => {
     const createSpy = vi
       .spyOn(api.tree, 'create')
       .mockResolvedValue({ data: {} } as never);
+
     const scope = fork({ values: [[model.form.$formValues, baseValues]] });
 
     await allSettled(model.createTrigger, { scope });
@@ -47,12 +48,14 @@ describe('tree/create-edit model (integration)', () => {
     const updateSpy = vi
       .spyOn(api.tree, 'update')
       .mockResolvedValue({ data: {} } as never);
+
     const scope = fork({ values: [[model.form.$formValues, baseValues]] });
 
     await allSettled(model.editTrigger, {
       scope,
       params: { id: 'tree-1', values: baseValues },
     });
+
     await allSettled(model.formValidated, { scope });
 
     expect(updateSpy).not.toHaveBeenCalled();
@@ -62,6 +65,7 @@ describe('tree/create-edit model (integration)', () => {
     const updateSpy = vi
       .spyOn(api.tree, 'update')
       .mockResolvedValue({ data: {} } as never);
+
     const changed = { name: 'Renamed Family', image: null, isPublic: true };
     const scope = fork({ values: [[model.form.$formValues, changed]] });
 
@@ -69,6 +73,7 @@ describe('tree/create-edit model (integration)', () => {
       scope,
       params: { id: 'tree-1', values: baseValues },
     });
+
     await allSettled(model.formValidated, { scope });
 
     expect(updateSpy).toHaveBeenCalledWith('tree-1', changed);

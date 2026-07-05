@@ -35,6 +35,7 @@ describe('tree-member/edit model (integration)', () => {
     const spy = vi
       .spyOn(api.treeMember, 'update')
       .mockResolvedValue({ data: {} } as never);
+
     const scope = fork({ values: [[model.form.$formValues, memberValues]] });
 
     await allSettled(model.editTrigger, { scope, params: memberValues });
@@ -50,9 +51,11 @@ describe('tree-member/edit model (integration)', () => {
     const uploadSpy = vi.spyOn(api.file, 'upload').mockResolvedValue({
       data: { path: 'https://r2.example.com/new.png', message: 'ok' },
     } as never);
+
     // The upload→setPath→edit chain proceeds even without a real form instance
     // (setPathToFormFx uses optional chaining), so stub the save call too.
     vi.spyOn(api.treeMember, 'update').mockResolvedValue({ data: {} } as never);
+
     const file = new File(['x'], 'member.png', { type: 'image/png' });
     const scope = fork({
       values: [

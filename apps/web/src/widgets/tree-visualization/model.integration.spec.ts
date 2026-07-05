@@ -1,9 +1,10 @@
 import type { UserResponseType } from '@family-tree/shared';
 import { UserGenderEnum } from '@family-tree/shared';
 import { createRoute } from 'atomic-router';
-import { allSettled, fork } from 'effector';
+import { fork } from 'effector';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from '~/shared/api';
+import { closeRoute, openRoute } from '~/test/route-events';
 import { createTreeDetailModel } from './model';
 
 type TreeData = {
@@ -66,9 +67,11 @@ describe('createTreeDetailModel (integration)', () => {
 
   it('fetches members and connections when the route opens', async () => {
     const fetchTree = vi.fn().mockResolvedValue({ data: treeData });
+
     vi.spyOn(api.treeMember, 'findAll').mockResolvedValue({
       data: mockMembers,
     } as unknown as Awaited<ReturnType<typeof api.treeMember.findAll>>);
+
     vi.spyOn(api.treeMemberConnection, 'findAll').mockResolvedValue({
       data: mockConnections,
     } as unknown as Awaited<
@@ -77,11 +80,9 @@ describe('createTreeDetailModel (integration)', () => {
 
     const { localRoute, localModel } = makeLocalModel({ fetchTree });
 
-    const scope = fork({ values: [[localRoute.$params, { id: 'tree-1' }]] });
-    await allSettled(localRoute.opened, {
-      scope,
-      params: { params: { id: 'tree-1' }, query: {} },
-    });
+    const scope = fork();
+
+    await openRoute(localRoute, scope, { id: 'tree-1' });
 
     expect(fetchTree).toHaveBeenCalledWith('tree-1');
     expect(scope.getState(localModel.$members)).toEqual(mockMembers);
@@ -92,6 +93,7 @@ describe('createTreeDetailModel (integration)', () => {
     vi.spyOn(api.treeMember, 'findAll').mockResolvedValue({
       data: [],
     } as unknown as Awaited<ReturnType<typeof api.treeMember.findAll>>);
+
     vi.spyOn(api.treeMemberConnection, 'findAll').mockResolvedValue({
       data: [],
     } as unknown as Awaited<
@@ -100,11 +102,9 @@ describe('createTreeDetailModel (integration)', () => {
 
     const { localRoute, localModel } = makeLocalModel();
 
-    const scope = fork({ values: [[localRoute.$params, { id: 'tree-42' }]] });
-    await allSettled(localRoute.opened, {
-      scope,
-      params: { params: { id: 'tree-42' }, query: {} },
-    });
+    const scope = fork();
+
+    await openRoute(localRoute, scope, { id: 'tree-42' });
 
     expect(scope.getState(localModel.$id)).toBe('tree-42');
   });
@@ -113,6 +113,7 @@ describe('createTreeDetailModel (integration)', () => {
     vi.spyOn(api.treeMember, 'findAll').mockResolvedValue({
       data: [],
     } as unknown as Awaited<ReturnType<typeof api.treeMember.findAll>>);
+
     vi.spyOn(api.treeMemberConnection, 'findAll').mockResolvedValue({
       data: [],
     } as unknown as Awaited<
@@ -121,11 +122,9 @@ describe('createTreeDetailModel (integration)', () => {
 
     const { localRoute, localModel } = makeLocalModel();
 
-    const scope = fork({ values: [[localRoute.$params, { id: 'tree-1' }]] });
-    await allSettled(localRoute.opened, {
-      scope,
-      params: { params: { id: 'tree-1' }, query: {} },
-    });
+    const scope = fork();
+
+    await openRoute(localRoute, scope, { id: 'tree-1' });
 
     expect(scope.getState(localModel.$treeName)).toBe('Smith Family');
   });
@@ -134,6 +133,7 @@ describe('createTreeDetailModel (integration)', () => {
     vi.spyOn(api.treeMember, 'findAll').mockResolvedValue({
       data: [],
     } as unknown as Awaited<ReturnType<typeof api.treeMember.findAll>>);
+
     vi.spyOn(api.treeMemberConnection, 'findAll').mockResolvedValue({
       data: [],
     } as unknown as Awaited<
@@ -150,16 +150,9 @@ describe('createTreeDetailModel (integration)', () => {
       }),
     });
 
-    const scope = fork({
-      values: [
-        [$user, ownerUser],
-        [localRoute.$params, { id: 'tree-1' }],
-      ],
-    });
-    await allSettled(localRoute.opened, {
-      scope,
-      params: { params: { id: 'tree-1' }, query: {} },
-    });
+    const scope = fork({ values: [[$user, ownerUser]] });
+
+    await openRoute(localRoute, scope, { id: 'tree-1' });
 
     expect(scope.getState(localModel.$permissions).canAdd).toBe(true);
   });
@@ -168,6 +161,7 @@ describe('createTreeDetailModel (integration)', () => {
     vi.spyOn(api.treeMember, 'findAll').mockResolvedValue({
       data: mockMembers,
     } as unknown as Awaited<ReturnType<typeof api.treeMember.findAll>>);
+
     vi.spyOn(api.treeMemberConnection, 'findAll').mockResolvedValue({
       data: mockConnections,
     } as unknown as Awaited<
@@ -176,12 +170,10 @@ describe('createTreeDetailModel (integration)', () => {
 
     const { localRoute, localModel } = makeLocalModel();
 
-    const scope = fork({ values: [[localRoute.$params, { id: 'tree-1' }]] });
-    await allSettled(localRoute.opened, {
-      scope,
-      params: { params: { id: 'tree-1' }, query: {} },
-    });
-    await allSettled(localRoute.closed, { scope });
+    const scope = fork();
+
+    await openRoute(localRoute, scope, { id: 'tree-1' });
+    await closeRoute(localRoute, scope);
 
     expect(scope.getState(localModel.$members)).toEqual([]);
     expect(scope.getState(localModel.$connections)).toEqual([]);

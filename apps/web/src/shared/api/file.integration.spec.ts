@@ -7,6 +7,7 @@ describe('file api client (integration)', () => {
   it('upload → POST /files/:category as multipart form data', async () => {
     const rec = recordRequest({ path: 'x', message: 'ok' });
     const form = new FormData();
+
     form.append('file', new Blob(['data']), 'avatar.png');
 
     await file.upload(FileUploadFolderEnum.AVATAR, form);

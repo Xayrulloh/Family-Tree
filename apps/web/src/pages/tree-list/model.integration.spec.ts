@@ -3,6 +3,7 @@ import { allSettled, fork } from 'effector';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { $session, SessionStatus } from '~/entities/user/model';
 import { api } from '~/shared/api';
+import { openRoute } from '~/test/route-events';
 import { factory } from './model';
 
 const emptyTreePage = {
@@ -24,9 +25,11 @@ function mockApis() {
   vi.spyOn(api.tree, 'findAll').mockResolvedValue({
     data: emptyTreePage,
   } as never);
+
   vi.spyOn(api.sharedTree, 'findAll').mockResolvedValue({
     data: emptySharedPage,
   } as never);
+
   vi.spyOn(api.tree, 'findAllPublic').mockResolvedValue({
     data: emptyTreePage,
   } as never);
@@ -34,6 +37,7 @@ function mockApis() {
 
 describe('pages/tree-list factory (integration)', () => {
   const testRoute = createRoute();
+
   let model: ReturnType<typeof factory>;
 
   beforeAll(() => {
@@ -45,11 +49,13 @@ describe('pages/tree-list factory (integration)', () => {
   describe('initial state', () => {
     it('$mode starts as public-trees when initialMode is public-trees', () => {
       const scope = fork();
+
       expect(scope.getState(model.$mode)).toBe('public-trees');
     });
 
     it('$myTreesPage starts at 1', () => {
       const scope = fork();
+
       expect(scope.getState(model.$myTreesPage)).toBe(1);
     });
   });
@@ -57,12 +63,10 @@ describe('pages/tree-list factory (integration)', () => {
   describe('route open', () => {
     it('fetches public trees when the route opens', async () => {
       mockApis();
+
       const scope = fork({ values: [[$session, SessionStatus.Authorized]] });
 
-      await allSettled(testRoute.opened, {
-        scope,
-        params: { params: {}, query: {} },
-      });
+      await openRoute(testRoute, scope);
 
       expect(api.tree.findAllPublic).toHaveBeenCalled();
     });
@@ -72,10 +76,7 @@ describe('pages/tree-list factory (integration)', () => {
       // UnAuthorized (not Initial) so chainAuthorized skips sessionFx.
       const scope = fork({ values: [[$session, SessionStatus.UnAuthorized]] });
 
-      await allSettled(testRoute.opened, {
-        scope,
-        params: { params: {}, query: {} },
-      });
+      await openRoute(testRoute, scope);
 
       expect(api.tree.findAllPublic).toHaveBeenCalled();
       expect(api.tree.findAll).not.toHaveBeenCalled();
@@ -111,6 +112,7 @@ describe('pages/tree-list factory (integration)', () => {
   describe('pagination', () => {
     it('myTreesPageChanged updates $myTreesPage', async () => {
       mockApis();
+
       const scope = fork({ values: [[$session, SessionStatus.Authorized]] });
 
       await allSettled(model.myTreesPageChanged, { scope, params: 3 });
@@ -120,6 +122,7 @@ describe('pages/tree-list factory (integration)', () => {
 
     it('sharedTreesPageChanged updates $sharedTreesPage', async () => {
       mockApis();
+
       const scope = fork({ values: [[$session, SessionStatus.Authorized]] });
 
       await allSettled(model.sharedTreesPageChanged, { scope, params: 2 });
@@ -129,6 +132,7 @@ describe('pages/tree-list factory (integration)', () => {
 
     it('publicTreesPageChanged updates $publicTreesPage', async () => {
       mockApis();
+
       const scope = fork();
 
       await allSettled(model.publicTreesPageChanged, { scope, params: 4 });
@@ -144,21 +148,22 @@ describe('pages/tree-list factory (integration)', () => {
         totalCount: 5,
         familyTrees: [{ id: 't-1' }],
       };
+
       vi.spyOn(api.tree, 'findAll').mockResolvedValue({
         data: emptyTreePage,
       } as never);
+
       vi.spyOn(api.sharedTree, 'findAll').mockResolvedValue({
         data: emptySharedPage,
       } as never);
+
       vi.spyOn(api.tree, 'findAllPublic').mockResolvedValue({
         data: publicData,
       } as never);
 
       const scope = fork({ values: [[$session, SessionStatus.Authorized]] });
-      await allSettled(testRoute.opened, {
-        scope,
-        params: { params: {}, query: {} },
-      });
+
+      await openRoute(testRoute, scope);
 
       expect(scope.getState(model.$paginatedPublicTrees).totalCount).toBe(5);
     });

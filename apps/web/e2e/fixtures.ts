@@ -6,7 +6,7 @@ export const mockUser = {
   id: '00000000-0000-0000-0000-000000000001',
   email: 'test@example.com',
   name: 'Test User',
-  username: 'testuser',
+  username: 'testUser',
   image: null,
   gender: 'MALE',
   dob: null,
@@ -58,4 +58,79 @@ export async function mockAuthenticated(page: Page): Promise<void> {
       body: JSON.stringify(mockUser),
     }),
   );
+}
+
+export function makeMember(
+  overrides: { id?: string; name?: string; familyTreeId?: string } = {},
+) {
+  return {
+    id: overrides.id ?? '00000000-0000-0000-0000-000000000003',
+    name: overrides.name ?? 'John Smith',
+    image: null,
+    gender: 'MALE',
+    dob: null,
+    dod: null,
+    description: null,
+    familyTreeId:
+      overrides.familyTreeId ?? '00000000-0000-0000-0000-000000000002',
+    createdAt: '2020-01-01T00:00:00.000Z',
+    updatedAt: '2020-01-01T00:00:00.000Z',
+    deletedAt: null,
+  };
+}
+
+export function makeSharedTree(
+  overrides: {
+    familyTreeId?: string;
+    name?: string;
+    canAddMembers?: boolean;
+    canEditMembers?: boolean;
+    canDeleteMembers?: boolean;
+    isBlocked?: boolean;
+  } = {},
+) {
+  return {
+    familyTreeId:
+      overrides.familyTreeId ?? '00000000-0000-0000-0000-000000000002',
+    userId: mockUser.id,
+    name: overrides.name ?? 'Shared Tree',
+    image: null,
+    createdBy: '00000000-0000-0000-0000-000000000009',
+    canAddMembers: overrides.canAddMembers ?? false,
+    canEditMembers: overrides.canEditMembers ?? false,
+    canDeleteMembers: overrides.canDeleteMembers ?? false,
+    isBlocked: overrides.isBlocked ?? false,
+    createdAt: '2020-01-01T00:00:00.000Z',
+    updatedAt: '2020-01-01T00:00:00.000Z',
+    deletedAt: null,
+  };
+}
+
+export function makeSharedUser(
+  overrides: {
+    userId?: string;
+    name?: string;
+    email?: string;
+    canAddMembers?: boolean;
+    isBlocked?: boolean;
+  } = {},
+) {
+  return {
+    familyTreeId: '00000000-0000-0000-0000-000000000002',
+    userId: overrides.userId ?? '00000000-0000-0000-0000-000000000004',
+    name: overrides.name ?? 'Alice Johnson',
+    email: overrides.email ?? 'alice@example.com',
+    image: null,
+    gender: 'FEMALE',
+    dob: null,
+    dod: null,
+    description: null,
+    canAddMembers: overrides.canAddMembers ?? true,
+    canEditMembers: false,
+    canDeleteMembers: false,
+    isBlocked: overrides.isBlocked ?? false,
+    createdAt: '2020-01-01T00:00:00.000Z',
+    updatedAt: '2020-01-01T00:00:00.000Z',
+    deletedAt: null,
+  };
 }

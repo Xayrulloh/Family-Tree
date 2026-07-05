@@ -7,7 +7,9 @@ describe('features/auth googleLoginFx', () => {
 
   it('navigates the browser to the Google OAuth endpoint', async () => {
     const assign = vi.fn();
+
     vi.stubGlobal('location', { assign });
+
     const scope = fork();
 
     await allSettled(googleLoginFx, { scope });

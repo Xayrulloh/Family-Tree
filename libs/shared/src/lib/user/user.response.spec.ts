@@ -9,7 +9,7 @@ const VALID = {
   deletedAt: null,
   email: 'test@example.com',
   name: 'Test User',
-  username: 'testuser',
+  username: 'testUser',
   image: null,
   gender: UserGenderEnum.MALE,
   dob: null,

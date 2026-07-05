@@ -1,5 +1,5 @@
 import { SearchOutlined } from '@ant-design/icons';
-import type { SharedFamilyTreeUserResponseType } from '@family-tree/shared';
+import type { FamilyTreeSharedUserResponseType } from '@family-tree/shared';
 import {
   Avatar,
   Button,
@@ -50,7 +50,7 @@ const SharedTreeUsers: React.FC<Props> = ({ model }) => {
     return <PageLoading />;
   }
 
-  const columns: ColumnsType<SharedFamilyTreeUserResponseType> = [
+  const columns: ColumnsType<FamilyTreeSharedUserResponseType> = [
     {
       title: 'User',
       key: 'name',

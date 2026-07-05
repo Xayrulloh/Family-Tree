@@ -9,9 +9,11 @@ import {
 test.describe('Public tree list page (/family-trees/public)', () => {
   test.beforeEach(async ({ page }) => {
     await mockAuthenticated(page);
+
     // Stub personal and shared trees so chainAuthorized's authorized fetch doesn't hit a real server.
     await page.route(`${API_URL}/family-trees**`, (route) => {
       const url = route.request().url();
+
       if (url.includes('/shared')) {
         return route.fulfill({
           status: 200,
@@ -19,6 +21,7 @@ test.describe('Public tree list page (/family-trees/public)', () => {
           body: JSON.stringify(makePaginated('sharedFamilyTrees', [])),
         });
       }
+
       return route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -51,6 +54,7 @@ test.describe('Public tree list page (/family-trees/public)', () => {
     await expect(
       page.getByRole('tab', { name: /public family trees/i }),
     ).toBeVisible();
+
     await expect(
       page.getByRole('tab', { name: /public family trees/i }),
     ).toContainText('0');

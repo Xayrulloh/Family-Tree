@@ -19,8 +19,9 @@ const makeError = (data: unknown, message = 'Request failed'): AxiosError =>
 describe('base response interceptor', () => {
   const successCalls: unknown[] = [];
   const errorCalls: unknown[] = [];
-  const unsubSuccess = successFx.watch((payload) => successCalls.push(payload));
-  const unsubError = errorFx.watch((payload) => errorCalls.push(payload));
+
+  const unSubSuccess = successFx.watch((payload) => successCalls.push(payload));
+  const unSubError = errorFx.watch((payload) => errorCalls.push(payload));
 
   afterEach(() => {
     successCalls.length = 0;
@@ -28,8 +29,8 @@ describe('base response interceptor', () => {
   });
 
   afterAll(() => {
-    unsubSuccess();
-    unsubError();
+    unSubSuccess();
+    unSubError();
   });
 
   describe('success toasts', () => {
@@ -68,6 +69,7 @@ describe('base response interceptor', () => {
       const error = makeError({ statusCode: 401, message: 'Unauthorized' });
 
       await expect(handler.rejected(error)).rejects.toBe(error);
+
       expect(errorCalls).toHaveLength(0);
     });
 
@@ -82,6 +84,7 @@ describe('base response interceptor', () => {
       });
 
       await expect(handler.rejected(error)).rejects.toBe(error);
+
       expect(errorCalls).toEqual(['name: Too short\nimage: Invalid url']);
     });
 
@@ -89,6 +92,7 @@ describe('base response interceptor', () => {
       const error = makeError({ statusCode: 404, message: 'Tree not found' });
 
       await expect(handler.rejected(error)).rejects.toBe(error);
+
       expect(errorCalls).toEqual(['Tree not found']);
     });
 
@@ -96,6 +100,7 @@ describe('base response interceptor', () => {
       const error = { message: 'Network Error' } as AxiosError;
 
       await expect(handler.rejected(error)).rejects.toBe(error);
+
       expect(errorCalls).toEqual(['Network Error']);
     });
   });
