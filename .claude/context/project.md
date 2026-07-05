@@ -73,6 +73,7 @@ Per-project (when you only want one):
 - API E2E: 58 tests — supertest against full NestJS app, real Postgres via Testcontainers, `CacheService` overridden with no-op to avoid Redis. Covers all endpoint groups incl. shared-tree RBAC negative paths (403s).
 - Web E2E: 19 tests — Playwright Chromium, all API calls intercepted via `page.route()`, dev server started by Playwright with `VITE_API_URL=http://localhost:9999/api`. Every page has a spec (home, registration, tree-list, public-tree-list, not-found, 3 detail pages, shared-tree-users).
 - All four tiers now run in CI before SonarQube scan (`.github/workflows/ci.yml`).
+- Web Sonar coverage = unit + integration lcov merged (`sonar.javascript.lcov.reportPaths` comma list; integration coverage always on via `coverage.enabled: true` in `vitest.integration.config.ts`); `.tsx` files are excluded from the coverage metric (`sonar.coverage.exclusions`) because their tier is Playwright, which can't emit lcov — keep logic in `model.ts`, not `.tsx`.
 - API jest configs share `apps/api/jest.base.ts`. Gotcha: Jest's TS config loader needs the explicit extension — `import { baseConfig } from './jest.base.ts'` (extensionless fails with `ERR_MODULE_NOT_FOUND`).
 - Both API global teardowns delegate to `apps/api/src/test/docker-cleanup.ts` (`stopAndRemoveContainer`); Ryuk is the fallback reaper.
 

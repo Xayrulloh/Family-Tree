@@ -26,5 +26,13 @@ export default defineConfig({
       VITE_API_URL: 'http://api.test',
     },
     reporters: ['default'],
+    coverage: {
+      // Always on: CI's `nx affected -t test-integration` runs without
+      // --coverage, and Sonar merges this lcov with the unit one.
+      enabled: true,
+      reportsDirectory: '../../coverage/apps/web-integration',
+      provider: 'v8',
+      reporter: ['lcov', 'text-summary'],
+    },
   },
 });
