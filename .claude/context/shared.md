@@ -32,6 +32,7 @@ libs/shared/src/lib/
 ```ts
 BaseSchema = { id: uuid, createdAt: string, updatedAt: string, deletedAt: string | null }
 ```
+Timestamps use a `dateToString` preprocess that normalizes Date objects / ISO strings to Z-suffixed ISO strings. **Invalid dates pass through unchanged** so `z.string().datetime()` rejects them as a validation failure — do not "simplify" back to an unguarded `new Date(val).toISOString()`, which made `safeParse()` throw `RangeError` (fixed 2026-07-06).
 
 ### `user.schema.ts`
 ```ts

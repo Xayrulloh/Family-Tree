@@ -87,6 +87,38 @@ describe('Shared Family Trees (E2E)', () => {
       expect(res.body.canAddMembers).toBe(true);
       expect(res.body.canEditMembers).toBe(false);
     });
+
+    it('returns 403 for a user who has no share for the tree', async () => {
+      const { tree } = await seedShare();
+      const stranger = await seedUser(getTestDb());
+
+      const token = await signToken(jwtService, stranger);
+
+      await req
+        .get(`/api/family-trees/shared/${tree.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(403);
+    });
+
+    it('returns 403 for a blocked shared user', async () => {
+      const db = getTestDb();
+      const owner = await seedUser(db);
+      const blockedUser = await seedUser(db);
+      const tree = await seedFamilyTree(db, owner.id);
+
+      await db.insert(schema.sharedFamilyTreesSchema).values({
+        familyTreeId: tree.id,
+        userId: blockedUser.id,
+        isBlocked: true,
+      });
+
+      const token = await signToken(jwtService, blockedUser);
+
+      await req
+        .get(`/api/family-trees/shared/${tree.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(403);
+    });
   });
 
   describe('GET /api/family-trees/shared/:familyTreeId/users', () => {
@@ -101,6 +133,17 @@ describe('Shared Family Trees (E2E)', () => {
 
       expect(res.body.sharedFamilyTreeUsers).toHaveLength(1);
       expect(res.body.sharedFamilyTreeUsers[0].userId).toBe(sharedUser.id);
+    });
+
+    it('returns 403 when a non-owner requests the user list', async () => {
+      const { sharedUser, tree } = await seedShare();
+
+      const token = await signToken(jwtService, sharedUser);
+
+      await req
+        .get(`/api/family-trees/shared/${tree.id}/users`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(403);
     });
   });
 

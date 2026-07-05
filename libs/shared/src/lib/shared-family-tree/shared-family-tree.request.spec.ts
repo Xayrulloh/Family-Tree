@@ -78,10 +78,18 @@ describe('FamilyTreeSharedUpdateRequestSchema', () => {
 });
 
 describe('FamilyTreeSharedUpdateParamSchema', () => {
-  it('is the same shape as the create request (familyTreeId + userId)', () => {
-    expect(FamilyTreeSharedUpdateParamSchema).toBe(
-      FamilyTreeSharedCreateRequestSchema,
-    );
+  it('requires familyTreeId and userId, same as the create request', () => {
+    expect(
+      FamilyTreeSharedUpdateParamSchema.safeParse({
+        familyTreeId: UUID,
+        userId: UUID,
+      }).success,
+    ).toBe(true);
+
+    expect(
+      FamilyTreeSharedUpdateParamSchema.safeParse({ familyTreeId: UUID })
+        .success,
+    ).toBe(false);
   });
 });
 

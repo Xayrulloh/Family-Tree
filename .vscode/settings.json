@@ -27,6 +27,7 @@
     "rspack",
     "Ryuk",
     "Streamable",
+    "teardowns",
     "unstub",
     "upserts",
     "Vercel",

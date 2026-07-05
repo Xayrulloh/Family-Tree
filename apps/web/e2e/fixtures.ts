@@ -1,5 +1,8 @@
 import type { Page } from '@playwright/test';
 
+// Must match VITE_API_URL in playwright.config.ts `webServer.command` —
+// page.route() intercepts this fixed API origin, independent of the
+// browser baseURL / dev-server port.
 export const API_URL = 'http://localhost:9999/api';
 
 export const mockUser = {

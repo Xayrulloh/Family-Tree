@@ -149,14 +149,7 @@ describe('pages/tree-list factory (integration)', () => {
         familyTrees: [{ id: 't-1' }],
       };
 
-      vi.spyOn(api.tree, 'findAll').mockResolvedValue({
-        data: emptyTreePage,
-      } as never);
-
-      vi.spyOn(api.sharedTree, 'findAll').mockResolvedValue({
-        data: emptySharedPage,
-      } as never);
-
+      mockApis();
       vi.spyOn(api.tree, 'findAllPublic').mockResolvedValue({
         data: publicData,
       } as never);

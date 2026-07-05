@@ -295,3 +295,29 @@ Branch `feature/isolation-routes` continued (all phases on same branch, no merge
 - **Fix:** Simplified `pageChanged updates $page` in `apps/web/src/pages/shared-tree-users/model.integration.spec.ts` — removed route opening, auth seeding, and API mock. Test now fires `model.pageChanged` directly on a fresh `fork()` and asserts `$page === 3`. Clean, correct, and not affected by the `chainRoute` limitation.
 - Removed now-unused `$session`, `SessionStatus`, and `api` imports from the spec.
 - **Key note (`chainRoute` $hasSameParams breaks Effector fork):** Don't assert fetch-effect call args that depend on `authorizedRoute.$params` in integration tests — the chained route's params are never populated in `fork`+`allSettled`. Test store state (e.g. `$page`, `$searchQuery`) instead. This limitation is documented in `web.md`.
+
+---
+
+## 2026-07-05 — Coverage gap fill: specs for all untested logic-bearing files
+
+- Added 28 spec files (~100 tests) so almost every source file has an adjacent test: 16 shared lib request/response schema specs, 5 API unit specs (http.filter, require-permission decorator, env-validation, cloudflare.config, file.service), 3 API E2E specs (fcm-tokens, member connections, shared trees RBAC — previously zero endpoint coverage), 7 web specs (routing invariant, base interceptors, message, lazy-page, auth model, registration/not-found chainAnonymous), 1 web E2E (not-found). Committed as `e802bcf`.
+- Added 4 more web E2E specs closing the detail-page gap: `tree-detail`, `shared-tree-detail`, `public-tree-detail`, `shared-tree-users` (+ `makeMember`/`makeSharedTree`/`makeSharedUser` fixtures). Web E2E 8 → 19 tests; API E2E 36 → 55.
+- Deliberately skipped: barrel files, NestJS modules, one-line guards (`extends AuthGuard(...)`), thin controllers (E2E-covered), `ui.tsx` (Playwright tier), Drizzle `schema.ts`, type-only files, empty `home/model.ts` factory.
+- **Key note (Playwright route regex must be port-scoped):** a bare regex like `/family-trees\/shared\/.+\/users/` also matches the BROWSER NAVIGATION URL (port 4200) — Playwright then serves the JSON mock as the page document itself. Always anchor with `:9999/api/` (same lesson as commit e22c936, easy to re-trip).
+- **Key note (antd Empty strict-mode violation):** antd renders "No data" twice (SVG `<title>` + description div) → `getByText('No data')` fails strict mode. Use `page.locator('.ant-empty-description')`.
+- **Key note (`requireAuth: false` skips chainAuthorized):** `createTreeDetailModel` only wraps the route in `chainAuthorized` when `requireAuth: true` — the public detail page works for anonymous visitors (`mockUnauthenticated` fine in E2E), unlike list pages that always call `chainAuthorized`.
+- **Key note (`chainRoute` `$hasSameParams` breaks Effector fork):** documented in web.md — chained-route `$params` never populate under `fork`+`allSettled`; don't assert fetch args derived from `authorizedRoute.$params` in integration tests.
+- **Local-only debris:** `apps/web/api/` is an untracked empty skeleton of `apps/api` (stale `.env` copy, empty dirs, docker `init-db/` mount artifact) created by tooling run with cwd=`apps/web`. Safe to delete; git never saw it.
+
+---
+
+## 2026-07-06 — CodeRabbit round 2 on PR #516: production bug + refactors
+
+- Triaged 18 CodeRabbit inline comments: 11 fixed, 7 skipped with reasons (4 AAA-blank-line comments were STALE — cited lines already compliant at HEAD; verify line numbers before acting on review comments).
+- **Production bug fixed (`libs/shared` base.schema):** `dateToString` preprocess called `new Date(val).toISOString()` unguarded — an invalid date string made `safeParse()` THROW `RangeError` instead of returning a validation failure (the old spec even asserted the throw as documented behavior). Fix: pass invalid values through so `z.string().datetime()` rejects them; added regression tests for invalid string + invalid Date object.
+- Added 3 negative-path E2E tests (stranger 403 / blocked-user 403 on `GET shared/:id`, non-owner 403 on `GET shared/:id/users`); API E2E 55 → 58.
+- Extracted `apps/api/src/test/docker-cleanup.ts` (`stopAndRemoveContainer`) shared by both global teardowns; extracted `apps/api/jest.base.ts` shared by all 3 jest configs.
+- Replaced schema-identity assertions (`expect(SchemaA).toBe(SchemaB)`) with behavior assertions in 2 shared lib specs; added missing `id`-stripped assertion in shared-family-tree.response.spec.
+- `apps/web/src/shared/api/base.ts` now exports `onResponseSuccess`/`onResponseError` so base.spec.ts tests them directly instead of reading axios' internal `handlers` array.
+- **Key note (Jest ESM config loader needs explicit `.ts` extension):** `import { baseConfig } from './jest.base'` fails with `ERR_MODULE_NOT_FOUND` when Jest parses a TS config — must write `from './jest.base.ts'`.
+- **Key note (CodeRabbit reviews can be stale):** review ran against an older file state; 4 of 18 comments cited line numbers that were already fixed. Always verify the cited lines at HEAD before "fixing".

@@ -58,9 +58,10 @@ describe('FamilyTreeSharedResponseSchema', () => {
     expect(FamilyTreeSharedResponseSchema.safeParse(rest).success).toBe(false);
   });
 
-  it('strips the omitted tree id field', () => {
+  it('strips the omitted tree id and isPublic fields', () => {
     const result = FamilyTreeSharedResponseSchema.parse(VALID_SHARED_TREE);
 
+    expect(result).not.toHaveProperty('id');
     expect(result).not.toHaveProperty('isPublic');
   });
 });

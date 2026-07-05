@@ -56,10 +56,16 @@ describe('FamilyTreeMemberCreateSpouseRequestSchema', () => {
     ).toBe(false);
   });
 
-  it('is reused as the parents create schema', () => {
-    expect(FamilyTreeMemberCreateParentsRequestSchema).toBe(
-      FamilyTreeMemberCreateSpouseRequestSchema,
-    );
+  it('parents create schema requires the same fromMemberId shape', () => {
+    expect(
+      FamilyTreeMemberCreateParentsRequestSchema.safeParse({
+        fromMemberId: UUID,
+      }).success,
+    ).toBe(true);
+
+    expect(
+      FamilyTreeMemberCreateParentsRequestSchema.safeParse({}).success,
+    ).toBe(false);
   });
 });
 

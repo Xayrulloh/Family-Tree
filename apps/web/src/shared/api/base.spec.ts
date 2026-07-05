@@ -1,20 +1,22 @@
 import type { AxiosError, AxiosResponse } from 'axios';
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
 import { errorFx, successFx } from '~/shared/lib/message';
-import { base } from './base';
+import {
+  type ApiErrorResponse,
+  onResponseError,
+  onResponseSuccess,
+} from './base';
 
-type Handler = {
-  fulfilled: (response: AxiosResponse) => AxiosResponse;
-  rejected: (error: AxiosError) => Promise<never>;
-};
-
-const handler = (base.interceptors.response as any).handlers[0] as Handler;
+const handler = { fulfilled: onResponseSuccess, rejected: onResponseError };
 
 const makeResponse = (method: string, url = '/family-trees'): AxiosResponse =>
   ({ config: { method, url }, data: {} }) as AxiosResponse;
 
-const makeError = (data: unknown, message = 'Request failed'): AxiosError =>
-  ({ response: { data }, message }) as AxiosError;
+const makeError = (
+  data: unknown,
+  message = 'Request failed',
+): AxiosError<ApiErrorResponse> =>
+  ({ response: { data }, message }) as AxiosError<ApiErrorResponse>;
 
 describe('base response interceptor', () => {
   const successCalls: unknown[] = [];
@@ -97,7 +99,9 @@ describe('base response interceptor', () => {
     });
 
     it('falls back to the axios message when there is no response body', async () => {
-      const error = { message: 'Network Error' } as AxiosError;
+      const error = {
+        message: 'Network Error',
+      } as AxiosError<ApiErrorResponse>;
 
       await expect(handler.rejected(error)).rejects.toBe(error);
 

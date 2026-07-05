@@ -68,11 +68,13 @@ Per-project (when you only want one):
 - Web E2E: `pnpm exec nx run @family-tree/web:test-e2e`
 - Shared: `pnpm exec nx test shared`
 
-- Unit: 210 tests (2026-06-24, 5 tiers).
-- Integration: 153 tests — 79 API (Testcontainers + real Postgres) + 74 web (MSW + Effector `fork`).
-- API E2E: 36 tests — supertest against full NestJS app, real Postgres via Testcontainers, `CacheService` overridden with no-op to avoid Redis.
-- Web E2E: 8 tests — Playwright Chromium, all API calls intercepted via `page.route()`, dev server started by Playwright with `VITE_API_URL=http://localhost:9999/api`.
+- Unit: ~355 tests (2026-07-06) — api 110 (Jest), shared 226 (Vitest), web (Vitest). Almost every logic-bearing source file has an adjacent spec; barrels/modules/one-line guards/ui.tsx are deliberately untested (covered by the E2E tier).
+- Integration: ~215 tests — ~93 API (Testcontainers + real Postgres) + ~121 web (MSW + Effector `fork`).
+- API E2E: 58 tests — supertest against full NestJS app, real Postgres via Testcontainers, `CacheService` overridden with no-op to avoid Redis. Covers all endpoint groups incl. shared-tree RBAC negative paths (403s).
+- Web E2E: 19 tests — Playwright Chromium, all API calls intercepted via `page.route()`, dev server started by Playwright with `VITE_API_URL=http://localhost:9999/api`. Every page has a spec (home, registration, tree-list, public-tree-list, not-found, 3 detail pages, shared-tree-users).
 - All four tiers now run in CI before SonarQube scan (`.github/workflows/ci.yml`).
+- API jest configs share `apps/api/jest.base.ts`. Gotcha: Jest's TS config loader needs the explicit extension — `import { baseConfig } from './jest.base.ts'` (extensionless fails with `ERR_MODULE_NOT_FOUND`).
+- Both API global teardowns delegate to `apps/api/src/test/docker-cleanup.ts` (`stopAndRemoveContainer`); Ryuk is the fallback reaper.
 
 ## Test conventions
 - All spec files use AAA (Arrange-Act-Assert) blank-line grouping inside `it()` blocks: one blank line before the act, one before the first `expect()`. Single-line tests need no gaps.

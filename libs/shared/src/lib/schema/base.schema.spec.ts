@@ -54,10 +54,22 @@ describe('BaseSchema', () => {
   });
 
   describe('timestamp fields', () => {
-    it('throws RangeError for an invalid date string for createdAt (preprocess calls new Date().toISOString() which throws)', () => {
-      expect(() =>
-        BaseSchema.safeParse({ ...VALID, createdAt: 'not-a-date' }),
-      ).toThrow(RangeError);
+    it('rejects an invalid date string for createdAt as a validation failure (not a thrown RangeError)', () => {
+      const result = BaseSchema.safeParse({
+        ...VALID,
+        createdAt: 'not-a-date',
+      });
+
+      expect(result.success).toBe(false);
+    });
+
+    it('rejects an invalid Date object for createdAt as a validation failure', () => {
+      const result = BaseSchema.safeParse({
+        ...VALID,
+        createdAt: new Date('not-a-date'),
+      });
+
+      expect(result.success).toBe(false);
     });
 
     it('rejects a missing createdAt', () => {
