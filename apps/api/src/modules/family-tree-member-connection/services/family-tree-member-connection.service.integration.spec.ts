@@ -41,6 +41,7 @@ describe('FamilyTreeMemberConnectionService (integration)', () => {
         seedMember(getTestDb(), tree.id),
         seedMember(getTestDb(), tree.id),
       ]);
+
       await seedConnection(tree.id, m1.id, m2.id);
 
       const result = await service.getAllFamilyTreeMemberConnections({
@@ -69,10 +70,12 @@ describe('FamilyTreeMemberConnectionService (integration)', () => {
         seedFamilyTree(getTestDb(), user.id),
         seedFamilyTree(getTestDb(), user.id),
       ]);
+
       const [mA1, mA2] = await Promise.all([
         seedMember(getTestDb(), treeA.id),
         seedMember(getTestDb(), treeA.id),
       ]);
+
       await seedConnection(treeA.id, mA1.id, mA2.id);
 
       const result = await service.getAllFamilyTreeMemberConnections({
@@ -87,11 +90,13 @@ describe('FamilyTreeMemberConnectionService (integration)', () => {
     it('returns connections filtered by both tree and fromMember', async () => {
       const user = await seedUser(getTestDb());
       const tree = await seedFamilyTree(getTestDb(), user.id);
+
       const [m1, m2, m3] = await Promise.all([
         seedMember(getTestDb(), tree.id),
         seedMember(getTestDb(), tree.id),
         seedMember(getTestDb(), tree.id),
       ]);
+
       await seedConnection(tree.id, m1.id, m2.id);
       await seedConnection(tree.id, m3.id, m2.id);
 

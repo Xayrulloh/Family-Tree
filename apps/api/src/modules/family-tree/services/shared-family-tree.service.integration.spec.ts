@@ -33,7 +33,9 @@ describe('FamilyTreeSharedService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       const tree = await seedFamilyTree(getTestDb(), owner.id);
+
       await share(tree.id, viewer.id);
 
       const result = await service.getSharedFamilyTrees(viewer.id, {
@@ -50,7 +52,9 @@ describe('FamilyTreeSharedService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       const tree = await seedFamilyTree(getTestDb(), owner.id);
+
       await share(tree.id, viewer.id, { isBlocked: true });
 
       const result = await service.getSharedFamilyTrees(viewer.id, {
@@ -66,12 +70,15 @@ describe('FamilyTreeSharedService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       const smith = await seedFamilyTree(getTestDb(), owner.id, {
         name: 'Smith Family',
       });
+
       const jones = await seedFamilyTree(getTestDb(), owner.id, {
         name: 'Jones Family',
       });
+
       await share(smith.id, viewer.id);
       await share(jones.id, viewer.id);
 
@@ -92,7 +99,9 @@ describe('FamilyTreeSharedService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       const tree = await seedFamilyTree(getTestDb(), owner.id);
+
       await share(tree.id, viewer.id, { canEditMembers: true });
 
       const result = await service.getSharedFamilyTreeById(viewer.id, tree.id);
@@ -106,6 +115,7 @@ describe('FamilyTreeSharedService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       const tree = await seedFamilyTree(getTestDb(), owner.id);
 
       await expect(
@@ -118,7 +128,9 @@ describe('FamilyTreeSharedService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       const tree = await seedFamilyTree(getTestDb(), owner.id);
+
       await share(tree.id, viewer.id, { isBlocked: true });
 
       await expect(
@@ -133,6 +145,7 @@ describe('FamilyTreeSharedService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       const tree = await seedFamilyTree(getTestDb(), owner.id);
 
       await service.createSharedFamilyTree({
@@ -146,6 +159,7 @@ describe('FamilyTreeSharedService (integration)', () => {
           eq(schema.sharedFamilyTreesSchema.userId, viewer.id),
         ),
       });
+
       expect(row).toBeDefined();
     });
 
@@ -167,7 +181,9 @@ describe('FamilyTreeSharedService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       const tree = await seedFamilyTree(getTestDb(), owner.id);
+
       await share(tree.id, viewer.id);
 
       const result = await service.getSharedFamilyTreeUsersById(
@@ -188,6 +204,7 @@ describe('FamilyTreeSharedService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       const tree = await seedFamilyTree(getTestDb(), owner.id);
 
       await expect(
@@ -205,7 +222,9 @@ describe('FamilyTreeSharedService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       const tree = await seedFamilyTree(getTestDb(), owner.id);
+
       await share(tree.id, viewer.id);
 
       await service.updateSharedFamilyTreeById(viewer.id, tree.id, {
@@ -221,6 +240,7 @@ describe('FamilyTreeSharedService (integration)', () => {
           eq(schema.sharedFamilyTreesSchema.userId, viewer.id),
         ),
       });
+
       expect(row?.canAddMembers).toBe(true);
       expect(row?.canDeleteMembers).toBe(true);
     });

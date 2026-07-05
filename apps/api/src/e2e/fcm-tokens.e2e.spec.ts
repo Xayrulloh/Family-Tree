@@ -71,6 +71,7 @@ describe('FCM Tokens (E2E)', () => {
       const user = await seedUser(getTestDb());
       const token = await signToken(jwtService, user);
       const body = { token: 'fcm-abc', deviceType: FCMTokenDeviceEnum.WEB };
+
       await req
         .post('/api/fcm-tokens')
         .set('Authorization', `Bearer ${token}`)

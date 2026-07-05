@@ -24,9 +24,11 @@ describe('HttpExceptionFilter', () => {
 
   beforeEach(() => {
     filter = new HttpExceptionFilter();
+
     superCatchSpy = jest
       .spyOn(BaseExceptionFilter.prototype, 'catch')
       .mockImplementation(() => {});
+
     loggerErrorSpy = jest
       .spyOn(Logger.prototype, 'error')
       .mockImplementation(() => {});
@@ -53,6 +55,7 @@ describe('HttpExceptionFilter', () => {
         message: 'Required',
       } as never,
     ]);
+
     const exception = new ZodSerializationException(zodError);
     const host = makeHost();
 
@@ -61,6 +64,7 @@ describe('HttpExceptionFilter', () => {
     expect(loggerErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining('ZodSerializationException:'),
     );
+
     expect(superCatchSpy).toHaveBeenCalledWith(exception, host);
   });
 });

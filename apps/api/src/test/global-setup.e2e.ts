@@ -62,6 +62,7 @@ export default async function globalSetupE2E() {
     );
   } catch (err) {
     await pgContainer.stop();
+
     throw err;
   }
 }

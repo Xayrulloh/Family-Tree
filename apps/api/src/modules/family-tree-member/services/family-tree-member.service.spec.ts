@@ -77,12 +77,15 @@ function setupMocks({
   memberCount = 3,
 } = {}) {
   mockConnectionsFindMany.mockResolvedValue(children);
+
   mockConnectionsFindFirst
     .mockResolvedValueOnce(hasParents)
     .mockResolvedValueOnce(spouseConn);
+
   if (spouseConn !== undefined) {
     mockConnectionsFindFirst.mockResolvedValueOnce(spouseHasParents);
   }
+
   mockMembersFindMany.mockResolvedValue(Array(memberCount).fill({}));
 }
 
@@ -91,6 +94,7 @@ describe('FamilyTreeMemberService.computeDeletePreview', () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
+
     service = new FamilyTreeMemberService(
       mockDb as any,
       {} as any,

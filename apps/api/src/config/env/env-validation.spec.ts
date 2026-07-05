@@ -42,6 +42,7 @@ describe('envSchema', () => {
     expect(envSchema.safeParse({ ...VALID_ENV, PORT: '80' }).success).toBe(
       false,
     );
+
     expect(envSchema.safeParse({ ...VALID_ENV, PORT: '30000' }).success).toBe(
       false,
     );

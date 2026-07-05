@@ -45,6 +45,7 @@ describe('AuthService (integration)', () => {
       });
 
       const all = await getTestDb().query.usersSchema.findMany();
+
       expect(all).toHaveLength(1);
     });
 
@@ -56,6 +57,7 @@ describe('AuthService (integration)', () => {
       const created = await getTestDb().query.usersSchema.findFirst({
         where: eq(schema.usersSchema.email, 'newcomer@test.com'),
       });
+
       expect(created).toBeDefined();
       expect(created?.username).toBe('newcomer-google-oauth-id');
     });
@@ -76,6 +78,7 @@ describe('AuthService (integration)', () => {
       const created = await getTestDb().query.usersSchema.findFirst({
         where: eq(schema.usersSchema.email, 'newcomer@test.com'),
       });
+
       expect(created?.name).toBe('New Comer');
       expect(created?.gender).toBe(UserGenderEnum.MALE);
     });

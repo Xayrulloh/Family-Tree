@@ -38,7 +38,9 @@ describe('CloudflareConfig', () => {
       await config.uploadFile('avatar', 'user-1.png', body, 'image/png');
 
       expect(sendSpy).toHaveBeenCalledTimes(1);
+
       const command = sendSpy.mock.calls[0][0] as PutObjectCommand;
+
       expect(command).toBeInstanceOf(PutObjectCommand);
       expect(command.input).toEqual({
         Bucket: 'family-tree',
@@ -62,7 +64,9 @@ describe('CloudflareConfig', () => {
       await config.deleteFile('https://cdn.example.com/avatar/user-1.png');
 
       expect(sendSpy).toHaveBeenCalledTimes(1);
+
       const command = sendSpy.mock.calls[0][0] as DeleteObjectCommand;
+
       expect(command).toBeInstanceOf(DeleteObjectCommand);
       expect(command.input).toEqual({
         Bucket: 'family-tree',

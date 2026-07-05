@@ -79,6 +79,7 @@ describe('UserService (integration)', () => {
       await service.updateUser(user.id, { name: 'After' });
 
       const updated = await service.getUserById(user.id);
+
       expect(updated.name).toBe('After');
     });
 

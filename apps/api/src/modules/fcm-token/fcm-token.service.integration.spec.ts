@@ -33,6 +33,7 @@ describe('FCMTokenService (integration)', () => {
       const row = await getTestDb().query.FCMTokensSchema.findFirst({
         where: eq(schema.FCMTokensSchema.id, result.id),
       });
+
       expect(row).toBeDefined();
     });
 
@@ -53,6 +54,7 @@ describe('FCMTokenService (integration)', () => {
 
     it('allows the same token on a different device type', async () => {
       const user = await seedUser(getTestDb());
+
       await service.createFcmToken(user.id, {
         token: 'device-token-123',
         deviceType: FCMTokenDeviceEnum.WEB,

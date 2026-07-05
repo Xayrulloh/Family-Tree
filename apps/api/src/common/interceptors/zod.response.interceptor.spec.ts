@@ -52,6 +52,7 @@ describe('ZodSerializerInterceptorCustom', () => {
 
   it('calls validate with the response when a schema is registered', (done) => {
     const mockSchema = {};
+
     jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(mockSchema);
     validate.mockReturnValue({ validated: true });
 
@@ -70,6 +71,7 @@ describe('ZodSerializerInterceptorCustom', () => {
 
   it('passes a StreamableFile through without validation even when a schema is set', (done) => {
     jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue({});
+
     const file = new StreamableFile(Buffer.from('data'));
 
     interceptor.intercept(makeContext(), makeNext(file)).subscribe((result) => {

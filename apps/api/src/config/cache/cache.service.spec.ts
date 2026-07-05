@@ -26,6 +26,7 @@ describe('CacheService', () => {
       const cache = makeCache({
         get: jest.fn().mockResolvedValue({ id: '1' }),
       });
+
       const service = new CacheService(cache as any);
 
       const result = await service.get('key');
@@ -44,6 +45,7 @@ describe('CacheService', () => {
       const cache = makeCache({
         get: jest.fn().mockRejectedValue(new Error('Redis down')),
       });
+
       const service = new CacheService(cache as any);
 
       await expect(service.get('key')).resolves.toBeNull();
@@ -96,10 +98,12 @@ describe('CacheService', () => {
     it('deletes all keys matching the pattern', async () => {
       const mockKeys = jest.fn().mockResolvedValue(['a:1', 'a:2']);
       const mockMdel = jest.fn().mockResolvedValue(undefined);
+
       const cache = makeCache({
         mdel: mockMdel,
         stores: [{ opts: { store: { client: { keys: mockKeys } } } }],
       });
+
       const service = new CacheService(cache as any);
 
       await service.delByPattern('a:*');
@@ -111,10 +115,12 @@ describe('CacheService', () => {
     it('skips deletion when no keys match the pattern', async () => {
       const mockKeys = jest.fn().mockResolvedValue([]);
       const mockMdel = jest.fn();
+
       const cache = makeCache({
         mdel: mockMdel,
         stores: [{ opts: { store: { client: { keys: mockKeys } } } }],
       });
+
       const service = new CacheService(cache as any);
 
       await service.delByPattern('missing:*');
@@ -149,6 +155,7 @@ describe('CacheService', () => {
           },
         ],
       });
+
       const service = new CacheService(cache as any);
 
       await expect(service.delByPattern('a:*')).resolves.toBeUndefined();
@@ -159,17 +166,21 @@ describe('CacheService', () => {
     it('getUserFamilyTrees / setUserFamilyTrees use a stable query-keyed cache key', async () => {
       const mockGet = jest.fn().mockResolvedValue(null);
       const mockSet = jest.fn().mockResolvedValue(undefined);
+
       const service = new CacheService(
         makeCache({ get: mockGet, set: mockSet }) as any,
       );
+
       const query = { page: 1, perPage: 10 };
 
       await service.getUserFamilyTrees('u-1', query);
+
       expect(mockGet).toHaveBeenCalledWith(
         'users:u-1:family-trees:{"page":1,"perPage":10}',
       );
 
       await service.setUserFamilyTrees('u-1', query, {} as any);
+
       expect(mockSet).toHaveBeenCalledWith(
         'users:u-1:family-trees:{"page":1,"perPage":10}',
         {},
@@ -180,14 +191,17 @@ describe('CacheService', () => {
     it('getFamilyTreeMembers / setFamilyTreeMembers key by treeId', async () => {
       const mockGet = jest.fn().mockResolvedValue(null);
       const mockSet = jest.fn().mockResolvedValue(undefined);
+
       const service = new CacheService(
         makeCache({ get: mockGet, set: mockSet }) as any,
       );
 
       await service.getFamilyTreeMembers('tree-1');
+
       expect(mockGet).toHaveBeenCalledWith('family-trees:tree-1:members');
 
       await service.setFamilyTreeMembers('tree-1', [] as any);
+
       expect(mockSet).toHaveBeenCalledWith(
         'family-trees:tree-1:members',
         [],
@@ -198,16 +212,19 @@ describe('CacheService', () => {
     it('getFamilyTreeMemberConnections / setFamilyTreeMemberConnections key by treeId', async () => {
       const mockGet = jest.fn().mockResolvedValue(null);
       const mockSet = jest.fn().mockResolvedValue(undefined);
+
       const service = new CacheService(
         makeCache({ get: mockGet, set: mockSet }) as any,
       );
 
       await service.getFamilyTreeMemberConnections('tree-1');
+
       expect(mockGet).toHaveBeenCalledWith(
         'family-trees:tree-1:members:connections',
       );
 
       await service.setFamilyTreeMemberConnections('tree-1', [] as any);
+
       expect(mockSet).toHaveBeenCalledWith(
         'family-trees:tree-1:members:connections',
         [],
@@ -218,14 +235,17 @@ describe('CacheService', () => {
     it('getUser / setUser key by userId', async () => {
       const mockGet = jest.fn().mockResolvedValue(null);
       const mockSet = jest.fn().mockResolvedValue(undefined);
+
       const service = new CacheService(
         makeCache({ get: mockGet, set: mockSet }) as any,
       );
 
       await service.getUser('u-1');
+
       expect(mockGet).toHaveBeenCalledWith('users:u-1');
 
       await service.setUser('u-1', {} as any);
+
       expect(mockSet).toHaveBeenCalledWith('users:u-1', {}, undefined);
     });
   });

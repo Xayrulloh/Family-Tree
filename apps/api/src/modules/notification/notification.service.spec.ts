@@ -23,9 +23,11 @@ describe('NotificationService', () => {
   describe('markAllAsRead', () => {
     it('upserts a notification_reads row for the given user', async () => {
       const mockOnConflictDoUpdate = jest.fn().mockResolvedValue(undefined);
+
       const mockValues = jest
         .fn()
         .mockReturnValue({ onConflictDoUpdate: mockOnConflictDoUpdate });
+
       const mockInsert = jest.fn().mockReturnValue({ values: mockValues });
 
       const service = new NotificationService({ insert: mockInsert } as any);
@@ -33,12 +35,14 @@ describe('NotificationService', () => {
       await service.markAllAsRead('user-1');
 
       expect(mockInsert).toHaveBeenCalledWith({ userId: 'userId' });
+
       expect(mockValues).toHaveBeenCalledWith(
         expect.objectContaining({
           userId: 'user-1',
           updatedAt: expect.anything(),
         }),
       );
+
       expect(mockOnConflictDoUpdate).toHaveBeenCalledWith(
         expect.objectContaining({
           target: 'userId',

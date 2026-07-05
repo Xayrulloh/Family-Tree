@@ -32,6 +32,7 @@ describe('FamilyTreeMemberService (integration)', () => {
 
   beforeEach(async () => {
     jest.resetAllMocks();
+
     await truncateTables();
   });
 
@@ -39,6 +40,7 @@ describe('FamilyTreeMemberService (integration)', () => {
     it('returns all members in the tree', async () => {
       const user = await seedUser(getTestDb());
       const tree = await seedFamilyTree(getTestDb(), user.id);
+
       await Promise.all([
         seedMember(getTestDb(), tree.id),
         seedMember(getTestDb(), tree.id),
@@ -113,6 +115,7 @@ describe('FamilyTreeMemberService (integration)', () => {
             husband.id,
           ),
         });
+
       expect(conn?.type).toBe(FamilyTreeMemberConnectionEnum.SPOUSE);
       expect(conn?.toMemberId).toBe(wife.id);
     });
@@ -123,6 +126,7 @@ describe('FamilyTreeMemberService (integration)', () => {
       const husband = await seedMember(getTestDb(), tree.id, {
         gender: UserGenderEnum.MALE,
       });
+
       await service.createFamilyTreeMemberSpouse(tree.id, {
         fromMemberId: husband.id,
       });
@@ -150,9 +154,11 @@ describe('FamilyTreeMemberService (integration)', () => {
     it('creates a child with correct name and two PARENT connections', async () => {
       const user = await seedUser(getTestDb());
       const tree = await seedFamilyTree(getTestDb(), user.id);
+
       const husband = await seedMember(getTestDb(), tree.id, {
         gender: UserGenderEnum.MALE,
       });
+
       await service.createFamilyTreeMemberSpouse(tree.id, {
         fromMemberId: husband.id,
       });
@@ -172,6 +178,7 @@ describe('FamilyTreeMemberService (integration)', () => {
             child.id,
           ),
         });
+
       expect(parentConns).toHaveLength(2);
       expect(
         parentConns.every(
@@ -208,6 +215,7 @@ describe('FamilyTreeMemberService (integration)', () => {
         await getTestDb().query.familyTreeMembersSchema.findMany({
           where: eq(schema.familyTreeMembersSchema.familyTreeId, tree.id),
         });
+
       expect(allMembers).toHaveLength(3);
 
       const allConns =
@@ -217,6 +225,7 @@ describe('FamilyTreeMemberService (integration)', () => {
             tree.id,
           ),
         });
+
       expect(allConns).toHaveLength(3);
     });
 
@@ -242,6 +251,7 @@ describe('FamilyTreeMemberService (integration)', () => {
         gender: UserGenderEnum.MALE,
         name: 'Bob',
       });
+
       const tree = await seedFamilyTree(getTestDb(), user.id);
 
       await service.createFamilyTreeMemberInitial(user as any, tree.id);
@@ -249,6 +259,7 @@ describe('FamilyTreeMemberService (integration)', () => {
       const members = await service.getAllFamilyTreeMembers({
         familyTreeId: tree.id,
       });
+
       expect(members).toHaveLength(1);
       expect(members[0].name).toBe('Bob');
       expect(members[0].gender).toBe(UserGenderEnum.MALE);
@@ -259,6 +270,7 @@ describe('FamilyTreeMemberService (integration)', () => {
         gender: UserGenderEnum.FEMALE,
         name: 'Carol',
       });
+
       const tree = await seedFamilyTree(getTestDb(), user.id);
 
       await service.createFamilyTreeMemberInitial(user as any, tree.id);
@@ -266,6 +278,7 @@ describe('FamilyTreeMemberService (integration)', () => {
       const members = await service.getAllFamilyTreeMembers({
         familyTreeId: tree.id,
       });
+
       expect(members).toHaveLength(1);
       expect(members[0].name).toBe('Carol');
     });
@@ -274,6 +287,7 @@ describe('FamilyTreeMemberService (integration)', () => {
       const user = await seedUser(getTestDb(), {
         gender: UserGenderEnum.UNKNOWN,
       });
+
       const tree = await seedFamilyTree(getTestDb(), user.id);
 
       await service.createFamilyTreeMemberInitial(user as any, tree.id);
@@ -281,6 +295,7 @@ describe('FamilyTreeMemberService (integration)', () => {
       const members = await service.getAllFamilyTreeMembers({
         familyTreeId: tree.id,
       });
+
       expect(members).toHaveLength(2);
       expect(members.map((m) => m.name).sort()).toEqual([
         'Jane Doe',
@@ -294,6 +309,7 @@ describe('FamilyTreeMemberService (integration)', () => {
             tree.id,
           ),
         });
+
       expect(conn?.type).toBe(FamilyTreeMemberConnectionEnum.SPOUSE);
     });
   });
@@ -313,6 +329,7 @@ describe('FamilyTreeMemberService (integration)', () => {
         id: member.id,
         familyTreeId: tree.id,
       });
+
       expect(updated.name).toBe('After');
     });
 
@@ -351,6 +368,7 @@ describe('FamilyTreeMemberService (integration)', () => {
       const user = await seedUser(getTestDb());
       const tree = await seedFamilyTree(getTestDb(), user.id);
       const target = await seedMember(getTestDb(), tree.id);
+
       await seedMember(getTestDb(), tree.id);
 
       await service.deleteFamilyTreeMember({
@@ -379,9 +397,11 @@ describe('FamilyTreeMemberService (integration)', () => {
       const husband = await seedMember(getTestDb(), tree.id, {
         gender: UserGenderEnum.MALE,
       });
+
       const wife = await service.createFamilyTreeMemberSpouse(tree.id, {
         fromMemberId: husband.id,
       });
+
       const extra = await seedMember(getTestDb(), tree.id);
 
       await service.deleteFamilyTreeMember({
@@ -392,6 +412,7 @@ describe('FamilyTreeMemberService (integration)', () => {
       await expect(
         service.getFamilyTreeMember({ id: husband.id, familyTreeId: tree.id }),
       ).rejects.toThrow(NotFoundException);
+
       await expect(
         service.getFamilyTreeMember({ id: wife.id, familyTreeId: tree.id }),
       ).rejects.toThrow(NotFoundException);
@@ -399,6 +420,7 @@ describe('FamilyTreeMemberService (integration)', () => {
       const survivors = await service.getAllFamilyTreeMembers({
         familyTreeId: tree.id,
       });
+
       expect(survivors).toHaveLength(1);
       expect(survivors[0].id).toBe(extra.id);
     });

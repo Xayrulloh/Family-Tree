@@ -51,6 +51,7 @@ describe('GoogleStrategy (integration)', () => {
       );
 
       const all = await getTestDb().query.usersSchema.findMany();
+
       expect(all).toHaveLength(1);
     });
   });

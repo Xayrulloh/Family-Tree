@@ -74,6 +74,7 @@ describe('ZodValidationExceptionFilter', () => {
     );
 
     const [body] = json.mock.calls[0];
+
     expect(body.errors[0].path).toBe('user.email');
   });
 
@@ -90,6 +91,7 @@ describe('ZodValidationExceptionFilter', () => {
     );
 
     const [body] = json.mock.calls[0];
+
     expect(body.errors).toHaveLength(2);
     expect(body.errors[1].path).toBe('email');
   });
@@ -101,6 +103,7 @@ describe('ZodValidationExceptionFilter', () => {
     filter.catch(makeException([]), makeHost(status, json));
 
     const [body] = json.mock.calls[0];
+
     expect(body.errors).toEqual([]);
   });
 
@@ -114,6 +117,7 @@ describe('ZodValidationExceptionFilter', () => {
     );
 
     const [body] = json.mock.calls[0];
+
     expect(body.errors[0].path).toBe('');
   });
 });

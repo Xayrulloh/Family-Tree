@@ -30,11 +30,13 @@ describe('Shared Family Trees (E2E)', () => {
     const owner = await seedUser(db);
     const sharedUser = await seedUser(db);
     const tree = await seedFamilyTree(db, owner.id);
+
     await db.insert(schema.sharedFamilyTreesSchema).values({
       familyTreeId: tree.id,
       userId: sharedUser.id,
       canAddMembers: true,
     });
+
     return { owner, sharedUser, tree };
   }
 
@@ -57,6 +59,7 @@ describe('Shared Family Trees (E2E)', () => {
 
     it('lists trees shared with the authenticated user', async () => {
       const { sharedUser, tree } = await seedShare();
+
       const token = await signToken(jwtService, sharedUser);
 
       const res = await req

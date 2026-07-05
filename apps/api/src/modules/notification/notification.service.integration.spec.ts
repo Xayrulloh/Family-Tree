@@ -15,6 +15,7 @@ async function seedNotification(
     .insert(schema.notificationsSchema)
     .values({ receiverUserId, senderUserId, content, createdAt })
     .returning();
+
   return row;
 }
 
@@ -35,12 +36,14 @@ describe('NotificationService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       await seedNotification(
         receiver.id,
         sender.id,
         'A',
         '2026-01-01T00:00:00.000Z',
       );
+
       await seedNotification(
         receiver.id,
         sender.id,
@@ -59,18 +62,21 @@ describe('NotificationService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       const old = await seedNotification(
         receiver.id,
         sender.id,
         'old',
         '2026-01-01T00:00:00.000Z',
       );
+
       const fresh = await seedNotification(
         receiver.id,
         sender.id,
         'fresh',
         '2026-01-03T00:00:00.000Z',
       );
+
       await getTestDb()
         .insert(schema.notificationReadsSchema)
         .values({ userId: receiver.id, updatedAt: '2026-01-02T00:00:00.000Z' });
@@ -87,12 +93,14 @@ describe('NotificationService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       await seedNotification(
         receiver.id,
         sender.id,
         'mine',
         '2026-01-01T00:00:00.000Z',
       );
+
       await seedNotification(
         other.id,
         sender.id,

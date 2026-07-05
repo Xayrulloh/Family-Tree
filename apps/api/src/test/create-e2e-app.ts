@@ -41,6 +41,7 @@ export async function createE2EApp(): Promise<{
     .compile();
 
   const app = moduleRef.createNestApplication();
+
   app.setGlobalPrefix(GLOBAL_PREFIX);
   app.use(cookieParser());
 

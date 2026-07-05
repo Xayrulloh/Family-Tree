@@ -27,10 +27,12 @@ describe('Family Tree Member Connections (E2E)', () => {
 
   async function seedTreeWithConnection() {
     const db = getTestDb();
+
     const owner = await seedUser(db);
     const tree = await seedFamilyTree(db, owner.id);
     const memberA = await seedMember(db, tree.id);
     const memberB = await seedMember(db, tree.id, { name: 'Second Member' });
+
     const [connection] = await db
       .insert(schema.familyTreeMemberConnectionsSchema)
       .values({
@@ -40,6 +42,7 @@ describe('Family Tree Member Connections (E2E)', () => {
         type: FamilyTreeMemberConnectionEnum.SPOUSE,
       })
       .returning();
+
     return { owner, tree, memberA, memberB, connection };
   }
 
@@ -54,6 +57,7 @@ describe('Family Tree Member Connections (E2E)', () => {
 
     it('returns the connections of an owned tree', async () => {
       const { owner, tree, connection } = await seedTreeWithConnection();
+
       const token = await signToken(jwtService, owner);
 
       const res = await req
@@ -82,6 +86,7 @@ describe('Family Tree Member Connections (E2E)', () => {
     it('returns only the connections of the given member', async () => {
       const { owner, tree, memberA, connection } =
         await seedTreeWithConnection();
+
       const token = await signToken(jwtService, owner);
 
       const res = await req

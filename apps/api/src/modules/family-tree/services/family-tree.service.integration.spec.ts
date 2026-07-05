@@ -37,6 +37,7 @@ describe('FamilyTreeService (integration)', () => {
 
     it('throws BadRequestException when the same user creates a duplicate name', async () => {
       const user = await seedUser(getTestDb());
+
       await seedFamilyTree(getTestDb(), user.id, { name: 'Smith Family' });
 
       await expect(
@@ -53,6 +54,7 @@ describe('FamilyTreeService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       await seedFamilyTree(getTestDb(), user1.id, { name: 'Smith Family' });
 
       await expect(
@@ -95,6 +97,7 @@ describe('FamilyTreeService (integration)', () => {
       });
 
       const updated = await service.getFamilyTreeById(tree.id);
+
       expect(updated.name).toBe('After');
       expect(updated.isPublic).toBe(true);
     });
@@ -175,6 +178,7 @@ describe('FamilyTreeService (integration)', () => {
     it('calls deleteFile for members with custom (non-DiceBear) images', async () => {
       const user = await seedUser(getTestDb());
       const tree = await seedFamilyTree(getTestDb(), user.id);
+
       await seedMember(getTestDb(), tree.id, {
         image: 'https://r2.example.com/member.png',
       });
@@ -189,6 +193,7 @@ describe('FamilyTreeService (integration)', () => {
     it('does not call deleteFile for members with DiceBear images', async () => {
       const user = await seedUser(getTestDb());
       const tree = await seedFamilyTree(getTestDb(), user.id);
+
       await seedMember(getTestDb(), tree.id, {
         image: 'https://api.dicebear.com/9.x/notionists/svg?seed=abc',
       });
@@ -205,6 +210,7 @@ describe('FamilyTreeService (integration)', () => {
         seedUser(getTestDb()),
         seedUser(getTestDb()),
       ]);
+
       await seedFamilyTree(getTestDb(), user1.id);
       await seedFamilyTree(getTestDb(), user2.id);
 
@@ -219,6 +225,7 @@ describe('FamilyTreeService (integration)', () => {
 
     it('filters by name case-insensitively', async () => {
       const user = await seedUser(getTestDb());
+
       await seedFamilyTree(getTestDb(), user.id, { name: 'Smith Family' });
       await seedFamilyTree(getTestDb(), user.id, { name: 'Jones Family' });
 
@@ -234,6 +241,7 @@ describe('FamilyTreeService (integration)', () => {
 
     it('paginates correctly', async () => {
       const user = await seedUser(getTestDb());
+
       await Promise.all([
         seedFamilyTree(getTestDb(), user.id),
         seedFamilyTree(getTestDb(), user.id),
@@ -244,6 +252,7 @@ describe('FamilyTreeService (integration)', () => {
         page: 1,
         perPage: 2,
       });
+
       const page2 = await service.getFamilyTreesOfUser(user.id, {
         page: 2,
         perPage: 2,
@@ -258,6 +267,7 @@ describe('FamilyTreeService (integration)', () => {
   describe('getPublicFamilyTrees', () => {
     it('returns only public trees', async () => {
       const user = await seedUser(getTestDb());
+
       await seedFamilyTree(getTestDb(), user.id, { isPublic: true });
       await seedFamilyTree(getTestDb(), user.id, { isPublic: false });
 

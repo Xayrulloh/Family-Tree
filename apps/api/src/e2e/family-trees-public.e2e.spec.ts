@@ -33,6 +33,7 @@ describe('Family Trees — Public (E2E)', () => {
       const publicTree = await seedFamilyTree(getTestDb(), user.id, {
         isPublic: true,
       });
+
       await seedFamilyTree(getTestDb(), user.id, { isPublic: false });
 
       const res = await req.get('/api/family-trees/public').expect(200);

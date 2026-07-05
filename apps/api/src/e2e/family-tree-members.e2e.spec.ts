@@ -60,7 +60,9 @@ describe('Family Tree Members (E2E)', () => {
     it('returns seeded members', async () => {
       const user = await seedUser(getTestDb());
       const tree = await seedFamilyTree(getTestDb(), user.id);
+
       await seedMember(getTestDb(), tree.id, { name: 'Alice' });
+
       const token = await signToken(jwtService, user);
 
       const res = await req
@@ -156,8 +158,10 @@ describe('Family Tree Members (E2E)', () => {
       const user = await seedUser(getTestDb());
       const tree = await seedFamilyTree(getTestDb(), user.id);
       const toDelete = await seedMember(getTestDb(), tree.id);
+
       // Tree must have at least one surviving member after deletion.
       await seedMember(getTestDb(), tree.id);
+
       const token = await signToken(jwtService, user);
 
       await req

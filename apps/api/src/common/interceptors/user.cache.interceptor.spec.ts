@@ -19,6 +19,7 @@ function makeContext({
     /:(\w+)/g,
     (_, key) => params[key] ?? `:${key}`,
   );
+
   return {
     switchToHttp: () => ({
       getRequest: () => ({
@@ -100,6 +101,7 @@ describe('UserCacheInterceptor', () => {
     const cache = makeCacheService({
       getUser: jest.fn().mockResolvedValue(cached),
     });
+
     const interceptor = new UserCacheInterceptor(cache);
 
     const result$ = await interceptor.intercept(

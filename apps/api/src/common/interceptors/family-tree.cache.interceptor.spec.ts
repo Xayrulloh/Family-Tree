@@ -18,6 +18,7 @@ function makeContext({
   const resolvedPath = routePath
     .replace(':familyTreeId', treeId)
     .replace(':id', treeId);
+
   return {
     switchToHttp: () => ({
       getRequest: () => ({
@@ -55,7 +56,9 @@ describe('FamilyTreeCacheInterceptor', () => {
     it('returns cached list when warm', async () => {
       const cached = [{ id: 'tree-1' }];
       const cache = makeCacheService();
+
       cache.getUserFamilyTrees.mockResolvedValue(cached as any);
+
       const interceptor = new FamilyTreeCacheInterceptor(cache);
 
       const result$ = await interceptor.intercept(
@@ -90,7 +93,9 @@ describe('FamilyTreeCacheInterceptor', () => {
     it('returns cached members when warm', async () => {
       const cached = [{ id: 'm-1' }];
       const cache = makeCacheService();
+
       cache.getFamilyTreeMembers.mockResolvedValue(cached as any);
+
       const interceptor = new FamilyTreeCacheInterceptor(cache);
 
       const result$ = await interceptor.intercept(
@@ -121,7 +126,9 @@ describe('FamilyTreeCacheInterceptor', () => {
     it('returns cached connections when warm', async () => {
       const cached = [{ fromMemberId: 'm-1' }];
       const cache = makeCacheService();
+
       cache.getFamilyTreeMemberConnections.mockResolvedValue(cached as any);
+
       const interceptor = new FamilyTreeCacheInterceptor(cache);
 
       const result$ = await interceptor.intercept(

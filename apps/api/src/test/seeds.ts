@@ -17,12 +17,13 @@ export async function seedUser(
     .values({
       email: `user-${uid}@test.com`,
       name: 'Test User',
-      username: `testuser-${uid}`,
+      username: `testUser-${uid}`,
       gender: UserGenderEnum.MALE,
       image: null,
       ...overrides,
     })
     .returning();
+
   return user;
 }
 
@@ -40,6 +41,7 @@ export async function seedFamilyTree(
       ...overrides,
     })
     .returning();
+
   return tree;
 }
 
@@ -58,5 +60,6 @@ export async function seedMember(
       ...overrides,
     })
     .returning();
+
   return member;
 }
