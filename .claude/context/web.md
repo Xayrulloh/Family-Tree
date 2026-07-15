@@ -78,6 +78,7 @@ src/
 ```
 
 ## Visualization widget (`src/widgets/tree-visualization/`)
+- **"Convert to Image" export requires CORS on every image host** — `handleDownloadImage` uses `html2canvas(container, { useCORS: true })`, which re-fetches each cross-origin `<img>` with `crossOrigin='anonymous'`; hosts must send `Access-Control-Allow-Origin` or the image is silently dropped from the PNG (issue #508 — R2 buckets need a CORS policy allowing the app origins). Do NOT flip to `useCORS: false` (skips all cross-origin images) or `allowTaint: true` (taints canvas → `toDataURL()` throws → whole export fails).
 - `model.ts` — `createTreeDetailModel<T>(config)` generic factory; takes `scope`, `requireAuth`, `fetchTree`, `resolvePermissions`, `getName`; returns `TreeDetailModel` (`$members`, `$connections`, `$id`, `$treeName`, `$permissions`, `$loading`). All three fetch effects (`fetchTreeFx`, `fetchMembersFx`, `fetchConnectionsFx`) have both done and fail handlers — fail reinits the affected stores.
 - `visualization.tsx` — canvas component; reads `permissions.canAdd/canEdit/canDelete/canManageSharedUsers`
 - `view.tsx` — `TreeDetailView` (edit/delete buttons gated on permissions)

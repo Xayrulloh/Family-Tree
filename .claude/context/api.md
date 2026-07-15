@@ -21,6 +21,7 @@ SENTRY_DSN
 REDIS_URL, REDIS_TTL
 COOKIE_DOMAIN, COOKIE_CLIENT_URL
 ```
+**Gotcha (`CLOUDFLARE_ENDPOINT` path = bucket):** the S3 client (`config/cloudflare/cloudflare.config.ts`) uses `forcePathStyle: true`, so a path segment in the endpoint URL (local dev has `/testing`) becomes the actual bucket — the hardcoded `Bucket: 'family-tree'` is demoted to a key prefix. Local uploads live in bucket `testing` under `family-tree/...` keys; the `family-tree` bucket holds only static assets. Any per-bucket config (e.g. CORS for the image-export feature) must target the bucket the environment actually writes to. TODO: replace with bare host + `CLOUDFLARE_BUCKET` env var.
 
 ## Auth flow
 1. `GET /auth/google` → `GoogleOauthGuard` → redirects to Google
